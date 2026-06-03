@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BurnReward — Earn Your Treats</title>
+  <script>
+    /* Apply saved theme before paint to avoid a flash (default: sky) */
+    (function(){
+      try { document.documentElement.setAttribute('data-theme', localStorage.getItem('br-theme') || 'sky'); }
+      catch(e){ document.documentElement.setAttribute('data-theme', 'sky'); }
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --px: 'Press Start 2P', monospace;
+      /* ── SKY THEME (default) ── */
+      --bg:      #86c9f2;
+      --surface: #c8e6f5;
+      --card:    #ffffff;
+      --card2:   #e4f2fb;
+      --border:  #0f1e40;
+      --green:   #045e32;
+      --yellow:  #6e4400;
+      --orange:  #b83010;
+      --red:     #aa1030;
+      --blue:    #0a50a0;
+      --purple:  #6010aa;
+      --text:    #080e20;
+      --muted:   #162244;
+      --scanline: rgba(0,0,0,.025);
+      --bg-pattern: none;
+      --bg-size: auto;
+    }
+
+    /* ── DARK THEME (the original look) ── */
+    [data-theme="dark"] {
+      --bg:      #0a0a14;
+      --surface: #0d0d1a;
+      --card:    #111120;
+      --card2:   #161628;
+      --border:  #2a2a44;
+      --green:   #00ff88;
+      --yellow:  #ffd700;
+      --orange:  #ff6b35;
+      --red:     #ff2244;
+      --blue:    #00aaff;
+      --purple:  #cc44ff;
+      --text:    #e8e8ff;
+      --muted:   #6060a0;
+      --scanline: rgba(0,0,0,.06);
+      --bg-pattern: radial-gradient(rgba(0,255,136,.04) 1px, transparent 1px);
+      --bg-size: 24px 24px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--px);
+      background-color: var(--bg);
+      background-image: var(--bg-pattern);
+      background-size: var(--bg-size);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background-color .4s, color .4s;
+    }
+
+    /* Global scanline overlay */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 2px,
+        var(--scanline) 2px, var(--scanline) 4px
+      );
+      pointer-events: none;
+      z-index: 900;
+    }
+
+    /* ── THEME TOGGLE ──────────────────────────────── */
+    .theme-toggle {
+      position: fixed; top: 14px; right: 14px;
+      z-index: 950;
+      font-family: var(--px); font-size: 8px;
+      background: var(--card); color: var(--text);
+      border: 2px solid var(--border);
+      box-shadow: 3px 3px 0 var(--border);
+      padding: 9px 10px; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px;
+      transition: transform .08s, box-shadow .08s, background .3s, color .3s, border-color .3s;
+    }
+    .theme-toggle:hover  { transform: translate(1px,1px); box-shadow: 2px 2px 0 var(--border); }
+    .theme-toggle:active { transform: translate(3px,3px); box-shadow: 0 0 0 var(--border); }
+    .theme-toggle span { letter-spacing: 1px; }
+
+    /* ── ANIMATED PIXEL SKY ────────────────────────── */
+    .sky-bg {
+      position: fixed; inset: 0;
+      z-index: -1; overflow: hidden;
+      background: linear-gradient(to bottom,
+        #4fa3e8 0%, #6fb8ef 28%, #9ad3f5 60%, #c8e9fb 82%, #e8f6fd 100%);
+    }
+    [data-theme="dark"] .sky-bg { display: none; }
+
+    .cloud {
+      position: absolute; left: 0;
+      width: 10px; height: 10px;
+      background: #fff;
+      image-rendering: pixelated;
+      transform-origin: left center;
+      box-shadow:
+        10px 0 0 0 #fff, 20px 0 0 0 #fff, 30px 0 0 0 #fff, 40px 0 0 0 #fff, 50px 0 0 0 #fff,
+        10px -10px 0 0 #fff, 20px -10px 0 0 #fff, 30px -10px 0 0 #fff, 40px -10px 0 0 #fff,
+        20px -20px 0 0 #fff, 30px -20px 0 0 #fff;
+      animation: drift linear infinite;
+    }
+    @keyframes drift {
+      from { transform: translateX(-22vw) scale(var(--s,2)); }
+      to   { transform: translateX(122vw) scale(var(--s,2)); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .cloud { animation: none; }
+    }
+
+    /* ── UTILS ──────────────────────────────────────── */
+    @keyframes blink    { 0%,100%{opacity:1} 50%{opacity:0} }
+    @keyframes pop      { 0%{transform:scale(0)} 70%{transform:scale(1.3)} 100%{transform:scale(1)} }
+    @keyframes slide-in { from{opacity:0;transform:translateX(16px)} to{opacity:1;transform:translateX(0)} }
+    @keyframes float-up { 0%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(-80px)} }
+    @keyframes pixel-fall {
+      0%  { transform:translateY(0)    rotate(0deg);   opacity:1; }
+      100%{ transform:translateY(100vh) rotate(720deg); opacity:0; }
+    }
+    @keyframes pulse-glow {
+      0%,100%{ text-shadow: 3px 3px 0 rgba(0,0,0,.15); }
+      50%    { text-shadow: 3px 3px 0 rgba(0,0,0,.25), 0 0 16px rgba(0,0,0,.1); }
+    }
+    [data-theme="dark"] .hero-logo {
+      animation: pulse-glow-dark 3s ease-in-out infinite;
+    }
+    @keyframes pulse-glow-dark {
+      0%,100%{ text-shadow: 0 0 6px var(--green); }
+      50%    { text-shadow: 0 0 18px var(--green), 0 0 32px rgba(0,255,136,.4); }
+    }
+
+    /* Pixel double-border card */
+    .pbox {
+      background: var(--card);
+      border: 3px solid var(--border);
+      box-shadow: 4px 4px 0 var(--border);
+    }
+    .pbox-green {
+      border-color: var(--green);
+      box-shadow: 4px 4px 0 rgba(0,255,136,.25);
+    }
+    .pbox-yellow {
+      border-color: var(--yellow);
+      box-shadow: 4px 4px 0 rgba(255,215,0,.2);
+    }
+
+    /* Pixel button */
+    .pbtn {
+      font-family: var(--px);
+      font-size: 9px;
+      border: none;
+      cursor: pointer;
+      padding: 13px 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      transition: transform .08s, box-shadow .08s;
+    }
+    .pbtn:active { transform: translate(3px,3px) !important; box-shadow: 1px 1px 0 currentColor !important; }
+
+    .pbtn-green {
+      background: var(--green); color: #000;
+      box-shadow: 4px 4px 0 #007744;
+    }
+    .pbtn-green:hover { transform: translate(2px,2px); box-shadow: 2px 2px 0 #007744; }
+
+    .pbtn-ghost {
+      background: transparent; color: var(--text);
+      border: 2px solid var(--border);
+      box-shadow: 4px 4px 0 var(--border);
+    }
+    .pbtn-ghost:hover { transform: translate(2px,2px); box-shadow: 2px 2px 0 var(--border); }
+
+    /* Section scaffold */
+    .sec { padding: 80px 24px; }
+    .sec-surface { background: var(--surface); backdrop-filter: none; }
+    .sec-inner { max-width: 1100px; margin: 0 auto; }
+
+    .sec-badge {
+      font-size: 8px; color: var(--yellow);
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .sec-badge::before, .sec-badge::after {
+      content:''; flex:1; height:2px; background:var(--border);
+    }
+
+    .sec-title {
+      font-size: clamp(14px, 3vw, 26px);
+      color: var(--text);
+      text-align: center;
+      line-height: 1.7;
+      margin-bottom: 14px;
+    }
+    .sec-title .hi { color: var(--green); }
+
+    .sec-sub {
+      font-size: 8px; color: var(--muted);
+      text-align: center;
+      line-height: 2.4;
+      max-width: 480px;
+      margin: 0 auto 52px;
+    }
+
+    /* Pixel dashed divider */
+    .pdiv {
+      height: 3px;
+      background: repeating-linear-gradient(
+        90deg, var(--green) 0 8px, transparent 8px 16px
+      );
+      opacity: .12;
+    }
+
+    /* ── HERO ───────────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 60px 24px 80px;
+      text-align: center;
+      position: relative;
+    }
+
+    /* Rainbow top bar */
+    .hero::before {
+      content:''; position:absolute;
+      top:0; left:0; right:0; height:4px;
+      background: linear-gradient(90deg,
+        var(--green), var(--yellow), var(--orange),
+        var(--red), var(--purple), var(--blue));
+    }
+
+    /* Corner brackets */
+    .corner {
+      position: absolute;
+      width: 22px; height: 22px;
+      border-color: var(--green);
+      border-style: solid;
+    }
+    .corner.tl { top:18px; left:18px;  border-width:3px 0 0 3px; }
+    .corner.tr { top:18px; right:18px; border-width:3px 3px 0 0; }
+    .corner.bl { bottom:18px; left:18px;  border-width:0 0 3px 3px; }
+    .corner.br { bottom:18px; right:18px; border-width:0 3px 3px 0; }
+
+    .hero-insert {
+      font-size: 9px; color: var(--yellow);
+      letter-spacing: 2px;
+      animation: blink 1.2s step-end infinite;
+      margin-bottom: 24px;
+    }
+
+    .hero-lvl {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--card);
+      border: 2px solid var(--yellow);
+      box-shadow: 3px 3px 0 rgba(255,215,0,.2);
+      padding: 6px 14px;
+      font-size: 7px; color: var(--yellow);
+      margin-bottom: 28px;
+    }
+
+    .hero-logo {
+      font-size: clamp(24px, 7vw, 60px);
+      color: var(--green);
+      text-shadow: 4px 4px 0 rgba(0,255,136,.25);
+      animation: pulse-glow 3s ease-in-out infinite;
+      margin-bottom: 10px;
+      line-height: 1.2;
+    }
+    .hero-logo::after {
+      content: '█';
+      animation: blink 1s step-end infinite;
+      font-size: .7em;
+    }
+
+    .hero-tag {
+      font-size: clamp(9px, 2vw, 13px);
+      color: var(--yellow);
+      letter-spacing: 2px;
+      margin-bottom: 28px;
+    }
+
+    .hero-desc {
+      font-size: 8px; color: var(--muted);
+      line-height: 2.5; max-width: 500px;
+      margin-bottom: 44px;
+    }
+
+    /* ── DEMO ───────────────────────────────────────── */
+    .demo-grid {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 44px;
+      align-items: start;
+    }
+
+    /* ── WATCH ──────────────────────────────────────── */
+    .watch-wrap {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 10px;
+    }
+
+    .watch-shell {
+      width: 220px; height: 268px;
+      background: linear-gradient(160deg, #1c1c1c, #080808);
+      border-radius: 72px; padding: 18px;
+      box-shadow:
+        0 0 0 2px #2a2a2a,
+        0 0 0 4px #0f0f0f,
+        0 40px 80px rgba(0,0,0,.85),
+        0 0 60px rgba(0,255,136,.05);
+      position: relative;
+    }
+
+    .w-crown {
+      position:absolute; right:-8px; top:72px;
+      width:8px; height:36px;
+      background:linear-gradient(to right,#222,#444);
+      border-radius:4px;
+    }
+    .w-btn {
+      position:absolute; right:-8px; top:118px;
+      width:8px; height:18px;
+      background:linear-gradient(to right,#222,#444);
+      border-radius:4px;
+    }
+
+    .watch-screen {
+      /* The watch is a physical OLED screen — keep it bright in any page theme */
+      --green:#00ff88; --yellow:#ffd700; --orange:#ff6b35;
+      --blue:#00aaff; --purple:#cc44ff;
+      --text:#e8e8ff; --muted:#6060a0; --border:#2a2a44;
+      width:100%; height:100%;
+      background:#030a04;
+      border-radius:56px;
+      overflow:hidden;
+      position:relative;
+    }
+    /* Scanlines on screen */
+    .watch-screen::after {
+      content:''; position:absolute; inset:0;
+      background:repeating-linear-gradient(
+        0deg,transparent,transparent 3px,
+        rgba(0,0,0,.18) 3px,rgba(0,0,0,.18) 4px
+      );
+      pointer-events:none; z-index:10;
+    }
+
+    .wview {
+      position:absolute; inset:0;
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:flex-start;
+      padding:12px 10px;
+      opacity:0; transform:translateX(16px);
+      transition:opacity .3s,transform .3s;
+      pointer-events:none; z-index:1;
+    }
+    .wview.active {
+      opacity:1; transform:translateX(0);
+      pointer-events:all;
+    }
+
+    /* ── WATCH VIEW: PICK ───────────────────────────── */
+    #vw-pick { background:#030a04; }
+
+    .wv-header {
+      font-size:7px; color:var(--green);
+      letter-spacing:1px; margin-bottom:8px;
+      text-align:center;
+    }
+
+    .w-reward-list {
+      width:100%; display:flex; flex-direction:column;
+      gap:4px; overflow-y:auto; max-height:162px;
+    }
+    .w-reward-list::-webkit-scrollbar{display:none}
+
+    .w-ri {
+      display:flex; align-items:center; gap:6px;
+      background:#0a140a; border:2px solid #182018;
+      padding:5px 7px; cursor:pointer;
+      transition:border-color .1s,background .1s;
+    }
+    .w-ri:hover, .w-ri.on {
+      background:rgba(0,255,136,.1);
+      border-color:var(--green);
+    }
+    .w-ri-em  { font-size:16px; line-height:1; }
+    .w-ri-inf { flex:1; }
+    .w-ri-nm  { font-size:5px; color:var(--green); margin-bottom:2px; }
+    .w-ri-cal { font-size:5px; color:var(--yellow); }
+    .w-ri-chk { font-size:8px; color:var(--green); opacity:0; transition:opacity .2s; }
+    .w-ri.on .w-ri-chk { opacity:1; }
+
+    .w-cta {
+      margin-top:7px; width:100%;
+      padding:8px 0; font-family:var(--px); font-size:7px;
+      background:var(--green); color:#000; border:none; cursor:pointer;
+      box-shadow:0 3px 0 #007744;
+      transition:box-shadow .08s,transform .08s;
+    }
+    .w-cta:hover:not(:disabled){ box-shadow:0 1px 0 #007744; transform:translateY(2px); }
+    .w-cta:disabled{ background:#1a2a1a; color:var(--muted); box-shadow:none; cursor:default; }
+
+    /* ── WATCH VIEW: WORKOUT ────────────────────────── */
+    #vw-work { background:#030a04; justify-content:center; gap:0; }
+
+    .w-reward-em { font-size:30px; margin-bottom:4px; }
+    .w-reward-nm {
+      font-size:6px; color:var(--green);
+      text-align:center; margin-bottom:10px;
+      max-width:160px; line-height:1.6;
+    }
+
+    /* EXP bar */
+    .w-exp { width:100%; margin-bottom:8px; }
+    .w-exp-top {
+      display:flex; justify-content:space-between;
+      align-items:center; margin-bottom:4px;
+    }
+    .w-exp-lbl { font-size:6px; color:var(--yellow); }
+    .w-exp-pct { font-size:9px; color:var(--green); }
+
+    .w-exp-bar {
+      width:100%; height:14px;
+      background:#080808; border:2px solid var(--yellow);
+      overflow:hidden; position:relative;
+    }
+    .w-exp-fill {
+      height:100%;
+      background:repeating-linear-gradient(
+        90deg,
+        var(--yellow) 0 6px,
+        rgba(255,215,0,.55) 6px 8px
+      );
+      transition:width .35s steps(20,end);
+      width:0%;
+    }
+
+    .w-cal-inf {
+      font-size:6px; color:var(--muted);
+      text-align:center; margin-bottom:8px;
+    }
+
+    .w-stats {
+      display:grid; grid-template-columns:1fr 1fr;
+      gap:4px; width:100%;
+    }
+    .wstat {
+      background:#0a140a; border:1px solid #182018;
+      padding:5px 4px; text-align:center;
+    }
+    .wstat-v { font-size:10px; color:var(--orange); }
+    .wstat-l { font-size:5px; color:var(--muted); margin-top:3px; }
+
+    /* ── WATCH VIEW: EARNED ─────────────────────────── */
+    #vw-done {
+      background:radial-gradient(circle at 50% 35%,#0a1a0a,#030a04);
+      justify-content:center;
+    }
+    .w-earn-ttl {
+      font-size:8px; color:var(--green);
+      animation:blink .8s step-end infinite;
+      margin-bottom:8px; text-align:center;
+    }
+    .w-earn-em  { font-size:44px; margin-bottom:8px; animation:pop .4s ease; }
+    .w-earn-nm  { font-size:7px; color:var(--yellow); text-align:center; margin-bottom:12px; line-height:1.6; }
+    .w-earn-btn {
+      padding:6px 14px; font-family:var(--px); font-size:7px;
+      background:var(--green); color:#000; border:none; cursor:pointer;
+      box-shadow:0 3px 0 #007744;
+    }
+
+    /* ── CONTROLS ───────────────────────────────────── */
+    .ctrl-panel {
+      min-width:240px; padding:22px;
+      display:flex; flex-direction:column; gap:18px;
+    }
+
+    .ctrl-ttl {
+      font-size:9px; color:var(--yellow);
+      padding-bottom:12px; border-bottom:2px solid var(--border);
+    }
+
+    .ctrl-row {
+      display:flex; justify-content:space-between;
+      align-items:center; gap:8px;
+    }
+    .ctrl-lbl { font-size:7px; color:var(--muted); }
+    .ctrl-val { font-size:9px; color:var(--green); }
+
+    input[type=range]{
+      -webkit-appearance:none; appearance:none;
+      width:100%; height:4px;
+      background:var(--border); outline:none; cursor:pointer;
+    }
+    input[type=range]::-webkit-slider-thumb{
+      -webkit-appearance:none;
+      width:16px; height:16px;
+      background:var(--green); cursor:pointer;
+      border:2px solid #000;
+      box-shadow:2px 2px 0 #007744;
+    }
+
+    .sim-btn {
+      width:100%; padding:12px; font-family:var(--px);
+      font-size:9px; border:none; cursor:pointer;
+      transition:transform .08s,box-shadow .08s;
+    }
+    .sim-btn:active{ transform:translate(3px,3px)!important; box-shadow:1px 1px 0 #000!important; }
+
+    .sim-burn {
+      background:var(--orange); color:#fff;
+      box-shadow:4px 4px 0 #882200;
+    }
+    .sim-burn:hover{ transform:translate(2px,2px); box-shadow:2px 2px 0 #882200; }
+    .sim-burn:disabled{ background:#222; color:var(--muted); box-shadow:2px 2px 0 #111; cursor:default; transform:none!important; }
+
+    .sim-rst {
+      background:transparent; color:var(--muted);
+      border:2px solid var(--border);
+      box-shadow:3px 3px 0 var(--border); font-size:8px;
+    }
+    .sim-rst:hover{ transform:translate(2px,2px); box-shadow:1px 1px 0 var(--border); }
+
+    .status-row {
+      display:flex; align-items:center; gap:8px;
+      font-size:7px; color:var(--muted);
+    }
+    .sdot {
+      width:8px; height:8px; background:var(--border);
+      flex-shrink:0; transition:background .3s;
+    }
+    .sdot.on{ background:var(--green); box-shadow:0 0 8px var(--green); }
+
+    .ctrl-tip {
+      font-size:7px; color:var(--muted);
+      line-height:2.3; padding:12px;
+      background:var(--card2);
+      border-left:3px solid var(--border);
+    }
+    .ctrl-tip b{ color:var(--green); font-weight:normal; }
+
+    /* ── DEMO INFO CARDS ────────────────────────────── */
+    .dinfo { display:flex; flex-direction:column; gap:14px; }
+
+    .icard { padding:20px; }
+    .icard h3 {
+      font-size:8px; color:var(--green);
+      margin-bottom:10px; line-height:1.7;
+    }
+    .icard p {
+      font-size:7px; color:var(--muted); line-height:2.3;
+    }
+    .itags { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
+    .itag {
+      font-size:6px; padding:4px 8px;
+      background:rgba(0,255,136,.07);
+      border:1px solid rgba(0,255,136,.2);
+      color:var(--green);
+    }
+
+    /* ── FEATURES ───────────────────────────────────── */
+    .feat-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+      gap:18px;
+    }
+
+    .fcard {
+      padding:26px;
+      transition:transform .12s,box-shadow .12s,border-color .12s;
+    }
+    .fcard:hover{
+      transform:translate(-2px,-2px);
+      box-shadow:6px 6px 0 var(--border);
+      border-color:var(--green);
+    }
+    .fcard-ic { font-size:26px; display:block; margin-bottom:12px; }
+    .fcard h3 {
+      font-size:9px; color:var(--green);
+      margin-bottom:10px; line-height:1.7;
+    }
+    .fcard p { font-size:7px; color:var(--muted); line-height:2.3; }
+
+    /* ── GALLERY ────────────────────────────────────── */
+    .gal-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+      gap:12px;
+    }
+
+    .gcard {
+      padding:20px 14px; text-align:center; cursor:pointer;
+      transition:transform .1s,box-shadow .1s,border-color .1s;
+    }
+    .gcard:hover{
+      border-color:var(--yellow);
+      transform:translate(-2px,-2px);
+      box-shadow:5px 5px 0 rgba(255,215,0,.25);
+    }
+    .gcard:active{ transform:translate(1px,1px); box-shadow:1px 1px 0 var(--border); }
+    .gc-em  { font-size:36px; margin-bottom:10px; display:block; }
+    .gc-nm  { font-size:7px; color:var(--text); margin-bottom:6px; line-height:1.7; }
+    .gc-cal { font-size:7px; color:var(--yellow); }
+    .gc-dsc { font-size:6px; color:var(--muted); margin-top:4px; line-height:1.7; }
+
+    /* ── FOOTER ─────────────────────────────────────── */
+    footer {
+      padding:40px 24px;
+      text-align:center;
+      border-top:2px solid var(--border);
+    }
+    .ft-txt { font-size:8px; color:var(--muted); line-height:2.8; }
+    .ft-txt span { color:var(--green); }
+    .ft-credit { font-size:7px; color:#222; margin-top:12px; }
+
+    /* ── FLOATING POPUPS ────────────────────────────── */
+    .xp-pop {
+      position:fixed; pointer-events:none; z-index:9999;
+      font-family:var(--px); font-size:11px; color:var(--yellow);
+      text-shadow:2px 2px 0 #886600;
+      animation:float-up 1.5s ease-out forwards;
+    }
+
+    /* ── RESPONSIVE ─────────────────────────────────── */
+    @media(max-width:920px){
+      .demo-grid{
+        grid-template-columns:1fr;
+        justify-items:center;
+      }
+      .dinfo,.ctrl-panel{ width:100%; max-width:420px; }
+    }
+    @media(max-width:480px){
+      .hero-logo{ font-size:18px; }
+      .hero-tag { font-size:8px; }
+      .hero-desc{ font-size:7px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Animated pixel sky (sky theme only) -->
+<div class="sky-bg" aria-hidden="true">
+  <div class="cloud" style="top:10%; --s:2.4; animation-duration:95s;  animation-delay:-10s; opacity:.95"></div>
+  <div class="cloud" style="top:22%; --s:1.6; animation-duration:120s; animation-delay:-60s; opacity:.85"></div>
+  <div class="cloud" style="top:38%; --s:3;   animation-duration:80s;  animation-delay:-30s; opacity:.9"></div>
+  <div class="cloud" style="top:55%; --s:1.4; animation-duration:140s; animation-delay:-95s; opacity:.8"></div>
+  <div class="cloud" style="top:70%; --s:2.1; animation-duration:105s; animation-delay:-45s; opacity:.88"></div>
+  <div class="cloud" style="top:85%; --s:1.8; animation-duration:115s; animation-delay:-15s; opacity:.82"></div>
+</div>
+
+<!-- Theme toggle -->
+<button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" aria-label="Toggle color theme">🌙 <span>DARK</span></button>
+
+<!-- ═══════════════════════════════════════════
+     HERO
+════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
+
+  <div class="hero-insert">▶ INSERT COIN TO START ◀</div>
+
+  <div class="hero-lvl">⚔️ &nbsp;LVL 1 FITNESS RPG&nbsp; ⚔️</div>
+
+  <div class="hero-logo">BURNREWARD</div>
+
+  <div class="hero-tag">SWEAT NOW. FEAST LATER.</div>
+
+  <p class="hero-desc">
+    Set a reward goal — a burrito, pizza, ice cream.<br>
+    Run, cycle, lift. Watch the EXP bar fill up.<br>
+    Earn your treat. No cheat codes allowed.
+  </p>
+
+  <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center">
+    <a href="#demo" class="pbtn pbtn-green">▶ PLAY DEMO</a>
+    <a href="#features" class="pbtn pbtn-ghost">? INFO</a>
+  </div>
+</section>
+
+<div class="pdiv"></div>
+
+<!-- ═══════════════════════════════════════════
+     DEMO
+════════════════════════════════════════════ -->
+<section class="sec sec-surface" id="demo">
+  <div class="sec-inner">
+    <div class="sec-badge">STAGE SELECT</div>
+    <h2 class="sec-title">PICK YOUR REWARD.<br><span class="hi">START THE RUN.</span></h2>
+    <p class="sec-sub">
+      Select a reward on the Watch screen.<br>
+      Hit SET GOAL. Press BURN CALORIES. Fill the EXP bar!
+    </p>
+
+    <div class="demo-grid">
+
+      <!-- Left: info -->
+      <div class="dinfo">
+        <div class="icard pbox">
+          <h3>🎯 GOAL-DRIVEN GAMEPLAY</h3>
+          <p>Pick any reward and let the<br>app calculate the calories needed.<br>Every workout inch you closer.</p>
+        </div>
+        <div class="icard pbox">
+          <h3>📊 LIVE EXP BAR</h3>
+          <p>Like an RPG XP bar — it fills<br>as you burn. Milestones trigger<br>satisfying haptic pulses.</p>
+          <div class="itags">
+            <span class="itag">HEALTHKIT</span>
+            <span class="itag">WATCHOS 10+</span>
+            <span class="itag">WORKOUTKIT</span>
+          </div>
+        </div>
+        <div class="icard pbox">
+          <h3>🏃 ANY WORKOUT COUNTS</h3>
+          <p>Running, cycling, swimming,<br>lifting — all tracked by your<br>Apple Watch automatically.</p>
+        </div>
+      </div>
+
+      <!-- Center: Watch -->
+      <div class="watch-wrap">
+        <div class="watch-shell">
+          <div class="w-crown"></div>
+          <div class="w-btn"></div>
+          <div class="watch-screen">
+
+            <!-- PICK REWARD -->
+            <div class="wview active" id="vw-pick">
+              <div class="wv-header">★ PICK REWARD ★</div>
+              <div class="w-reward-list" id="watch-list"></div>
+              <button class="w-cta" id="w-start" disabled>SET GOAL ▶</button>
+            </div>
+
+            <!-- WORKOUT -->
+            <div class="wview" id="vw-work">
+              <div class="w-reward-em" id="w-em">🌯</div>
+              <div class="w-reward-nm" id="w-nm">CHIPOTLE BURRITO</div>
+
+              <div class="w-exp">
+                <div class="w-exp-top">
+                  <span class="w-exp-lbl">EXP</span>
+                  <span class="w-exp-pct" id="w-pct">0%</span>
+                </div>
+                <div class="w-exp-bar">
+                  <div class="w-exp-fill" id="w-fill"></div>
+                </div>
+              </div>
+
+              <div class="w-cal-inf" id="w-calinf">0 / 980 CAL</div>
+
+              <div class="w-stats">
+                <div class="wstat">
+                  <div class="wstat-v" id="ws-burned">0</div>
+                  <div class="wstat-l">BURNED</div>
+                </div>
+                <div class="wstat">
+                  <div class="wstat-v" id="ws-left">980</div>
+                  <div class="wstat-l">LEFT</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- EARNED -->
+            <div class="wview" id="vw-done">
+              <div class="w-earn-ttl">★ EARNED! ★</div>
+              <div class="w-earn-em" id="w-earn-em">🌯</div>
+              <div class="w-earn-nm" id="w-earn-nm">CHIPOTLE BURRITO</div>
+              <button class="w-earn-btn" onclick="resetDemo()">▶ NEW GOAL</button>
+            </div>
+
+          </div><!-- /watch-screen -->
+        </div><!-- /watch-shell -->
+        <div style="font-size:6px;color:var(--muted);text-align:center;margin-top:6px">
+          APPLE WATCH ULTRA 2
+        </div>
+      </div>
+
+      <!-- Right: controls -->
+      <div class="ctrl-panel pbox">
+        <div class="ctrl-ttl">⚙ SIMULATOR</div>
+
+        <div class="status-row">
+          <div class="sdot" id="sdot"></div>
+          <span id="stext">IDLE</span>
+        </div>
+
+        <div>
+          <div class="ctrl-row" style="margin-bottom:8px">
+            <span class="ctrl-lbl">CAL PER BURN</span>
+            <span class="ctrl-val" id="burn-val">80</span>
+          </div>
+          <input type="range" id="burn-slider" min="20" max="200" value="80"
+            oninput="document.getElementById('burn-val').textContent=this.value">
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <div class="ctrl-row">
+            <span class="ctrl-lbl">REWARD</span>
+            <span class="ctrl-val" id="c-name" style="font-size:6px;text-align:right;max-width:120px;line-height:1.6">—</span>
+          </div>
+          <div class="ctrl-row">
+            <span class="ctrl-lbl">TARGET</span>
+            <span class="ctrl-val" id="c-cal">—</span>
+          </div>
+          <div class="ctrl-row">
+            <span class="ctrl-lbl">PROGRESS</span>
+            <span class="ctrl-val" id="c-prog">0%</span>
+          </div>
+        </div>
+
+        <button class="sim-btn sim-burn" id="burn-btn" onclick="burnCalories()" disabled>
+          🔥 BURN CALORIES
+        </button>
+        <button class="sim-btn sim-rst" onclick="resetDemo()">↺ RESET</button>
+
+        <div class="ctrl-tip">
+          1. <b>PICK</b> a reward on watch<br>
+          2. Press <b>SET GOAL</b> to begin<br>
+          3. Hit <b>BURN CALORIES</b><br>
+          4. Fill the EXP bar! 🎮
+        </div>
+      </div>
+
+    </div><!-- /demo-grid -->
+  </div>
+</section>
+
+<div class="pdiv"></div>
+
+<!-- ═══════════════════════════════════════════
+     FEATURES
+════════════════════════════════════════════ -->
+<section class="sec" id="features">
+  <div class="sec-inner">
+    <div class="sec-badge">ABILITIES UNLOCKED</div>
+    <h2 class="sec-title">POWER-UPS &<br><span class="hi">FEATURES</span></h2>
+    <p class="sec-sub">Everything packed into your wrist.</p>
+
+    <div class="feat-grid">
+      <div class="fcard pbox">
+        <span class="fcard-ic">🏅</span>
+        <h3>CUSTOM REWARDS</h3>
+        <p>Add any food, treat, or prize. Set the calorie target. Make every session count toward something real.</p>
+      </div>
+      <div class="fcard pbox">
+        <span class="fcard-ic">🔗</span>
+        <h3>HEALTHKIT SYNC</h3>
+        <p>Live calorie data pulled straight from Apple Health. Every Apple Watch workout counts automatically.</p>
+      </div>
+      <div class="fcard pbox">
+        <span class="fcard-ic">📈</span>
+        <h3>HISTORY & STREAKS</h3>
+        <p>Track every reward earned, maintain workout streaks, and review your weekly calorie history.</p>
+      </div>
+      <div class="fcard pbox">
+        <span class="fcard-ic">📳</span>
+        <h3>HAPTIC MILESTONES</h3>
+        <p>Satisfying haptic at 25%, 50%, 75%. Full victory rumble the moment you earn your reward.</p>
+      </div>
+      <div class="fcard pbox">
+        <span class="fcard-ic">👾</span>
+        <h3>FRIEND CHALLENGES</h3>
+        <p>Race a friend to the same reward. First to burn the calories picks the restaurant.</p>
+      </div>
+      <div class="fcard pbox">
+        <span class="fcard-ic">⌚</span>
+        <h3>WATCH COMPLICATION</h3>
+        <p>A glanceable complication shows your current reward and EXP progress without opening the app.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="pdiv"></div>
+
+<!-- ═══════════════════════════════════════════
+     ITEM SHOP
+════════════════════════════════════════════ -->
+<section class="sec sec-surface" id="gallery">
+  <div class="sec-inner">
+    <div class="sec-badge">ITEM SHOP</div>
+    <h2 class="sec-title">CHOOSE YOUR<br><span class="hi">QUEST REWARD</span></h2>
+    <p class="sec-sub">What are you working toward today?</p>
+
+    <div class="gal-grid" id="gal-grid"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════ -->
+<footer>
+  <div class="pdiv" style="margin-bottom:32px;opacity:.07"></div>
+  <div class="ft-txt">
+    <span>BURNREWARD</span> v0.1.0<br>
+    COMING TO APP STORE · APPLE WATCH<br>
+    © 2025 ALL RIGHTS RESERVED
+  </div>
+  <div class="ft-credit">MADE WITH ♥ IN 8-BIT</div>
+</footer>
+
+<!-- Floating popup layer -->
+<div id="fx-layer" style="position:fixed;inset:0;pointer-events:none;z-index:9999"></div>
+
+<script>
+  /* ── DATA ─────────────────────────────────────────── */
+  const REWARDS = [
+    { e:'🌯', n:'Chipotle Burrito',    c:980,  d:'Full build' },
+    { e:'🍕', n:'Pizza Slice ×2',      c:570,  d:'Pepperoni' },
+    { e:'🍔', n:'Double Cheeseburger', c:740,  d:'With fries' },
+    { e:'🍦', n:'Ice Cream Sundae',    c:420,  d:'Hot fudge' },
+    { e:'🍰', n:'Cheesecake Slice',    c:490,  d:'NY style' },
+    { e:'🧇', n:'Pancake Stack',       c:520,  d:'Syrup & butter' },
+    { e:'🍟', n:'Large Fries',         c:490,  d:"McDonald's" },
+    { e:'🌮', n:'Taco Tuesday',        c:650,  d:'3 crunchy tacos' },
+    { e:'🍩', n:'Donut Box ×2',        c:500,  d:'Glazed' },
+    { e:'🥗', n:'Treat Salad',         c:200,  d:'Light mode' },
+    { e:'🎂', n:'Birthday Cake',       c:350,  d:'You deserve it' },
+    { e:'🍜', n:'Ramen Bowl',          c:600,  d:'Tonkotsu' },
+  ];
+
+  /* ── STATE ────────────────────────────────────────── */
+  let sel     = null;
+  let burned  = 0;
+  let phase   = 'pick'; // pick | work | done
+
+  /* ── THEME ────────────────────────────────────────── */
+  function setTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    try { localStorage.setItem('br-theme', t); } catch (e) {}
+    const b = document.getElementById('theme-toggle');
+    if (b) b.innerHTML = (t === 'dark') ? '☀ <span>SKY</span>' : '🌙 <span>DARK</span>';
+  }
+  function toggleTheme() {
+    const cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'sky';
+    setTheme(cur === 'dark' ? 'sky' : 'dark');
+  }
+
+  /* ── INIT ─────────────────────────────────────────── */
+  function init() {
+    // Watch list (first 6)
+    document.getElementById('watch-list').innerHTML =
+      REWARDS.slice(0, 6).map((r, i) => `
+        <div class="w-ri" id="ri${i}" onclick="pickReward(${i})">
+          <span class="w-ri-em">${r.e}</span>
+          <div class="w-ri-inf">
+            <div class="w-ri-nm">${r.n.toUpperCase().slice(0,16)}</div>
+            <div class="w-ri-cal">${r.c} CAL</div>
+          </div>
+          <span class="w-ri-chk">✓</span>
+        </div>`).join('');
+
+    // Gallery
+    document.getElementById('gal-grid').innerHTML =
+      REWARDS.map(r => `
+        <div class="gcard pbox">
+          <span class="gc-em">${r.e}</span>
+          <div class="gc-nm">${r.n}</div>
+          <div class="gc-cal">${r.c} CAL</div>
+          <div class="gc-dsc">${r.d}</div>
+        </div>`).join('');
+
+    // Sync the toggle label with whatever theme is currently applied
+    setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'sky');
+  }
+
+  /* ── WATCH INTERACTIONS ───────────────────────────── */
+  function pickReward(i) {
+    document.querySelectorAll('.w-ri').forEach(el => el.classList.remove('on'));
+    document.getElementById(`ri${i}`).classList.add('on');
+    sel = REWARDS[i];
+    document.getElementById('w-start').disabled = false;
+  }
+
+  document.getElementById('w-start').addEventListener('click', () => {
+    if (!sel) return;
+    burned = 0;
+    phase  = 'work';
+    syncWorkoutUI();
+    showView('vw-work');
+
+    document.getElementById('c-name').textContent = sel.n.toUpperCase();
+    document.getElementById('c-cal').textContent  = sel.c + ' CAL';
+    document.getElementById('c-prog').textContent = '0%';
+    document.getElementById('burn-btn').disabled  = false;
+    setStatus(true, 'ACTIVE');
+  });
+
+  function burnCalories() {
+    if (phase !== 'work' || !sel) return;
+    const amt = parseInt(document.getElementById('burn-slider').value);
+    burned = Math.min(burned + amt, sel.c);
+    syncWorkoutUI();
+    spawnXP(`+${amt} EXP`);
+    if (burned >= sel.c) setTimeout(triggerEarned, 480);
+  }
+
+  function syncWorkoutUI() {
+    if (!sel) return;
+    const pct  = Math.round((burned / sel.c) * 100);
+    const left = Math.max(sel.c - burned, 0);
+
+    document.getElementById('w-em').textContent      = sel.e;
+    document.getElementById('w-nm').textContent      = sel.n.toUpperCase().slice(0, 20);
+    document.getElementById('w-calinf').textContent  = `${burned} / ${sel.c} CAL`;
+    document.getElementById('w-fill').style.width    = pct + '%';
+    document.getElementById('w-pct').textContent     = pct + '%';
+    document.getElementById('ws-burned').textContent = burned;
+    document.getElementById('ws-left').textContent   = left;
+    document.getElementById('c-prog').textContent    = pct + '%';
+  }
+
+  function triggerEarned() {
+    document.getElementById('w-earn-em').textContent = sel.e;
+    document.getElementById('w-earn-nm').textContent = sel.n.toUpperCase();
+    phase = 'done';
+    showView('vw-done');
+    pixelBurst();
+    document.getElementById('burn-btn').disabled = true;
+    setStatus(false, 'REWARD EARNED!');
+  }
+
+  function resetDemo() {
+    burned = 0; sel = null; phase = 'pick';
+    document.querySelectorAll('.w-ri').forEach(el => el.classList.remove('on'));
+    document.getElementById('w-start').disabled   = true;
+    document.getElementById('burn-btn').disabled  = true;
+    document.getElementById('c-name').textContent = '—';
+    document.getElementById('c-cal').textContent  = '—';
+    document.getElementById('c-prog').textContent = '0%';
+    setStatus(false, 'IDLE');
+    showView('vw-pick');
+  }
+
+  function showView(id) {
+    document.querySelectorAll('.wview').forEach(v => v.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function setStatus(on, txt) {
+    document.getElementById('sdot').classList.toggle('on', on);
+    document.getElementById('stext').textContent = txt;
+  }
+
+  /* ── FX ───────────────────────────────────────────── */
+  function spawnXP(txt) {
+    const layer = document.getElementById('fx-layer');
+    const el    = document.createElement('div');
+    el.className     = 'xp-pop';
+    el.textContent   = txt;
+    el.style.cssText = `left:${28+Math.random()*44}%;top:${25+Math.random()*35}%`;
+    layer.appendChild(el);
+    setTimeout(() => el.remove(), 1600);
+  }
+
+  function pixelBurst() {
+    const layer  = document.getElementById('fx-layer');
+    const colors = ['#00ff88','#ffd700','#ff6b35','#00aaff','#cc44ff','#ff2244'];
+
+    // Pixel squares
+    for (let i = 0; i < 36; i++) {
+      const p = document.createElement('div');
+      const s = 4 + Math.floor(Math.random() * 3) * 4;
+      p.style.cssText = `
+        position:fixed;
+        left:${Math.random()*100}%;top:-10px;
+        width:${s}px;height:${s}px;
+        background:${colors[Math.floor(Math.random()*colors.length)]};
+        animation:pixel-fall ${1+Math.random()*.8}s ease-in forwards;
+        animation-delay:${Math.random()*.5}s;
+        pointer-events:none;
+      `;
+      layer.appendChild(p);
+    }
+
+    // Text popups
+    ['★ REWARD EARNED!', '★ LEVEL UP! ★', '+BONUS EXP!'].forEach((t, i) =>
+      setTimeout(() => spawnXP(t), i * 280)
+    );
+
+    setTimeout(() => { layer.innerHTML = ''; }, 3200);
+  }
+
+  // Inject pixel-fall keyframe at runtime
+  const s = document.createElement('style');
+  s.textContent = `
+    @keyframes pixel-fall {
+      0%  { transform:translateY(0) rotate(0deg);   opacity:1; }
+      100%{ transform:translateY(100vh) rotate(720deg); opacity:0; }
+    }`;
+  document.head.appendChild(s);
+
+  /* ── SMOOTH SCROLL ────────────────────────────────── */
+  document.querySelectorAll('a[href^="#"]').forEach(a =>
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      document.querySelector(a.getAttribute('href'))?.scrollIntoView({ behavior:'smooth' });
+    })
+  );
+
+  init();
+</script>
+</body>
+</html>
