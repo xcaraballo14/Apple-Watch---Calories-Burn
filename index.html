@@ -4,6 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BurnReward — Earn Your Treats</title>
+  <meta name="description" content="BurnReward — the fitness RPG for Apple Watch. Set a food reward, burn the calories, earn your treat. Coming soon to the App Store.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="BurnReward — Earn Your Treats">
+  <meta property="og:description" content="Set a reward goal. Burn the calories. Earn your treat. The fitness RPG for Apple Watch.">
+  <meta property="og:image" content="https://xcaraballo14.github.io/Apple-Watch---Calories-Burn/og-card.png">
+  <meta property="og:url" content="https://xcaraballo14.github.io/Apple-Watch---Calories-Burn/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="BurnReward — Earn Your Treats">
+  <meta name="twitter:description" content="Set a reward goal. Burn the calories. Earn your treat. The fitness RPG for Apple Watch.">
+  <meta name="twitter:image" content="https://xcaraballo14.github.io/Apple-Watch---Calories-Burn/og-card.png">
   <script>
     /* Apply saved theme before paint to avoid a flash (default: sky) */
     (function(){
@@ -656,6 +666,136 @@
       .hero-tag { font-size:8px; }
       .hero-desc{ font-size:7px; }
     }
+
+    /* ── APP STORE BADGE ──────────────────────────────── */
+    .store-badge {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: #000; color: #fff;
+      border: 3px solid #333;
+      box-shadow: 4px 4px 0 #333;
+      padding: 11px 20px;
+      font-family: var(--px); font-size: 7px;
+      text-decoration: none; letter-spacing: 1px;
+      margin-top: 20px;
+      transition: transform .08s, box-shadow .08s;
+    }
+    .store-badge:hover  { transform: translate(2px,2px); box-shadow: 2px 2px 0 #333; }
+    .store-badge:active { transform: translate(4px,4px); box-shadow: 0 0 0 #333; }
+    .store-badge-icon { font-size: 14px; line-height: 1; }
+
+    /* ── IPHONE MOCKUPS ───────────────────────────────── */
+    .iphone-grid {
+      display: flex; justify-content: center; gap: 24px;
+      flex-wrap: wrap; align-items: flex-start;
+    }
+    .iphone-wrap {
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+    }
+    .iphone-shell {
+      width: 158px; height: 308px;
+      background: linear-gradient(160deg, #1c1c1c, #080808);
+      border-radius: 40px; padding: 12px;
+      box-shadow:
+        0 0 0 2px #2a2a2a,
+        0 0 0 4px #0f0f0f,
+        0 30px 70px rgba(0,0,0,.7);
+      position: relative;
+    }
+    .iph-notch {
+      position: absolute; top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 56px; height: 26px;
+      background: #080808;
+      border-radius: 0 0 16px 16px;
+      z-index: 5;
+    }
+    .iphone-screen {
+      /* Hardcode dark OLED vars so phone always looks like a real screen */
+      --green:#00ff88; --yellow:#ffd700; --orange:#ff6b35;
+      --blue:#00aaff; --muted:#5a5a90; --border:#1e1e36;
+      --text:#e8e8ff; --card2:#0d0d20;
+      width: 100%; height: 100%;
+      background: #030510;
+      border-radius: 30px;
+      overflow: hidden;
+      position: relative;
+      display: flex; flex-direction: column;
+      padding: 30px 8px 10px;
+      gap: 5px;
+    }
+    .iph-ttl {
+      font-size: 6px; color: var(--green);
+      text-align: center; letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+    .iph-stat-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
+    }
+    .iph-stat {
+      background: #080814; border: 1px solid var(--border);
+      padding: 7px 5px; text-align: center;
+    }
+    .iph-stat-v { font-size: 10px; color: var(--green); }
+    .iph-stat-l { font-size: 4px; color: var(--muted); margin-top: 2px; }
+    .iph-entry {
+      display: flex; align-items: center; gap: 5px;
+      background: #080814; border: 1px solid var(--border);
+      padding: 5px 6px;
+    }
+    .iph-em { font-size: 13px; line-height: 1; }
+    .iph-inf { flex: 1; min-width: 0; }
+    .iph-nm  { font-size: 5px; color: var(--green); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .iph-meta{ font-size: 4px; color: var(--muted); margin-top: 1px; }
+    .iph-earned { font-size: 5px; color: var(--yellow); }
+    .iph-input-row { display: flex; flex-direction: column; gap: 4px; }
+    .iph-lbl { font-size: 5px; color: var(--muted); }
+    .iph-field {
+      background: #080814; border: 1px solid var(--border);
+      padding: 6px 8px; font-size: 5px; color: var(--text);
+      width: 100%;
+    }
+    .iph-add-btn {
+      width: 100%; padding: 8px;
+      font-family: var(--px); font-size: 6px;
+      background: var(--green); color: #000; border: none;
+      box-shadow: 0 2px 0 #007744; margin-top: auto; cursor: default;
+    }
+    .iph-chart-row {
+      display: flex; align-items: flex-end; gap: 3px;
+      height: 44px; padding: 0 2px;
+    }
+    .iph-bar {
+      flex: 1; background: var(--green); opacity: .65;
+      border-radius: 1px; min-height: 4px;
+    }
+    .iph-cap {
+      font-size: 6px; color: var(--muted);
+      text-align: center; letter-spacing: 1px;
+    }
+
+    /* ── WAITLIST ─────────────────────────────────────── */
+    .wl-row {
+      display: flex; gap: 10px; justify-content: center;
+      flex-wrap: wrap; max-width: 520px; margin: 0 auto;
+    }
+    .wl-input {
+      font-family: var(--px); font-size: 8px;
+      background: var(--card); color: var(--text);
+      border: 2px solid var(--border);
+      box-shadow: 3px 3px 0 var(--border);
+      padding: 13px 16px; outline: none;
+      flex: 1; min-width: 210px;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .wl-input::placeholder { color: var(--muted); }
+    .wl-input:focus {
+      border-color: var(--green);
+      box-shadow: 3px 3px 0 rgba(0,255,136,.3);
+    }
+    .wl-msg {
+      font-size: 8px; margin-top: 14px; min-height: 20px;
+      color: var(--green); text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -700,6 +840,11 @@
     <a href="#demo" class="pbtn pbtn-green">▶ PLAY DEMO</a>
     <a href="#features" class="pbtn pbtn-ghost">? INFO</a>
   </div>
+
+  <a href="#waitlist" class="store-badge" aria-label="Coming to the App Store — join the waitlist">
+    <span class="store-badge-icon">🍎</span>
+    <span>COMING TO APP STORE</span>
+  </a>
 </section>
 
 <div class="pdiv"></div>
@@ -896,6 +1041,139 @@
 <div class="pdiv"></div>
 
 <!-- ═══════════════════════════════════════════
+     IPHONE COMPANION
+════════════════════════════════════════════ -->
+<section class="sec" id="companion">
+  <div class="sec-inner">
+    <div class="sec-badge">COMPANION APP</div>
+    <h2 class="sec-title">ALSO ON<br><span class="hi">iPHONE</span></h2>
+    <p class="sec-sub">The full command center in your pocket — stats, history, and custom rewards.</p>
+
+    <div class="iphone-grid">
+
+      <!-- Phone 1: Dashboard -->
+      <div class="iphone-wrap">
+        <div class="iphone-shell">
+          <div class="iph-notch"></div>
+          <div class="iphone-screen">
+            <div class="iph-ttl">★ DASHBOARD ★</div>
+            <div class="iph-stat-row">
+              <div class="iph-stat">
+                <div class="iph-stat-v">12</div>
+                <div class="iph-stat-l">REWARDS</div>
+              </div>
+              <div class="iph-stat">
+                <div class="iph-stat-v" style="color:var(--orange)">8,420</div>
+                <div class="iph-stat-l">CAL BURNED</div>
+              </div>
+            </div>
+            <div style="font-size:5px;color:var(--muted);letter-spacing:1px;margin-top:4px">THIS WEEK</div>
+            <div class="iph-chart-row">
+              <div class="iph-bar" style="height:55%"></div>
+              <div class="iph-bar" style="height:80%"></div>
+              <div class="iph-bar" style="height:40%"></div>
+              <div class="iph-bar" style="height:90%"></div>
+              <div class="iph-bar" style="height:65%"></div>
+              <div class="iph-bar" style="height:100%"></div>
+              <div class="iph-bar" style="height:70%"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:4px;color:var(--muted);padding:0 2px">
+              <span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span>
+            </div>
+            <div class="iph-entry" style="margin-top:4px">
+              <span class="iph-em">🌯</span>
+              <div class="iph-inf">
+                <div class="iph-nm">CURRENT GOAL</div>
+                <div class="iph-meta">CHIPOTLE BURRITO · 980 CAL</div>
+              </div>
+              <div style="font-size:6px;color:var(--green)">72%</div>
+            </div>
+          </div>
+        </div>
+        <div class="iph-cap">DASHBOARD</div>
+      </div>
+
+      <!-- Phone 2: History -->
+      <div class="iphone-wrap">
+        <div class="iphone-shell">
+          <div class="iph-notch"></div>
+          <div class="iphone-screen">
+            <div class="iph-ttl">★ EARNED ★</div>
+            <div class="iph-entry">
+              <span class="iph-em">🍕</span>
+              <div class="iph-inf">
+                <div class="iph-nm">PIZZA SLICE ×2</div>
+                <div class="iph-meta">TODAY · 570 CAL</div>
+              </div>
+              <div class="iph-earned">✓</div>
+            </div>
+            <div class="iph-entry">
+              <span class="iph-em">🍔</span>
+              <div class="iph-inf">
+                <div class="iph-nm">DBL CHEESEBURGER</div>
+                <div class="iph-meta">YESTERDAY · 740 CAL</div>
+              </div>
+              <div class="iph-earned">✓</div>
+            </div>
+            <div class="iph-entry">
+              <span class="iph-em">🍦</span>
+              <div class="iph-inf">
+                <div class="iph-nm">ICE CREAM SUNDAE</div>
+                <div class="iph-meta">MON · 420 CAL</div>
+              </div>
+              <div class="iph-earned">✓</div>
+            </div>
+            <div class="iph-entry">
+              <span class="iph-em">🌮</span>
+              <div class="iph-inf">
+                <div class="iph-nm">TACO TUESDAY</div>
+                <div class="iph-meta">SAT · 650 CAL</div>
+              </div>
+              <div class="iph-earned">✓</div>
+            </div>
+            <div style="font-size:5px;color:var(--muted);text-align:center;margin-top:6px;line-height:2">
+              🔥 4-DAY STREAK
+            </div>
+          </div>
+        </div>
+        <div class="iph-cap">HISTORY</div>
+      </div>
+
+      <!-- Phone 3: Add Reward -->
+      <div class="iphone-wrap">
+        <div class="iphone-shell">
+          <div class="iph-notch"></div>
+          <div class="iphone-screen">
+            <div class="iph-ttl">+ ADD REWARD</div>
+            <div class="iph-input-row">
+              <div class="iph-lbl">REWARD NAME</div>
+              <div class="iph-field" style="color:var(--green)">Mom's Lasagna_</div>
+            </div>
+            <div class="iph-input-row">
+              <div class="iph-lbl">EMOJI</div>
+              <div class="iph-field">🍝</div>
+            </div>
+            <div class="iph-input-row">
+              <div class="iph-lbl">CALORIES</div>
+              <div class="iph-field">850</div>
+            </div>
+            <div class="iph-input-row">
+              <div class="iph-lbl">NOTES (OPTIONAL)</div>
+              <div class="iph-field" style="color:var(--muted)">Sunday dinner...</div>
+            </div>
+            <div class="iph-add-btn">▶ SAVE REWARD</div>
+          </div>
+        </div>
+        <div class="iph-cap">CUSTOM REWARD</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="pdiv"></div>
+
+<!-- ═══════════════════════════════════════════
      ITEM SHOP
 ════════════════════════════════════════════ -->
 <section class="sec sec-surface" id="gallery">
@@ -905,6 +1183,45 @@
     <p class="sec-sub">What are you working toward today?</p>
 
     <div class="gal-grid" id="gal-grid"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     WAITLIST
+════════════════════════════════════════════ -->
+<section class="sec sec-surface" id="waitlist">
+  <div class="sec-inner" style="text-align:center">
+    <div class="sec-badge">EARLY ACCESS</div>
+    <h2 class="sec-title">GET NOTIFIED<br><span class="hi">ON LAUNCH</span></h2>
+    <p class="sec-sub">
+      Drop your email. Be first in line when<br>BurnReward hits the App Store.
+    </p>
+
+    <!-- Replace YOUR_FORM_ID with your Formspree form ID from formspree.io -->
+    <form
+      action="https://formspree.io/f/YOUR_FORM_ID"
+      method="POST"
+      id="waitlist-form"
+      onsubmit="handleWaitlist(event)"
+    >
+      <div class="wl-row">
+        <input
+          type="email"
+          name="email"
+          placeholder="YOUR@EMAIL.COM"
+          required
+          autocomplete="email"
+          class="wl-input"
+          aria-label="Email address"
+        >
+        <button type="submit" class="pbtn pbtn-green">▶ NOTIFY ME</button>
+      </div>
+      <div class="wl-msg" id="wl-msg" role="status"></div>
+    </form>
+
+    <p style="font-size:6px;color:var(--muted);margin-top:18px;line-height:2">
+      NO SPAM. ONE EMAIL. LAUNCH DAY ONLY.
+    </p>
   </div>
 </section>
 
@@ -1121,6 +1438,42 @@
   );
 
   init();
+
+  /* ── WAITLIST FORM ────────────────────────────────── */
+  async function handleWaitlist(e) {
+    e.preventDefault();
+    const form = e.target;
+    const msg  = document.getElementById('wl-msg');
+    const btn  = form.querySelector('button[type=submit]');
+
+    btn.disabled    = true;
+    btn.textContent = '… SENDING';
+    msg.textContent = '';
+
+    try {
+      const res = await fetch(form.action, {
+        method:  'POST',
+        body:    new FormData(form),
+        headers: { Accept: 'application/json' }
+      });
+
+      if (res.ok) {
+        msg.textContent = '★ YOU\'RE ON THE LIST! WE\'LL PING YOU ON LAUNCH. ★';
+        form.reset();
+        btn.textContent = '✓ JOINED';
+      } else {
+        throw new Error('server');
+      }
+    } catch {
+      msg.style.color = 'var(--red, #ff2244)';
+      msg.textContent = 'X SOMETHING WENT WRONG — TRY AGAIN.';
+      btn.disabled    = false;
+      btn.textContent = '▶ NOTIFY ME';
+    }
+  }
+
+  // Keep toggle label synced on load
+  setTheme(document.documentElement.getAttribute('data-theme') || 'sky');
 </script>
 </body>
 </html>
