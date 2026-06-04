@@ -2,9 +2,22 @@ import SwiftUI
 
 struct WorkoutView: View {
     @EnvironmentObject var wm: WorkoutManager
+    @State private var confirmingCancel = false
 
     var body: some View {
         VStack(spacing: 6) {
+            HStack {
+                Button {
+                    confirmingCancel = true
+                } label: {
+                    Label("Back", systemImage: "chevron.left")
+                        .font(.system(.caption2, design: .monospaced))
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                Spacer()
+            }
+
             Text(wm.selectedReward?.emoji ?? "")
                 .font(.system(size: 36))
 
@@ -31,6 +44,10 @@ struct WorkoutView: View {
             #endif
         }
         .padding(.horizontal, 6)
+        .confirmationDialog("Change reward?", isPresented: $confirmingCancel) {
+            Button("Go Back", role: .destructive) { wm.newGoal() }
+            Button("Keep Going", role: .cancel) {}
+        }
     }
 
     private var expBar: some View {
