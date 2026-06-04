@@ -841,7 +841,7 @@
     <a href="#features" class="pbtn pbtn-ghost">? INFO</a>
   </div>
 
-  <a href="#waitlist" class="store-badge" aria-label="Coming to the App Store — join the waitlist">
+  <a id="store-badge-link" href="#waitlist" class="store-badge" aria-label="Coming to the App Store">
     <span class="store-badge-icon">🍎</span>
     <span>COMING TO APP STORE</span>
   </a>
@@ -1242,6 +1242,13 @@
 <div id="fx-layer" style="position:fixed;inset:0;pointer-events:none;z-index:9999"></div>
 
 <script>
+  /* ── APP STORE URL ────────────────────────────────────
+     Set this to your TestFlight invite or App Store link.
+     While null the badge scrolls to the waitlist instead.
+     Example: 'https://testflight.apple.com/join/XXXXXXXX'
+  ─────────────────────────────────────────────────────── */
+  const APP_STORE_URL = null;
+
   /* ── DATA ─────────────────────────────────────────── */
   const REWARDS = [
     { e:'🌯', n:'Chipotle Burrito',    c:980,  d:'Full build' },
@@ -1277,6 +1284,15 @@
 
   /* ── INIT ─────────────────────────────────────────── */
   function init() {
+    // Point the App Store badge at APP_STORE_URL when set; otherwise keep #waitlist fallback
+    const badge = document.getElementById('store-badge-link');
+    if (APP_STORE_URL) {
+      badge.href   = APP_STORE_URL;
+      badge.target = '_blank';
+      badge.rel    = 'noopener noreferrer';
+      badge.setAttribute('aria-label', 'Download on the App Store');
+    }
+
     // Watch list (first 6)
     document.getElementById('watch-list').innerHTML =
       REWARDS.slice(0, 6).map((r, i) => `
