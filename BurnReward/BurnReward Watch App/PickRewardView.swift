@@ -6,8 +6,8 @@ struct PickRewardView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                List(allRewards) { reward in
+            List {
+                ForEach(allRewards) { reward in
                     Button { selected = reward } label: {
                         HStack(spacing: 8) {
                             Text(reward.emoji)
@@ -34,16 +34,16 @@ struct PickRewardView: View {
                             : Color(white: 0.08)
                     )
                 }
-                .listStyle(.plain)
 
                 Button("SET GOAL ▶") {
                     if let r = selected { wm.startWorkout(for: r) }
                 }
                 .buttonStyle(PixelButtonStyle(enabled: selected != nil))
                 .disabled(selected == nil)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 6)
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets(top: 8, leading: 4, bottom: 8, trailing: 4))
             }
+            .listStyle(.plain)
             .navigationTitle("★ PICK REWARD")
             .navigationBarTitleDisplayMode(.inline)
         }
