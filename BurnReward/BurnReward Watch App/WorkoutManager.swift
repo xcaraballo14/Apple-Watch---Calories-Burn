@@ -13,17 +13,23 @@ final class WorkoutManager: NSObject, ObservableObject {
     private var builder: HKLiveWorkoutBuilder?
 
     @Published var phase: AppPhase = .picking
-    @Published var selectedReward: Reward?
+    @Published var selectedRewards: [Reward] = []   // sorted ascending by calories
     @Published var caloriesBurned: Double = 0
+    @Published var earnedCount: Int = 0             // milestones cleared so far
+    @Published var milestoneFlash: Reward? = nil    // set briefly on intermediate earn
+
+    var totalGoal: Int { selectedRewards.reduce(0) { $0 + $1.calories } }
 
     var progress: Double {
-        guard let goal = selectedReward?.calories, goal > 0 else { return 0 }
-        return min(caloriesBurned / Double(goal), 1.0)
+        guard totalGoal > 0 else { return 0 }
+        return min(caloriesBurned / Double(totalGoal), 1.0)
     }
 
-    var caloriesLeft: Int {
-        let left = (selectedReward?.calories ?? 0) - Int(caloriesBurned)
-        return max(left, 0)
+    var caloriesLeft: Int { max(totalGoal - Int(caloriesBurned), 0) }
+
+    // Cumulative calorie threshold for each reward in order
+    func cumulativeTarget(at index: Int) -> Int {
+        selectedRewards[0...index].reduce(0) { $0 + $1.calories }
     }
 
     func requestAuthorization() async {
@@ -33,9 +39,11 @@ final class WorkoutManager: NSObject, ObservableObject {
         try? await healthStore.requestAuthorization(toShare: share, read: read)
     }
 
-    func startWorkout(for reward: Reward) {
-        selectedReward = reward
+    func startWorkout(for rewards: [Reward]) {
+        selectedRewards = rewards.sorted { $0.calories < $1.calories }
         caloriesBurned = 0
+        earnedCount = 0
+        milestoneFlash = nil
 
         let config = HKWorkoutConfiguration()
         config.activityType = .other
@@ -69,23 +77,44 @@ final class WorkoutManager: NSObject, ObservableObject {
             self?.builder?.finishWorkout { _, _ in }
         }
         phase = .picking
-        selectedReward = nil
+        selectedRewards = []
         caloriesBurned = 0
+        earnedCount = 0
+        milestoneFlash = nil
     }
-}
 
-// MARK: - Debug helpers
-
-#if DEBUG
-    func simulateBurn(_ amount: Double = 50) {
-        guard phase == .workout else { return }
-        caloriesBurned += amount
-        if let goal = selectedReward?.calories, caloriesBurned >= Double(goal) {
-            phase = .earned
-            WKInterfaceDevice.current().play(.success)
+    func checkMilestones(cal: Double) {
+        caloriesBurned = cal
+        while earnedCount < selectedRewards.count {
+            let threshold = Double(cumulativeTarget(at: earnedCount))
+            guard cal >= threshold else { break }
+            earnedCount += 1
+            if earnedCount < selectedRewards.count {
+                // Intermediate milestone — flash then keep going
+                let justEarned = selectedRewards[earnedCount - 1]
+                WKInterfaceDevice.current().play(.notification)
+                milestoneFlash = justEarned
+                Task {
+                    try? await Task.sleep(for: .milliseconds(1200))
+                    milestoneFlash = nil
+                }
+            } else {
+                // All rewards earned
+                phase = .earned
+                WKInterfaceDevice.current().play(.success)
+            }
         }
     }
-#endif
+
+    // MARK: - Debug helpers
+
+    #if DEBUG
+    func simulateBurn(_ amount: Double = 50) {
+        guard phase == .workout else { return }
+        checkMilestones(cal: caloriesBurned + amount)
+    }
+    #endif
+}
 
 // MARK: - HKWorkoutSessionDelegate
 
@@ -112,7 +141,6 @@ extension WorkoutManager: HKLiveWorkoutBuilderDelegate {
         didCollectDataOf collectedTypes: Set<HKSampleType>
     ) {
         guard collectedTypes.contains(HKQuantityType(.activeEnergyBurned)) else { return }
-
         let cal = workoutBuilder
             .statistics(for: HKQuantityType(.activeEnergyBurned))?
             .sumQuantity()?
@@ -120,11 +148,7 @@ extension WorkoutManager: HKLiveWorkoutBuilderDelegate {
 
         Task { @MainActor [weak self] in
             guard let self, self.phase == .workout else { return }
-            self.caloriesBurned = cal
-            if let goal = self.selectedReward?.calories, cal >= Double(goal) {
-                self.phase = .earned
-                WKInterfaceDevice.current().play(.success)
-            }
+            self.checkMilestones(cal: cal)
         }
     }
 }
