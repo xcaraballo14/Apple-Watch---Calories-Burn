@@ -22,6 +22,13 @@ struct WorkoutView: View {
                 .foregroundStyle(.secondary)
 
             statsRow
+
+            #if DEBUG
+            Button("+50 CAL") { wm.simulateBurn(50) }
+                .buttonStyle(.bordered)
+                .tint(.orange)
+                .font(.system(.caption2, design: .monospaced).weight(.bold))
+            #endif
         }
         .padding(.horizontal, 6)
     }
