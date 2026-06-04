@@ -2,26 +2,62 @@ import SwiftUI
 
 struct PickRewardView: View {
     @EnvironmentObject var wm: WorkoutManager
-    @State private var selected: Reward?
+    @State private var selectedIDs: Set<UUID> = []
+
+    private let maxSelection = 2
+
+    private var selectedRewards: [Reward] {
+        allRewards.filter { selectedIDs.contains($0.id) }
+    }
+
+    private var combinedCalories: Int {
+        selectedRewards.reduce(0) { $0 + $1.calories }
+    }
 
     var body: some View {
         NavigationStack {
             List {
+                // Live combo summary row
+                if !selectedIDs.isEmpty {
+                    HStack {
+                        Text(selectedRewards
+                            .sorted { $0.calories < $1.calories }
+                            .map { $0.emoji }
+                            .joined(separator: " + "))
+                            .font(.system(.caption2, design: .monospaced))
+                        Spacer()
+                        Text("\(combinedCalories) CAL")
+                            .font(.system(.caption2, design: .monospaced).weight(.bold))
+                            .foregroundStyle(.yellow)
+                    }
+                    .listRowBackground(Color(white: 0.06))
+                }
+
                 ForEach(allRewards) { reward in
-                    Button { selected = reward } label: {
+                    let isSelected = selectedIDs.contains(reward.id)
+                    let isFull = selectedIDs.count >= maxSelection && !isSelected
+
+                    Button {
+                        if isSelected {
+                            selectedIDs.remove(reward.id)
+                        } else if !isFull {
+                            selectedIDs.insert(reward.id)
+                        }
+                    } label: {
                         HStack(spacing: 8) {
                             Text(reward.emoji)
                                 .font(.title2)
+                                .opacity(isFull ? 0.35 : 1.0)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(reward.name)
                                     .font(.system(.caption, design: .monospaced).weight(.semibold))
-                                    .foregroundStyle(.green)
+                                    .foregroundStyle(isFull ? .secondary : .green)
                                 Text("\(reward.calories) CAL")
                                     .font(.system(.caption2, design: .monospaced))
-                                    .foregroundStyle(.yellow)
+                                    .foregroundStyle(isFull ? .secondary : .yellow)
                             }
                             Spacer()
-                            if selected?.id == reward.id {
+                            if isSelected {
                                 Image(systemName: "checkmark.circle.fill")
                                     .foregroundStyle(.green)
                                     .font(.caption)
@@ -29,17 +65,18 @@ struct PickRewardView: View {
                         }
                     }
                     .listRowBackground(
-                        selected?.id == reward.id
+                        isSelected
                             ? Color.green.opacity(0.2)
                             : Color(white: 0.08)
                     )
+                    .disabled(isFull)
                 }
 
                 Button("SET GOAL ▶") {
-                    if let r = selected { wm.startWorkout(for: r) }
+                    wm.startWorkout(for: selectedRewards)
                 }
-                .buttonStyle(PixelButtonStyle(enabled: selected != nil))
-                .disabled(selected == nil)
+                .buttonStyle(PixelButtonStyle(enabled: !selectedIDs.isEmpty))
+                .disabled(selectedIDs.isEmpty)
                 .listRowBackground(Color.clear)
                 .listRowInsets(EdgeInsets(top: 8, leading: 4, bottom: 8, trailing: 4))
             }

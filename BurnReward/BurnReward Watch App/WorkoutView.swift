@@ -5,48 +5,71 @@ struct WorkoutView: View {
     @State private var confirmingCancel = false
 
     var body: some View {
-        VStack(spacing: 6) {
-            HStack {
-                Button {
-                    confirmingCancel = true
-                } label: {
-                    Label("Back", systemImage: "chevron.left")
-                        .font(.system(.caption2, design: .monospaced))
-                        .foregroundStyle(.secondary)
+        ZStack {
+            VStack(spacing: 6) {
+                HStack {
+                    Button {
+                        confirmingCancel = true
+                    } label: {
+                        Label("Back", systemImage: "chevron.left")
+                            .font(.system(.caption2, design: .monospaced))
+                            .foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                    Spacer()
                 }
-                .buttonStyle(.plain)
-                Spacer()
+
+                rewardEmojis
+
+                expBar
+
+                Text("\(Int(wm.caloriesBurned)) / \(wm.totalGoal) CAL")
+                    .font(.system(.caption2, design: .monospaced))
+                    .foregroundStyle(.secondary)
+
+                statsRow
+
+                #if DEBUG
+                Button("+50 CAL") { wm.simulateBurn(50) }
+                    .buttonStyle(.bordered)
+                    .tint(.orange)
+                    .font(.system(.caption2, design: .monospaced).weight(.bold))
+                #endif
             }
+            .padding(.horizontal, 6)
 
-            Text(wm.selectedReward?.emoji ?? "")
-                .font(.system(size: 36))
-
-            Text((wm.selectedReward?.name ?? "").uppercased())
-                .font(.system(.caption2, design: .monospaced).weight(.semibold))
-                .foregroundStyle(.green)
-                .multilineTextAlignment(.center)
-                .lineLimit(2)
-                .minimumScaleFactor(0.7)
-
-            expBar
-
-            Text("\(Int(wm.caloriesBurned)) / \(wm.selectedReward?.calories ?? 0) CAL")
-                .font(.system(.caption2, design: .monospaced))
-                .foregroundStyle(.secondary)
-
-            statsRow
-
-            #if DEBUG
-            Button("+50 CAL") { wm.simulateBurn(50) }
-                .buttonStyle(.bordered)
-                .tint(.orange)
-                .font(.system(.caption2, design: .monospaced).weight(.bold))
-            #endif
+            // Milestone flash overlay
+            if let earned = wm.milestoneFlash {
+                milestoneOverlay(reward: earned)
+            }
         }
-        .padding(.horizontal, 6)
         .confirmationDialog("Change reward?", isPresented: $confirmingCancel) {
             Button("Go Back", role: .destructive) { wm.newGoal() }
             Button("Keep Going", role: .cancel) {}
+        }
+    }
+
+    // MARK: - Subviews
+
+    private var rewardEmojis: some View {
+        HStack(spacing: 6) {
+            ForEach(Array(wm.selectedRewards.enumerated()), id: \.offset) { index, reward in
+                if index > 0 {
+                    Text("+")
+                        .font(.system(.caption2, design: .monospaced))
+                        .foregroundStyle(.secondary)
+                }
+                ZStack(alignment: .bottomTrailing) {
+                    Text(reward.emoji)
+                        .font(.system(size: wm.selectedRewards.count > 1 ? 28 : 36))
+                        .opacity(index < wm.earnedCount ? 0.4 : 1.0)
+                    if index < wm.earnedCount {
+                        Text("✓")
+                            .font(.system(size: 10, design: .monospaced).weight(.bold))
+                            .foregroundStyle(.green)
+                    }
+                }
+            }
         }
     }
 
@@ -69,6 +92,15 @@ struct WorkoutView: View {
                             RoundedRectangle(cornerRadius: 2)
                                 .strokeBorder(Color.yellow, lineWidth: 1.5)
                         )
+                    // Milestone marker line for combo goals
+                    if wm.selectedRewards.count > 1, wm.totalGoal > 0 {
+                        let first = wm.selectedRewards[0]
+                        let markerX = geo.size.width * Double(first.calories) / Double(wm.totalGoal)
+                        Rectangle()
+                            .fill(Color.white.opacity(0.5))
+                            .frame(width: 2, height: 12)
+                            .offset(x: markerX - 1)
+                    }
                     RoundedRectangle(cornerRadius: 2)
                         .fill(Color.yellow)
                         .frame(width: geo.size.width * wm.progress)
@@ -100,5 +132,20 @@ struct WorkoutView: View {
         .padding(.vertical, 5)
         .background(Color(white: 0.08))
         .cornerRadius(4)
+    }
+
+    private func milestoneOverlay(reward: Reward) -> some View {
+        VStack(spacing: 4) {
+            Text(reward.emoji).font(.system(size: 32))
+            Text("EARNED!").font(.system(.caption2, design: .monospaced).weight(.bold))
+                .foregroundStyle(.green)
+            Text("KEEP GOING →").font(.system(size: 7, design: .monospaced))
+                .foregroundStyle(.secondary)
+        }
+        .padding(12)
+        .background(.black.opacity(0.85))
+        .cornerRadius(8)
+        .transition(.scale.combined(with: .opacity))
+        .animation(.easeOut(duration: 0.2), value: wm.milestoneFlash != nil)
     }
 }

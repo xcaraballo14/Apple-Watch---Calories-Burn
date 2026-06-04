@@ -10,18 +10,31 @@ struct EarnedView: View {
                 .font(.system(.caption2, design: .monospaced).weight(.bold))
                 .foregroundStyle(.green)
 
-            Text(wm.selectedReward?.emoji ?? "🏆")
-                .font(.system(size: 52))
-                .scaleEffect(animating ? 1.15 : 1.0)
-                .animation(
-                    .easeInOut(duration: 0.6).repeatForever(autoreverses: true),
-                    value: animating
-                )
+            HStack(spacing: 8) {
+                ForEach(Array(wm.selectedRewards.enumerated()), id: \.offset) { index, reward in
+                    if index > 0 {
+                        Text("+")
+                            .font(.system(.caption, design: .monospaced))
+                            .foregroundStyle(.secondary)
+                    }
+                    Text(reward.emoji)
+                        .font(.system(size: wm.selectedRewards.count > 1 ? 36 : 52))
+                }
+            }
+            .scaleEffect(animating ? 1.1 : 1.0)
+            .animation(
+                .easeInOut(duration: 0.6).repeatForever(autoreverses: true),
+                value: animating
+            )
 
-            Text((wm.selectedReward?.name ?? "").uppercased())
-                .font(.system(.caption, design: .monospaced).weight(.semibold))
+            Text(wm.selectedRewards
+                .map { $0.name.uppercased() }
+                .joined(separator: " + "))
+                .font(.system(.caption2, design: .monospaced).weight(.semibold))
                 .foregroundStyle(.yellow)
                 .multilineTextAlignment(.center)
+                .lineLimit(3)
+                .minimumScaleFactor(0.65)
 
             Button("▶ NEW GOAL") {
                 wm.newGoal()
