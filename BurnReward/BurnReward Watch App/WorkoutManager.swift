@@ -57,6 +57,9 @@ final class WorkoutManager: NSObject, ObservableObject {
             phase = .workout
         } catch {
             print("WorkoutManager: failed to start session – \(error)")
+            #if DEBUG
+            phase = .workout
+            #endif
         }
     }
 
@@ -70,6 +73,19 @@ final class WorkoutManager: NSObject, ObservableObject {
         caloriesBurned = 0
     }
 }
+
+// MARK: - Debug helpers
+
+#if DEBUG
+    func simulateBurn(_ amount: Double = 50) {
+        guard phase == .workout else { return }
+        caloriesBurned += amount
+        if let goal = selectedReward?.calories, caloriesBurned >= Double(goal) {
+            phase = .earned
+            WKInterfaceDevice.current().play(.success)
+        }
+    }
+#endif
 
 // MARK: - HKWorkoutSessionDelegate
 
