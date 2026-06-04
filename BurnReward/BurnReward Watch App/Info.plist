@@ -24,5 +24,7 @@
 	<string>BurnReward saves your workouts to Apple Health.</string>
 	<key>WKApplication</key>
 	<true/>
+	<key>WKWatchOnly</key>
+	<true/>
 </dict>
 </plist>
