@@ -34,42 +34,7 @@ struct PickRewardView: View {
                 }
 
                 ForEach(allRewards) { reward in
-                    let isSelected = selectedIDs.contains(reward.id)
-                    let isFull = selectedIDs.count >= maxSelection && !isSelected
-
-                    Button {
-                        if isSelected {
-                            selectedIDs.remove(reward.id)
-                        } else if !isFull {
-                            selectedIDs.insert(reward.id)
-                        }
-                    } label: {
-                        HStack(spacing: 8) {
-                            Text(reward.emoji)
-                                .font(.title2)
-                                .opacity(isFull ? 0.35 : 1.0)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(reward.name)
-                                    .font(.system(.caption, design: .monospaced).weight(.semibold))
-                                    .foregroundStyle(isFull ? .secondary : .green)
-                                Text("\(reward.calories) CAL")
-                                    .font(.system(.caption2, design: .monospaced))
-                                    .foregroundStyle(isFull ? .secondary : .yellow)
-                            }
-                            Spacer()
-                            if isSelected {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(.green)
-                                    .font(.caption)
-                            }
-                        }
-                    }
-                    .listRowBackground(
-                        isSelected
-                            ? Color.green.opacity(0.2)
-                            : Color(white: 0.08)
-                    )
-                    .disabled(isFull)
+                    rewardRow(for: reward)
                 }
 
                 Button("SET GOAL ▶") {
@@ -85,5 +50,45 @@ struct PickRewardView: View {
             .navigationBarTitleDisplayMode(.inline)
         }
         .task { await wm.requestAuthorization() }
+    }
+
+    @ViewBuilder
+    private func rewardRow(for reward: Reward) -> some View {
+        let isSelected = selectedIDs.contains(reward.id)
+        let isFull = selectedIDs.count >= maxSelection && !isSelected
+
+        Button {
+            if isSelected {
+                selectedIDs.remove(reward.id)
+            } else if !isFull {
+                selectedIDs.insert(reward.id)
+            }
+        } label: {
+            HStack(spacing: 8) {
+                Text(reward.emoji)
+                    .font(.title2)
+                    .opacity(isFull ? 0.35 : 1.0)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(reward.name)
+                        .font(.system(.caption, design: .monospaced).weight(.semibold))
+                        .foregroundStyle(isFull ? Color.secondary : Color.green)
+                    Text("\(reward.calories) CAL")
+                        .font(.system(.caption2, design: .monospaced))
+                        .foregroundStyle(isFull ? Color.secondary : Color.yellow)
+                }
+                Spacer()
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(.green)
+                        .font(.caption)
+                }
+            }
+        }
+        .listRowBackground(
+            isSelected
+                ? Color.green.opacity(0.2)
+                : Color(white: 0.08)
+        )
+        .disabled(isFull)
     }
 }
