@@ -18,6 +18,21 @@ final class WorkoutManager: NSObject, ObservableObject {
     @Published var earnedCount: Int = 0             // milestones cleared so far
     @Published var milestoneFlash: Reward? = nil    // set briefly on intermediate earn
 
+    // MARK: - Persistence
+
+    private let defaults = UserDefaults.standard
+    private enum Keys {
+        static let rewardIDs   = "br.activeRewardIDs"
+        static let phase       = "br.phase"
+        static let earnedCount = "br.earnedCount"
+        static let calories    = "br.caloriesBurned"
+    }
+
+    override init() {
+        super.init()
+        restoreState()
+    }
+
     var totalGoal: Int { selectedRewards.reduce(0) { $0 + $1.calories } }
 
     var progress: Double {
@@ -69,6 +84,7 @@ final class WorkoutManager: NSObject, ObservableObject {
             phase = .workout
             #endif
         }
+        persistState()
     }
 
     func newGoal() {
@@ -81,6 +97,7 @@ final class WorkoutManager: NSObject, ObservableObject {
         caloriesBurned = 0
         earnedCount = 0
         milestoneFlash = nil
+        clearState()
     }
 
     func checkMilestones(cal: Double) {
@@ -102,6 +119,62 @@ final class WorkoutManager: NSObject, ObservableObject {
                 // All rewards earned
                 phase = .earned
                 WKInterfaceDevice.current().play(.success)
+            }
+        }
+        persistState()
+    }
+
+    // MARK: - Persistence
+
+    private func persistState() {
+        guard phase != .picking, !selectedRewards.isEmpty else {
+            clearState()
+            return
+        }
+        defaults.set(selectedRewards.map(\.id), forKey: Keys.rewardIDs)
+        defaults.set(phase == .earned ? "earned" : "workout", forKey: Keys.phase)
+        defaults.set(earnedCount, forKey: Keys.earnedCount)
+        defaults.set(caloriesBurned, forKey: Keys.calories)
+    }
+
+    private func clearState() {
+        [Keys.rewardIDs, Keys.phase, Keys.earnedCount, Keys.calories]
+            .forEach { defaults.removeObject(forKey: $0) }
+    }
+
+    private func restoreState() {
+        guard
+            let ids = defaults.array(forKey: Keys.rewardIDs) as? [String],
+            !ids.isEmpty
+        else { return }
+
+        let rewards = ids.compactMap { id in allRewards.first { $0.id == id } }
+        guard !rewards.isEmpty else { clearState(); return }
+
+        selectedRewards = rewards.sorted { $0.calories < $1.calories }
+        caloriesBurned  = defaults.double(forKey: Keys.calories)
+        earnedCount     = defaults.integer(forKey: Keys.earnedCount)
+        phase           = defaults.string(forKey: Keys.phase) == "earned" ? .earned : .workout
+
+        // Reconnect to a workout session that may still be running in the background.
+        if phase == .workout {
+            recoverWorkoutSession()
+        }
+    }
+
+    private func recoverWorkoutSession() {
+        healthStore.recoverActiveWorkoutSession { [weak self] session, _ in
+            guard let self, let session else { return }
+            Task { @MainActor in
+                let builder = session.associatedWorkoutBuilder()
+                builder.dataSource = HKLiveWorkoutDataSource(
+                    healthStore: self.healthStore,
+                    workoutConfiguration: session.workoutConfiguration
+                )
+                session.delegate = self
+                builder.delegate = self
+                self.session = session
+                self.builder = builder
             }
         }
     }

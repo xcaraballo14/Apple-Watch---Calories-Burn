@@ -2,7 +2,7 @@ import SwiftUI
 
 struct PickRewardView: View {
     @EnvironmentObject var wm: WorkoutManager
-    @State private var selectedIDs: Set<UUID> = []
+    @State private var selectedIDs: Set<String> = []
 
     private let maxSelection = 2
 
