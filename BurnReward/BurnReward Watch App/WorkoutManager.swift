@@ -22,6 +22,7 @@ final class WorkoutManager: NSObject, ObservableObject {
 
     private var startDate: Date?
     private var tickTask: Task<Void, Never>?
+    private var hapticQuarter = 0  // highest 25% increment already buzzed (0–4)
 
     // MARK: - Persistence
 
@@ -69,6 +70,7 @@ final class WorkoutManager: NSObject, ObservableObject {
         earnedCount = 0
         milestoneFlash = nil
         heartRate = 0
+        hapticQuarter = 0
         startDate = Date()
         elapsedSeconds = 0
         startTicking()
@@ -113,12 +115,23 @@ final class WorkoutManager: NSObject, ObservableObject {
         heartRate = 0
         elapsedSeconds = 0
         startDate = nil
+        hapticQuarter = 0
         stopTicking()
         clearState()
     }
 
     func checkMilestones(cal: Double) {
         caloriesBurned = cal
+
+        // Subtle haptic pulses at 25 / 50 / 75 % progress (quarter < 4 so we don't double-buzz at 100%)
+        let quarter = Int(progress * 4)
+        if quarter > hapticQuarter && quarter < 4 {
+            for _ in hapticQuarter..<quarter {
+                WKInterfaceDevice.current().play(.click)
+            }
+            hapticQuarter = quarter
+        }
+
         while earnedCount < selectedRewards.count {
             let threshold = Double(cumulativeTarget(at: earnedCount))
             guard cal >= threshold else { break }
