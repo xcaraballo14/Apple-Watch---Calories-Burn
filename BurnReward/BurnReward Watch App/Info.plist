@@ -22,6 +22,10 @@
 	<string>BurnReward reads your active calories burned to track progress toward your reward goal.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>BurnReward saves your workouts to Apple Health.</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>PressStart2P-Regular.ttf</string>
+	</array>
 	<key>WKApplication</key>
 	<true/>
 	<key>WKWatchOnly</key>

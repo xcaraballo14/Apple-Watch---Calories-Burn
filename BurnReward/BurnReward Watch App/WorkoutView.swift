@@ -11,8 +11,8 @@ struct WorkoutView: View {
                     Button {
                         confirmingCancel = true
                     } label: {
-                        Label("Back", systemImage: "chevron.left")
-                            .font(.system(.caption2, design: .monospaced))
+                        Label("BACK", systemImage: "chevron.left")
+                            .font(.pixel(6))
                             .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
@@ -24,7 +24,7 @@ struct WorkoutView: View {
                 expBar
 
                 Text("\(Int(wm.caloriesBurned)) / \(wm.totalGoal) CAL")
-                    .font(.system(.caption2, design: .monospaced))
+                    .font(.pixel(7))
                     .foregroundStyle(.secondary)
 
                 statsRow
@@ -33,7 +33,7 @@ struct WorkoutView: View {
                 Button("+50 CAL") { wm.simulateBurn(50) }
                     .buttonStyle(.bordered)
                     .tint(.orange)
-                    .font(.system(.caption2, design: .monospaced).weight(.bold))
+                    .font(.pixel(7))
                 #endif
             }
             .padding(.horizontal, 6)
@@ -56,7 +56,7 @@ struct WorkoutView: View {
             ForEach(Array(wm.selectedRewards.enumerated()), id: \.offset) { index, reward in
                 if index > 0 {
                     Text("+")
-                        .font(.system(.caption2, design: .monospaced))
+                        .font(.pixel(8))
                         .foregroundStyle(.secondary)
                 }
                 ZStack(alignment: .bottomTrailing) {
@@ -66,7 +66,7 @@ struct WorkoutView: View {
                     if index < wm.earnedCount {
                         Text("✓")
                             .font(.system(size: 10, design: .monospaced).weight(.bold))
-                            .foregroundStyle(.green)
+                            .foregroundStyle(Theme.green)
                     }
                 }
             }
@@ -77,12 +77,12 @@ struct WorkoutView: View {
         VStack(spacing: 3) {
             HStack {
                 Text("EXP")
-                    .font(.system(.caption2, design: .monospaced))
-                    .foregroundStyle(.yellow)
+                    .font(.pixel(7))
+                    .foregroundStyle(Theme.yellow)
                 Spacer()
                 Text("\(Int(wm.progress * 100))%")
-                    .font(.system(.caption, design: .monospaced).weight(.bold))
-                    .foregroundStyle(.green)
+                    .font(.pixel(9))
+                    .foregroundStyle(Theme.green)
             }
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
@@ -90,7 +90,7 @@ struct WorkoutView: View {
                         .fill(Color(white: 0.1))
                         .overlay(
                             RoundedRectangle(cornerRadius: 2)
-                                .strokeBorder(Color.yellow, lineWidth: 1.5)
+                                .strokeBorder(Theme.yellow, lineWidth: 1.5)
                         )
                     // Milestone marker line for combo goals
                     if wm.selectedRewards.count > 1, wm.totalGoal > 0 {
@@ -102,7 +102,7 @@ struct WorkoutView: View {
                             .offset(x: markerX - 1)
                     }
                     RoundedRectangle(cornerRadius: 2)
-                        .fill(Color.yellow)
+                        .fill(Theme.yellow)
                         .frame(width: geo.size.width * wm.progress)
                         .animation(.easeInOut(duration: 0.3), value: wm.progress)
                 }
@@ -119,13 +119,14 @@ struct WorkoutView: View {
     }
 
     private func statCell(value: String, label: String) -> some View {
-        VStack(spacing: 2) {
+        VStack(spacing: 4) {
             Text(value)
-                .font(.system(.title3, design: .monospaced).weight(.bold))
-                .foregroundStyle(.orange)
-                .minimumScaleFactor(0.6)
+                .font(.pixel(11))
+                .foregroundStyle(Theme.orange)
+                .minimumScaleFactor(0.5)
+                .lineLimit(1)
             Text(label)
-                .font(.system(size: 7, design: .monospaced))
+                .font(.pixel(5))
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
@@ -137,9 +138,9 @@ struct WorkoutView: View {
     private func milestoneOverlay(reward: Reward) -> some View {
         VStack(spacing: 4) {
             Text(reward.emoji).font(.system(size: 32))
-            Text("EARNED!").font(.system(.caption2, design: .monospaced).weight(.bold))
-                .foregroundStyle(.green)
-            Text("KEEP GOING →").font(.system(size: 7, design: .monospaced))
+            Text("EARNED!").font(.pixel(9))
+                .foregroundStyle(Theme.green)
+            Text("KEEP GOING →").font(.pixel(6))
                 .foregroundStyle(.secondary)
         }
         .padding(12)

@@ -8,15 +8,11 @@ struct PixelButtonStyle: ButtonStyle {
         let pressed = configuration.isPressed
 
         configuration.label
-            .font(.system(.footnote, design: .monospaced).weight(.bold))
+            .font(.pixel(9))
             .foregroundStyle(enabled ? .black : Color(white: 0.35))
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 9)
-            .background(
-                enabled
-                    ? Color(red: 0, green: 1, blue: 0.53)   // #00ff88
-                    : Color(white: 0.1)                      // #1a1a1a
-            )
+            .padding(.vertical, 10)
+            .background(enabled ? Theme.green : Color(white: 0.1))
             .padding(.bottom, pressed || !enabled ? 0 : shadowHeight)
             .background(
                 enabled
