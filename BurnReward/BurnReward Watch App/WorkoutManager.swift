@@ -1,6 +1,7 @@
 import Foundation
 import HealthKit
 import WatchKit
+import WidgetKit
 
 enum AppPhase {
     case picking, workout, earned
@@ -188,11 +189,25 @@ final class WorkoutManager: NSObject, ObservableObject {
         if let startDate {
             defaults.set(startDate.timeIntervalSinceReferenceDate, forKey: Keys.startDate)
         }
+        publishSnapshot()
     }
 
     private func clearState() {
         [Keys.rewardIDs, Keys.phase, Keys.earnedCount, Keys.calories, Keys.startDate]
             .forEach { defaults.removeObject(forKey: $0) }
+        publishSnapshot()
+    }
+
+    /// Mirror the current goal into the shared App Group and refresh the complication.
+    private func publishSnapshot() {
+        let snapshot = BurnRewardSnapshot(
+            isActive: phase == .workout,
+            emoji: selectedRewards.first?.emoji ?? "🔥",
+            caloriesBurned: Int(caloriesBurned),
+            totalGoal: totalGoal
+        )
+        BurnRewardShared.save(snapshot)
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     private func restoreState() {
