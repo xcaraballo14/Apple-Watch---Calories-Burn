@@ -7,14 +7,14 @@ struct EarnedView: View {
     var body: some View {
         VStack(spacing: 10) {
             Text("★ EARNED! ★")
-                .font(.system(.caption2, design: .monospaced).weight(.bold))
-                .foregroundStyle(.green)
+                .font(.pixel(9))
+                .foregroundStyle(Theme.green)
 
             HStack(spacing: 8) {
                 ForEach(Array(wm.selectedRewards.enumerated()), id: \.offset) { index, reward in
                     if index > 0 {
                         Text("+")
-                            .font(.system(.caption, design: .monospaced))
+                            .font(.pixel(10))
                             .foregroundStyle(.secondary)
                     }
                     Text(reward.emoji)
@@ -30,18 +30,17 @@ struct EarnedView: View {
             Text(wm.selectedRewards
                 .map { $0.name.uppercased() }
                 .joined(separator: " + "))
-                .font(.system(.caption2, design: .monospaced).weight(.semibold))
-                .foregroundStyle(.yellow)
+                .font(.pixel(7))
+                .foregroundStyle(Theme.yellow)
                 .multilineTextAlignment(.center)
                 .lineLimit(3)
-                .minimumScaleFactor(0.65)
+                .minimumScaleFactor(0.6)
 
             Button("▶ NEW GOAL") {
                 wm.newGoal()
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.green)
-            .font(.system(.caption2, design: .monospaced).weight(.bold))
+            .buttonStyle(PixelButtonStyle())
+            .padding(.horizontal, 8)
         }
         .padding()
         .onAppear { animating = true }

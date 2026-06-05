@@ -24,11 +24,11 @@ struct PickRewardView: View {
                             .sorted { $0.calories < $1.calories }
                             .map { $0.emoji }
                             .joined(separator: " + "))
-                            .font(.system(.caption2, design: .monospaced))
+                            .font(.system(size: 16))
                         Spacer()
                         Text("\(combinedCalories) CAL")
-                            .font(.system(.caption2, design: .monospaced).weight(.bold))
-                            .foregroundStyle(.yellow)
+                            .font(.pixel(8))
+                            .foregroundStyle(Theme.yellow)
                     }
                     .listRowBackground(Color(white: 0.06))
                 }
@@ -68,13 +68,15 @@ struct PickRewardView: View {
                 Text(reward.emoji)
                     .font(.title2)
                     .opacity(isFull ? 0.35 : 1.0)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(reward.name)
-                        .font(.system(.caption, design: .monospaced).weight(.semibold))
-                        .foregroundStyle(isFull ? Color.secondary : Color.green)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(reward.name.uppercased())
+                        .font(.pixel(7))
+                        .foregroundStyle(isFull ? Color.secondary : Theme.green)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.55)
                     Text("\(reward.calories) CAL")
-                        .font(.system(.caption2, design: .monospaced))
-                        .foregroundStyle(isFull ? Color.secondary : Color.yellow)
+                        .font(.pixel(6))
+                        .foregroundStyle(isFull ? Color.secondary : Theme.yellow)
                 }
                 Spacer()
                 if isSelected {
