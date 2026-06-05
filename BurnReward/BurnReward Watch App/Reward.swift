@@ -1,7 +1,8 @@
 import Foundation
 
 struct Reward: Identifiable, Hashable {
-    let id = UUID()
+    /// Stable identity (the name) so a selection can be persisted across launches.
+    var id: String { name }
     let emoji: String
     let name: String
     let calories: Int
