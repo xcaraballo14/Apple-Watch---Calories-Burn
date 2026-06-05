@@ -4,39 +4,50 @@ struct WorkoutView: View {
     @EnvironmentObject var wm: WorkoutManager
     @State private var confirmingCancel = false
 
+    private var elapsedText: String {
+        String(format: "%d:%02d", wm.elapsedSeconds / 60, wm.elapsedSeconds % 60)
+    }
+
     var body: some View {
         ZStack {
-            VStack(spacing: 6) {
-                HStack {
-                    Button {
-                        confirmingCancel = true
-                    } label: {
-                        Label("BACK", systemImage: "chevron.left")
-                            .font(.pixel(6))
-                            .foregroundStyle(.secondary)
+            ScrollView {
+                VStack(spacing: 6) {
+                    HStack {
+                        Button {
+                            confirmingCancel = true
+                        } label: {
+                            Label("BACK", systemImage: "chevron.left")
+                                .font(.pixel(6))
+                                .foregroundStyle(.secondary)
+                        }
+                        .buttonStyle(.plain)
+                        Spacer()
+                        Text(elapsedText)
+                            .font(.pixel(7))
+                            .foregroundStyle(Theme.blue)
+                            .monospacedDigit()
                     }
-                    .buttonStyle(.plain)
-                    Spacer()
+
+                    rewardEmojis
+
+                    expBar
+
+                    Text("\(Int(wm.caloriesBurned)) / \(wm.totalGoal) CAL")
+                        .font(.pixel(7))
+                        .foregroundStyle(.secondary)
+
+                    statsRow
+                    heartRateCell
+
+                    #if DEBUG
+                    Button("+50 CAL") { wm.simulateBurn(50) }
+                        .buttonStyle(.bordered)
+                        .tint(.orange)
+                        .font(.pixel(7))
+                    #endif
                 }
-
-                rewardEmojis
-
-                expBar
-
-                Text("\(Int(wm.caloriesBurned)) / \(wm.totalGoal) CAL")
-                    .font(.pixel(7))
-                    .foregroundStyle(.secondary)
-
-                statsRow
-
-                #if DEBUG
-                Button("+50 CAL") { wm.simulateBurn(50) }
-                    .buttonStyle(.bordered)
-                    .tint(.orange)
-                    .font(.pixel(7))
-                #endif
+                .padding(.horizontal, 6)
             }
-            .padding(.horizontal, 6)
 
             // Milestone flash overlay
             if let earned = wm.milestoneFlash {
@@ -116,6 +127,25 @@ struct WorkoutView: View {
             statCell(value: "\(Int(wm.caloriesBurned))", label: "BURNED")
             statCell(value: "\(wm.caloriesLeft)", label: "LEFT")
         }
+    }
+
+    private var heartRateCell: some View {
+        HStack(spacing: 6) {
+            Text("♥")
+                .font(.system(size: 12))
+                .foregroundStyle(Theme.red)
+            Text(wm.heartRate > 0 ? "\(Int(wm.heartRate))" : "—")
+                .font(.pixel(11))
+                .foregroundStyle(Theme.red)
+                .monospacedDigit()
+            Text("BPM")
+                .font(.pixel(5))
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 5)
+        .background(Color(white: 0.08))
+        .cornerRadius(4)
     }
 
     private func statCell(value: String, label: String) -> some View {
