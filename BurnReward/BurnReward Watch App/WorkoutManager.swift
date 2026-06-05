@@ -17,6 +17,11 @@ final class WorkoutManager: NSObject, ObservableObject {
     @Published var caloriesBurned: Double = 0
     @Published var earnedCount: Int = 0             // milestones cleared so far
     @Published var milestoneFlash: Reward? = nil    // set briefly on intermediate earn
+    @Published var heartRate: Double = 0            // live BPM (0 = no reading yet)
+    @Published var elapsedSeconds: Int = 0          // workout duration
+
+    private var startDate: Date?
+    private var tickTask: Task<Void, Never>?
 
     // MARK: - Persistence
 
@@ -26,6 +31,7 @@ final class WorkoutManager: NSObject, ObservableObject {
         static let phase       = "br.phase"
         static let earnedCount = "br.earnedCount"
         static let calories    = "br.caloriesBurned"
+        static let startDate   = "br.startDate"
     }
 
     override init() {
@@ -50,7 +56,10 @@ final class WorkoutManager: NSObject, ObservableObject {
     func requestAuthorization() async {
         guard HKHealthStore.isHealthDataAvailable() else { return }
         let share: Set<HKSampleType> = [HKWorkoutType.workoutType()]
-        let read: Set<HKObjectType> = [HKQuantityType(.activeEnergyBurned)]
+        let read: Set<HKObjectType> = [
+            HKQuantityType(.activeEnergyBurned),
+            HKQuantityType(.heartRate),
+        ]
         try? await healthStore.requestAuthorization(toShare: share, read: read)
     }
 
@@ -59,6 +68,10 @@ final class WorkoutManager: NSObject, ObservableObject {
         caloriesBurned = 0
         earnedCount = 0
         milestoneFlash = nil
+        heartRate = 0
+        startDate = Date()
+        elapsedSeconds = 0
+        startTicking()
 
         let config = HKWorkoutConfiguration()
         config.activityType = .other
@@ -97,6 +110,10 @@ final class WorkoutManager: NSObject, ObservableObject {
         caloriesBurned = 0
         earnedCount = 0
         milestoneFlash = nil
+        heartRate = 0
+        elapsedSeconds = 0
+        startDate = nil
+        stopTicking()
         clearState()
     }
 
@@ -118,10 +135,30 @@ final class WorkoutManager: NSObject, ObservableObject {
             } else {
                 // All rewards earned
                 phase = .earned
+                stopTicking()
                 WKInterfaceDevice.current().play(.success)
             }
         }
         persistState()
+    }
+
+    // MARK: - Elapsed-time ticker
+
+    private func startTicking() {
+        tickTask?.cancel()
+        tickTask = Task { @MainActor [weak self] in
+            while !Task.isCancelled {
+                if let start = self?.startDate {
+                    self?.elapsedSeconds = Int(Date().timeIntervalSince(start))
+                }
+                try? await Task.sleep(for: .seconds(1))
+            }
+        }
+    }
+
+    private func stopTicking() {
+        tickTask?.cancel()
+        tickTask = nil
     }
 
     // MARK: - Persistence
@@ -135,10 +172,13 @@ final class WorkoutManager: NSObject, ObservableObject {
         defaults.set(phase == .earned ? "earned" : "workout", forKey: Keys.phase)
         defaults.set(earnedCount, forKey: Keys.earnedCount)
         defaults.set(caloriesBurned, forKey: Keys.calories)
+        if let startDate {
+            defaults.set(startDate.timeIntervalSinceReferenceDate, forKey: Keys.startDate)
+        }
     }
 
     private func clearState() {
-        [Keys.rewardIDs, Keys.phase, Keys.earnedCount, Keys.calories]
+        [Keys.rewardIDs, Keys.phase, Keys.earnedCount, Keys.calories, Keys.startDate]
             .forEach { defaults.removeObject(forKey: $0) }
     }
 
@@ -156,8 +196,15 @@ final class WorkoutManager: NSObject, ObservableObject {
         earnedCount     = defaults.integer(forKey: Keys.earnedCount)
         phase           = defaults.string(forKey: Keys.phase) == "earned" ? .earned : .workout
 
+        let savedStart = defaults.double(forKey: Keys.startDate)
+        if savedStart > 0 {
+            startDate = Date(timeIntervalSinceReferenceDate: savedStart)
+            elapsedSeconds = Int(Date().timeIntervalSince(startDate!))
+        }
+
         // Reconnect to a workout session that may still be running in the background.
         if phase == .workout {
+            startTicking()
             recoverWorkoutSession()
         }
     }
@@ -184,6 +231,7 @@ final class WorkoutManager: NSObject, ObservableObject {
     #if DEBUG
     func simulateBurn(_ amount: Double = 50) {
         guard phase == .workout else { return }
+        heartRate = Double(Int.random(in: 120...160))  // fake BPM for Simulator
         checkMilestones(cal: caloriesBurned + amount)
     }
     #endif
@@ -213,15 +261,24 @@ extension WorkoutManager: HKLiveWorkoutBuilderDelegate {
         _ workoutBuilder: HKLiveWorkoutBuilder,
         didCollectDataOf collectedTypes: Set<HKSampleType>
     ) {
-        guard collectedTypes.contains(HKQuantityType(.activeEnergyBurned)) else { return }
-        let cal = workoutBuilder
-            .statistics(for: HKQuantityType(.activeEnergyBurned))?
-            .sumQuantity()?
-            .doubleValue(for: .kilocalorie()) ?? 0
+        let energyType = HKQuantityType(.activeEnergyBurned)
+        let hrType     = HKQuantityType(.heartRate)
+
+        let cal = collectedTypes.contains(energyType)
+            ? workoutBuilder.statistics(for: energyType)?
+                .sumQuantity()?.doubleValue(for: .kilocalorie())
+            : nil
+
+        let bpm = collectedTypes.contains(hrType)
+            ? workoutBuilder.statistics(for: hrType)?
+                .mostRecentQuantity()?
+                .doubleValue(for: .count().unitDivided(by: .minute()))
+            : nil
 
         Task { @MainActor [weak self] in
             guard let self, self.phase == .workout else { return }
-            self.checkMilestones(cal: cal)
+            if let bpm { self.heartRate = bpm }
+            if let cal { self.checkMilestones(cal: cal) }
         }
     }
 }
