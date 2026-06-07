@@ -20,6 +20,9 @@ final class WorkoutManager: NSObject, ObservableObject {
     @Published var milestoneFlash: Reward? = nil    // set briefly on intermediate earn
     @Published var heartRate: Double = 0            // live BPM (0 = no reading yet)
     @Published var elapsedSeconds: Int = 0          // workout duration
+    @Published var summaryDuration: Int = 0         // frozen length once earned (s)
+    @Published var summaryAvgHR: Int = 0            // average BPM over the workout
+    @Published var summaryCalories: Int = 0         // total burned at the finish line
 
     private var startDate: Date?
     private var tickTask: Task<Void, Never>?
@@ -34,6 +37,9 @@ final class WorkoutManager: NSObject, ObservableObject {
         static let earnedCount = "br.earnedCount"
         static let calories    = "br.caloriesBurned"
         static let startDate   = "br.startDate"
+        static let sumDuration = "br.summaryDuration"
+        static let sumAvgHR    = "br.summaryAvgHR"
+        static let sumCalories = "br.summaryCalories"
     }
 
     override init() {
@@ -72,6 +78,9 @@ final class WorkoutManager: NSObject, ObservableObject {
         milestoneFlash = nil
         heartRate = 0
         hapticQuarter = 0
+        summaryDuration = 0
+        summaryAvgHR = 0
+        summaryCalories = 0
         startDate = Date()
         elapsedSeconds = 0
         startTicking()
@@ -115,10 +124,41 @@ final class WorkoutManager: NSObject, ObservableObject {
         milestoneFlash = nil
         heartRate = 0
         elapsedSeconds = 0
+        summaryDuration = 0
+        summaryAvgHR = 0
+        summaryCalories = 0
         startDate = nil
         hapticQuarter = 0
         stopTicking()
         clearState()
+    }
+
+    /// Freeze the workout summary, then end the session and save the HKWorkout to Health.
+    /// Called once the final reward is earned (the session is left running until this point
+    /// so the builder's statistics cover the whole effort).
+    private func finishAndSaveWorkout() {
+        summaryDuration = elapsedSeconds
+        summaryCalories = Int(caloriesBurned)
+
+        let hrType = HKQuantityType(.heartRate)
+        if let avgHR = builder?.statistics(for: hrType)?
+            .averageQuantity()?
+            .doubleValue(for: .count().unitDivided(by: .minute())) {
+            summaryAvgHR = Int(avgHR)
+        } else if heartRate > 0 {
+            summaryAvgHR = Int(heartRate)  // fallback when no aggregate is available
+        }
+
+        // Detach the session/builder up front so a later newGoal() can't double-end them.
+        let session = self.session
+        let builder = self.builder
+        self.session = nil
+        self.builder = nil
+
+        session?.end()
+        builder?.endCollection(withEnd: Date()) { _, _ in
+            builder?.finishWorkout { _, _ in }
+        }
     }
 
     func checkMilestones(cal: Double) {
@@ -151,6 +191,7 @@ final class WorkoutManager: NSObject, ObservableObject {
                 phase = .earned
                 stopTicking()
                 WKInterfaceDevice.current().play(.success)
+                finishAndSaveWorkout()
             }
         }
         persistState()
@@ -189,11 +230,15 @@ final class WorkoutManager: NSObject, ObservableObject {
         if let startDate {
             defaults.set(startDate.timeIntervalSinceReferenceDate, forKey: Keys.startDate)
         }
+        defaults.set(summaryDuration, forKey: Keys.sumDuration)
+        defaults.set(summaryAvgHR, forKey: Keys.sumAvgHR)
+        defaults.set(summaryCalories, forKey: Keys.sumCalories)
         publishSnapshot()
     }
 
     private func clearState() {
-        [Keys.rewardIDs, Keys.phase, Keys.earnedCount, Keys.calories, Keys.startDate]
+        [Keys.rewardIDs, Keys.phase, Keys.earnedCount, Keys.calories, Keys.startDate,
+         Keys.sumDuration, Keys.sumAvgHR, Keys.sumCalories]
             .forEach { defaults.removeObject(forKey: $0) }
         publishSnapshot()
     }
@@ -223,11 +268,17 @@ final class WorkoutManager: NSObject, ObservableObject {
         caloriesBurned  = defaults.double(forKey: Keys.calories)
         earnedCount     = defaults.integer(forKey: Keys.earnedCount)
         phase           = defaults.string(forKey: Keys.phase) == "earned" ? .earned : .workout
+        summaryDuration = defaults.integer(forKey: Keys.sumDuration)
+        summaryAvgHR    = defaults.integer(forKey: Keys.sumAvgHR)
+        summaryCalories = defaults.integer(forKey: Keys.sumCalories)
 
         let savedStart = defaults.double(forKey: Keys.startDate)
         if savedStart > 0 {
             startDate = Date(timeIntervalSinceReferenceDate: savedStart)
-            elapsedSeconds = Int(Date().timeIntervalSince(startDate!))
+            // Once earned the clock is frozen; while working out it keeps ticking.
+            elapsedSeconds = phase == .workout
+                ? Int(Date().timeIntervalSince(startDate!))
+                : summaryDuration
         }
 
         // Reconnect to a workout session that may still be running in the background.
