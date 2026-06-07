@@ -7,6 +7,14 @@ enum AppPhase {
     case picking, workout, earned
 }
 
+/// Whether we can read the data we need to run a quest.
+enum HealthAccess {
+    case unknown      // not yet asked
+    case granted      // good to go (or not-yet-determined, which still lets us prompt)
+    case denied       // user said no to sharing workouts
+    case unavailable  // HealthKit not present on this device
+}
+
 @MainActor
 final class WorkoutManager: NSObject, ObservableObject {
     private let healthStore = HKHealthStore()
@@ -23,6 +31,7 @@ final class WorkoutManager: NSObject, ObservableObject {
     @Published var summaryDuration: Int = 0         // frozen length once earned (s)
     @Published var summaryAvgHR: Int = 0            // average BPM over the workout
     @Published var summaryCalories: Int = 0         // total burned at the finish line
+    @Published var healthAccess: HealthAccess = .unknown
 
     private var startDate: Date?
     private var tickTask: Task<Void, Never>?
@@ -62,16 +71,38 @@ final class WorkoutManager: NSObject, ObservableObject {
     }
 
     func requestAuthorization() async {
-        guard HKHealthStore.isHealthDataAvailable() else { return }
+        guard HKHealthStore.isHealthDataAvailable() else {
+            healthAccess = .unavailable
+            return
+        }
         let share: Set<HKSampleType> = [HKWorkoutType.workoutType()]
         let read: Set<HKObjectType> = [
             HKQuantityType(.activeEnergyBurned),
             HKQuantityType(.heartRate),
         ]
-        try? await healthStore.requestAuthorization(toShare: share, read: read)
+        do {
+            try await healthStore.requestAuthorization(toShare: share, read: read)
+        } catch {
+            print("WorkoutManager: authorization error – \(error)")
+        }
+        updateHealthAccess()
     }
 
-    func startWorkout(for rewards: [Reward]) {
+    /// Re-reads the current authorization without prompting. HealthKit hides *read*
+    /// status for privacy, so we use the workout *share* status as a proxy: if the
+    /// user denied sharing workouts, they almost certainly denied calories too.
+    func updateHealthAccess() {
+        guard HKHealthStore.isHealthDataAvailable() else {
+            healthAccess = .unavailable
+            return
+        }
+        switch healthStore.authorizationStatus(for: HKWorkoutType.workoutType()) {
+        case .sharingDenied: healthAccess = .denied
+        default:             healthAccess = .granted  // authorized or notDetermined
+        }
+    }
+
+    func startWorkout(for rewards: [Reward], type: WorkoutType = .other) {
         selectedRewards = rewards.sorted { $0.calories < $1.calories }
         caloriesBurned = 0
         earnedCount = 0
@@ -86,8 +117,8 @@ final class WorkoutManager: NSObject, ObservableObject {
         startTicking()
 
         let config = HKWorkoutConfiguration()
-        config.activityType = .other
-        config.locationType = .unknown
+        config.activityType = type.activityType
+        config.locationType = type.locationType
 
         do {
             let session = try HKWorkoutSession(healthStore: healthStore, configuration: config)

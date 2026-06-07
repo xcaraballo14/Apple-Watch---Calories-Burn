@@ -14,6 +14,8 @@
 		AAAA00000000000000000034 /* EarnedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00000000000000000014 /* EarnedView.swift */; };
 		AAAA00000000000000000035 /* WorkoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00000000000000000015 /* WorkoutManager.swift */; };
 		AAAA00000000000000000036 /* Reward.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00000000000000000016 /* Reward.swift */; };
+		AAAA00000000000000000210 /* WorkoutType.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00000000000000000200 /* WorkoutType.swift */; };
+		AAAA00000000000000000211 /* HealthAccessView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00000000000000000201 /* HealthAccessView.swift */; };
 		AAAA00000000000000000037 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AAAA00000000000000000017 /* Assets.xcassets */; };
 		AAAA00000000000000000038 /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AAAA00000000000000000020 /* HealthKit.framework */; };
 		AAAA00000000000000000039 /* PixelButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00000000000000000022 /* PixelButtonStyle.swift */; };
@@ -58,6 +60,8 @@
 		AAAA00000000000000000014 /* EarnedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EarnedView.swift; sourceTree = "<group>"; };
 		AAAA00000000000000000015 /* WorkoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutManager.swift; sourceTree = "<group>"; };
 		AAAA00000000000000000016 /* Reward.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reward.swift; sourceTree = "<group>"; };
+		AAAA00000000000000000200 /* WorkoutType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutType.swift; sourceTree = "<group>"; };
+		AAAA00000000000000000201 /* HealthAccessView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthAccessView.swift; sourceTree = "<group>"; };
 		AAAA00000000000000000017 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AAAA00000000000000000018 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AAAA00000000000000000019 /* BurnReward_Watch_App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BurnReward_Watch_App.entitlements; sourceTree = "<group>"; };
@@ -131,6 +135,8 @@
 				AAAA00000000000000000014 /* EarnedView.swift */,
 				AAAA00000000000000000015 /* WorkoutManager.swift */,
 				AAAA00000000000000000016 /* Reward.swift */,
+				AAAA00000000000000000200 /* WorkoutType.swift */,
+				AAAA00000000000000000201 /* HealthAccessView.swift */,
 				AAAA00000000000000000022 /* PixelButtonStyle.swift */,
 				AAAA00000000000000000023 /* Theme.swift */,
 				AAAA00000000000000000024 /* PressStart2P-Regular.ttf */,
@@ -267,6 +273,8 @@
 				AAAA00000000000000000034 /* EarnedView.swift in Sources */,
 				AAAA00000000000000000035 /* WorkoutManager.swift in Sources */,
 				AAAA00000000000000000036 /* Reward.swift in Sources */,
+				AAAA00000000000000000210 /* WorkoutType.swift in Sources */,
+				AAAA00000000000000000211 /* HealthAccessView.swift in Sources */,
 				AAAA00000000000000000039 /* PixelButtonStyle.swift in Sources */,
 				AAAA00000000000000000040 /* Theme.swift in Sources */,
 				AAAA00000000000000000110 /* SharedState.swift in Sources */,
