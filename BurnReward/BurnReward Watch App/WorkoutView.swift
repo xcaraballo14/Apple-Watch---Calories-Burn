@@ -23,7 +23,7 @@ struct WorkoutView: View {
                         .buttonStyle(.plain)
                         Spacer()
                         Text(elapsedText)
-                            .font(.pixel(7))
+                            .font(.pixel(8))
                             .foregroundStyle(Theme.blue)
                             .monospacedDigit()
                     }
@@ -33,8 +33,9 @@ struct WorkoutView: View {
                     expBar
 
                     Text("\(Int(wm.caloriesBurned)) / \(wm.totalGoal) CAL")
-                        .font(.pixel(7))
-                        .foregroundStyle(.secondary)
+                        .font(.pixel(8))
+                        .foregroundStyle(Theme.green)
+                        .monospacedDigit()
 
                     statsRow
                     heartRateCell
@@ -92,8 +93,9 @@ struct WorkoutView: View {
                     .foregroundStyle(Theme.yellow)
                 Spacer()
                 Text("\(Int(wm.progress * 100))%")
-                    .font(.pixel(9))
+                    .font(.pixel(11))
                     .foregroundStyle(Theme.green)
+                    .monospacedDigit()
             }
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
@@ -135,7 +137,7 @@ struct WorkoutView: View {
                 .font(.system(size: 12))
                 .foregroundStyle(Theme.red)
             Text(wm.heartRate > 0 ? "\(Int(wm.heartRate))" : "—")
-                .font(.pixel(11))
+                .font(.pixel(13))
                 .foregroundStyle(Theme.red)
                 .monospacedDigit()
             Text("BPM")
@@ -151,8 +153,9 @@ struct WorkoutView: View {
     private func statCell(value: String, label: String) -> some View {
         VStack(spacing: 4) {
             Text(value)
-                .font(.pixel(11))
+                .font(.pixel(13))
                 .foregroundStyle(Theme.orange)
+                .monospacedDigit()
                 .minimumScaleFactor(0.5)
                 .lineLimit(1)
             Text(label)
