@@ -644,6 +644,17 @@
     .ft-txt { font-size:8px; color:var(--muted); line-height:2.8; }
     .ft-txt span { color:var(--green); }
     .ft-credit { font-size:7px; color:#222; margin-top:12px; }
+    .ft-legal {
+      display: flex; justify-content: center; gap: 24px; flex-wrap: wrap;
+      margin-top: 20px; padding-top: 18px;
+      border-top: 1px solid var(--border);
+    }
+    .ft-legal a {
+      font-size: 7px; color: var(--muted); text-decoration: none;
+      letter-spacing: 1px;
+      transition: color .15s;
+    }
+    .ft-legal a:hover { color: var(--green); }
 
     /* ── FLOATING POPUPS ────────────────────────────── */
     .xp-pop {
@@ -1233,9 +1244,14 @@
   <div class="ft-txt">
     <span>BURNREWARD</span> v0.1.0<br>
     COMING TO APP STORE · APPLE WATCH<br>
-    © 2025 ALL RIGHTS RESERVED
+    © 2025 XAVIER CARABALLO · ALL RIGHTS RESERVED
   </div>
   <div class="ft-credit">MADE WITH ♥ IN 8-BIT</div>
+  <nav class="ft-legal" aria-label="Legal">
+    <a href="privacy-policy.html">PRIVACY POLICY</a>
+    <a href="terms.html">TERMS &amp; CONDITIONS</a>
+    <a href="data-compliance.html">DATA &amp; COMPLIANCE</a>
+  </nav>
 </footer>
 
 <!-- Floating popup layer -->
