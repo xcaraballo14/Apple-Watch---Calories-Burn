@@ -75,6 +75,7 @@
       border-radius: 4px;
       padding: 28px 32px;
       margin-bottom: 24px;
+      overflow: hidden;
     }
     section h2 {
       font-family: var(--px);
@@ -94,7 +95,8 @@
     p:last-child { margin-bottom: 0; }
     ul { padding-left: 20px; margin-bottom: 14px; }
     ul li { font-size: 13px; color: #c8c8e8; margin-bottom: 8px; }
-    table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 16px 0; }
+    .table-wrap { width: 100%; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 16px 0; min-width: 0; }
     th {
       font-family: var(--px);
       font-size: 7px;
@@ -103,6 +105,7 @@
       padding: 10px 14px;
       background: rgba(255,215,0,.05);
       border: 1px solid var(--border);
+      white-space: nowrap;
     }
     td {
       padding: 10px 14px;
@@ -110,6 +113,8 @@
       color: #c8c8e8;
       vertical-align: top;
       font-size: 12px;
+      word-break: break-word;
+      overflow-wrap: break-word;
     }
     tr:nth-child(even) td { background: rgba(255,255,255,.02); }
     .badge {
@@ -205,7 +210,7 @@
     <h2>2. HEALTHKIT DATA TYPES — COMPLETE INVENTORY</h2>
     <p>BurnReward requests the following HealthKit permissions. This is the complete and exhaustive list — no data type is accessed without declaration.</p>
 
-    <table>
+    <div class="table-wrap"><table>
       <thead>
         <tr>
           <th>Data Type</th>
@@ -238,7 +243,7 @@
           <td>Once written to HealthKit, the workout record is owned and managed by Apple Health. BurnReward retains no copy and has no further access to it.</td>
         </tr>
       </tbody>
-    </table>
+    </table></div>
 
     <div class="info">
       <p><strong style="color:var(--blue)">HealthKit Privacy Note:</strong> Apple's HealthKit framework intentionally does not disclose read-authorization status to apps (it always returns <code>.notDetermined</code> for read types). This is an Apple privacy design decision to prevent apps from inferring which health categories a user has blocked. BurnReward uses the workout <em>share</em> authorization status as a proxy only to determine whether to show the "Health Access Needed" error screen.</p>
