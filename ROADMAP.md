@@ -39,6 +39,7 @@ Small polish pass before any external eyes see the app. **Do not invite testers 
 |---|---|---|---|
 | 1 | Remove `+50 CAL` debug button | Bug / cleanup | Was used for testing the EXP bar without working out. Must not ship. |
 | 2 | Step counter overflows at 4 digits | Bug | Numbers like 1,890 break out of their cell. Fix: auto-scale font below a threshold, or abbreviate to `1.8K` past 999. |
+| 3 | "MAX REACHED · TAP ✓ TO SWAP" header wraps + illegible checkmark | UI | The `✓` is a Unicode glyph rendered in the Press Start 2P pixel font, so it renders poorly, and the line wraps mid-phrase. Fix: replace with the green `checkmark.circle.fill` SF Symbol (same one shown on selected rows), composed inline, and keep the whole line single-line. |
 
 ---
 
