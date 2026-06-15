@@ -76,7 +76,7 @@ struct PickRewardView: View {
 
     private var helperHeader: some View {
         Text(isFull ? "MAX REACHED · TAP ✓ TO SWAP" : "PICK UP TO 2 REWARDS")
-            .font(.pixel(6))
+            .font(.pixel(9))
             .foregroundStyle(headerColor)
             .frame(maxWidth: .infinity)
             .multilineTextAlignment(.center)
@@ -107,12 +107,12 @@ struct PickRewardView: View {
                     .opacity(dimmed ? 0.4 : 1.0)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(reward.name.uppercased())
-                        .font(.pixel(7))
+                        .font(.pixel(9))
                         .foregroundStyle(dimmed ? Color.secondary : Theme.green)
                         .lineLimit(1)
                         .minimumScaleFactor(0.55)
                     Text("\(reward.calories) CAL")
-                        .font(.pixel(6))
+                        .font(.pixel(8))
                         .foregroundStyle(dimmed ? Color.secondary : Theme.yellow)
                 }
                 Spacer()
@@ -153,7 +153,7 @@ struct PickRewardView: View {
     private var workoutTypeSection: some View {
         VStack(alignment: .leading, spacing: 5) {
             Text("WORKOUT TYPE")
-                .font(.pixel(5))
+                .font(.pixel(8))
                 .foregroundStyle(Theme.muted)
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 6) {
@@ -177,7 +177,7 @@ struct PickRewardView: View {
                 Image(systemName: type.icon)
                     .font(.system(size: 15))
                 Text(type.label)
-                    .font(.pixel(5))
+                    .font(.pixel(7))
             }
             .frame(width: 46, height: 42)
             .foregroundStyle(selected ? .black : Theme.green)

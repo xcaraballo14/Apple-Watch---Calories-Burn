@@ -18,8 +18,10 @@
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>NSHealthShareUsageDescription</key>
-	<string>BurnReward reads your active calories burned to track progress toward your reward goal.</string>
+	<string>BurnReward reads your active calories burned, heart rate, and step count to track progress toward your reward goal.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>BurnReward saves your workouts to Apple Health.</string>
 	<key>UIAppFonts</key>
@@ -28,6 +30,10 @@
 	</array>
 	<key>WKApplication</key>
 	<true/>
+	<key>WKBackgroundModes</key>
+	<array>
+		<string>workout-processing</string>
+	</array>
 	<key>WKWatchOnly</key>
 	<true/>
 </dict>

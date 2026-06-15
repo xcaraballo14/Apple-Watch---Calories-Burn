@@ -27,6 +27,7 @@ final class WorkoutManager: NSObject, ObservableObject {
     @Published var earnedCount: Int = 0             // milestones cleared so far
     @Published var milestoneFlash: Reward? = nil    // set briefly on intermediate earn
     @Published var heartRate: Double = 0            // live BPM (0 = no reading yet)
+    @Published var steps: Int = 0                   // steps taken during this workout
     @Published var elapsedSeconds: Int = 0          // workout duration
     @Published var summaryDuration: Int = 0         // frozen length once earned (s)
     @Published var summaryAvgHR: Int = 0            // average BPM over the workout
@@ -79,6 +80,7 @@ final class WorkoutManager: NSObject, ObservableObject {
         let read: Set<HKObjectType> = [
             HKQuantityType(.activeEnergyBurned),
             HKQuantityType(.heartRate),
+            HKQuantityType(.stepCount),
         ]
         do {
             try await healthStore.requestAuthorization(toShare: share, read: read)
@@ -108,6 +110,7 @@ final class WorkoutManager: NSObject, ObservableObject {
         earnedCount = 0
         milestoneFlash = nil
         heartRate = 0
+        steps = 0
         hapticQuarter = 0
         summaryDuration = 0
         summaryAvgHR = 0
@@ -123,10 +126,12 @@ final class WorkoutManager: NSObject, ObservableObject {
         do {
             let session = try HKWorkoutSession(healthStore: healthStore, configuration: config)
             let builder = session.associatedWorkoutBuilder()
-            builder.dataSource = HKLiveWorkoutDataSource(
+            let dataSource = HKLiveWorkoutDataSource(
                 healthStore: healthStore,
                 workoutConfiguration: config
             )
+            dataSource.enableCollection(for: HKQuantityType(.stepCount), predicate: nil)
+            builder.dataSource = dataSource
             session.delegate = self
             builder.delegate = self
             self.session = session
@@ -154,6 +159,7 @@ final class WorkoutManager: NSObject, ObservableObject {
         earnedCount = 0
         milestoneFlash = nil
         heartRate = 0
+        steps = 0
         elapsedSeconds = 0
         summaryDuration = 0
         summaryAvgHR = 0
@@ -324,10 +330,12 @@ final class WorkoutManager: NSObject, ObservableObject {
             guard let self, let session else { return }
             Task { @MainActor in
                 let builder = session.associatedWorkoutBuilder()
-                builder.dataSource = HKLiveWorkoutDataSource(
+                let dataSource = HKLiveWorkoutDataSource(
                     healthStore: self.healthStore,
                     workoutConfiguration: session.workoutConfiguration
                 )
+                dataSource.enableCollection(for: HKQuantityType(.stepCount), predicate: nil)
+                builder.dataSource = dataSource
                 session.delegate = self
                 builder.delegate = self
                 self.session = session
@@ -373,6 +381,7 @@ extension WorkoutManager: HKLiveWorkoutBuilderDelegate {
     ) {
         let energyType = HKQuantityType(.activeEnergyBurned)
         let hrType     = HKQuantityType(.heartRate)
+        let stepType   = HKQuantityType(.stepCount)
 
         let cal = collectedTypes.contains(energyType)
             ? workoutBuilder.statistics(for: energyType)?
@@ -385,9 +394,15 @@ extension WorkoutManager: HKLiveWorkoutBuilderDelegate {
                 .doubleValue(for: .count().unitDivided(by: .minute()))
             : nil
 
+        let stepCount = collectedTypes.contains(stepType)
+            ? workoutBuilder.statistics(for: stepType)?
+                .sumQuantity()?.doubleValue(for: .count())
+            : nil
+
         Task { @MainActor [weak self] in
             guard let self, self.phase == .workout else { return }
             if let bpm { self.heartRate = bpm }
+            if let stepCount { self.steps = Int(stepCount) }
             if let cal { self.checkMilestones(cal: cal) }
         }
     }
