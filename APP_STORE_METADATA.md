@@ -12,7 +12,7 @@ Support email: **burnrewardapp@gmail.com**
 |---|---|
 | **App Name** (30 char max) | `BurnReward` |
 | **Subtitle** (30 char max) | `Earn your treats` |
-| **Bundle ID** | `com.burnrewardapp.widget` |
+| **Bundle ID** | `com.burnrewardapp.app` |
 | **SKU** | `BURNREWARD001` (any unique internal string) |
 | **Primary Category** | Health & Fitness |
 | **Secondary Category** | Games (optional — reinforces the RPG angle) |
@@ -202,7 +202,8 @@ No login credentials are required to review the app.
 - [ ] Apple ID added to Xcode with the paid Developer Program active
 - [ ] "Automatically manage signing" on for both targets (app + complication)
 - [ ] Archive validates clean (Product → Archive → Validate App)
-- [ ] App record created in App Store Connect with bundle ID `com.burnrewardapp.widget`
+- [ ] App record created in App Store Connect with bundle ID `com.burnrewardapp.app`
+- [ ] Complication target bundle ID is `com.burnrewardapp.app.widget` (nested under the app ID)
 - [ ] Build uploaded and processed (appears in TestFlight)
 - [ ] Tested via TestFlight on your own watch
 - [ ] Screenshots captured (Section 7)
