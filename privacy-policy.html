@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — BurnReward</title>
+  <meta name="description" content="BurnReward Privacy Policy — how we handle your health data.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --px: 'Press Start 2P', monospace;
+      --bg:      #0a0a14;
+      --surface: #0d0d1a;
+      --card:    #111120;
+      --border:  #2a2a44;
+      --green:   #00ff88;
+      --yellow:  #ffd700;
+      --orange:  #ff6b35;
+      --red:     #ff2244;
+      --blue:    #00aaff;
+      --text:    #e8e8ff;
+      --muted:   #6060a0;
+      --scanline: rgba(0,0,0,.06);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background-color: var(--bg);
+      background-image: radial-gradient(rgba(0,255,136,.04) 1px, transparent 1px);
+      background-size: 24px 24px;
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.8;
+    }
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 2px,
+        var(--scanline) 2px, var(--scanline) 4px
+      );
+      pointer-events: none;
+      z-index: 900;
+    }
+    header {
+      background: var(--card);
+      border-bottom: 2px solid var(--border);
+      padding: 24px 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    header a {
+      font-family: var(--px);
+      font-size: 9px;
+      color: var(--green);
+      text-decoration: none;
+    }
+    header a:hover { text-decoration: underline; }
+    header span { color: var(--muted); font-family: var(--px); font-size: 8px; }
+    .wordmark {
+      font-family: var(--px);
+      font-size: 13px;
+      color: var(--green);
+      letter-spacing: 1px;
+    }
+    main {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+    .hero {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .hero h1 {
+      font-family: var(--px);
+      font-size: 18px;
+      color: var(--green);
+      margin-bottom: 12px;
+    }
+    .hero .meta {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 28px 32px;
+      margin-bottom: 24px;
+    }
+    section h2 {
+      font-family: var(--px);
+      font-size: 10px;
+      color: var(--yellow);
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    section h3 {
+      font-family: var(--px);
+      font-size: 8px;
+      color: var(--blue);
+      margin: 20px 0 10px;
+    }
+    p { font-size: 13px; color: #c8c8e8; margin-bottom: 14px; }
+    p:last-child { margin-bottom: 0; }
+    ul {
+      padding-left: 20px;
+      margin-bottom: 14px;
+    }
+    ul li {
+      font-size: 13px;
+      color: #c8c8e8;
+      margin-bottom: 8px;
+    }
+    .highlight {
+      background: rgba(0,255,136,.07);
+      border-left: 3px solid var(--green);
+      padding: 14px 18px;
+      margin: 16px 0;
+      border-radius: 0 3px 3px 0;
+    }
+    .highlight p { margin: 0; }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin: 16px 0;
+    }
+    .data-table th {
+      font-family: var(--px);
+      font-size: 7px;
+      color: var(--yellow);
+      text-align: left;
+      padding: 10px 12px;
+      background: rgba(255,215,0,.06);
+      border: 1px solid var(--border);
+    }
+    .data-table td {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      color: #c8c8e8;
+      vertical-align: top;
+    }
+    .data-table tr:nth-child(even) td { background: rgba(255,255,255,.02); }
+    .badge {
+      display: inline-block;
+      font-family: var(--px);
+      font-size: 7px;
+      padding: 3px 8px;
+      border-radius: 2px;
+      background: rgba(0,255,136,.15);
+      color: var(--green);
+      border: 1px solid rgba(0,255,136,.3);
+    }
+    .badge.red { background: rgba(255,34,68,.12); color: var(--red); border-color: rgba(255,34,68,.3); }
+    footer {
+      text-align: center;
+      padding: 32px;
+      font-family: var(--px);
+      font-size: 7px;
+      color: var(--muted);
+    }
+    footer a { color: var(--green); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+    a { color: var(--green); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="wordmark">★ BURNREWARD</div>
+  </div>
+  <span>/</span>
+  <span style="font-family:var(--px);font-size:8px;color:var(--muted);">PRIVACY POLICY</span>
+  <div style="flex:1"></div>
+  <a href="index.html">← BACK HOME</a>
+</header>
+
+<main>
+  <div class="hero">
+    <h1>PRIVACY POLICY</h1>
+    <p class="meta">Effective Date: June 15, 2025 &nbsp;·&nbsp; Last Updated: June 15, 2025</p>
+  </div>
+
+  <section>
+    <h2>1. OVERVIEW</h2>
+    <p>BurnReward ("we", "our", or "the app") is a watchOS fitness application developed by Xavier Caraballo. We are deeply committed to protecting your privacy. This policy explains in plain terms what information BurnReward accesses, why we access it, where it stays, and — critically — what we never do with it.</p>
+    <div class="highlight">
+      <p><strong style="color:var(--green)">The short version:</strong> BurnReward reads your health data exclusively on your Apple Watch. It is processed locally on your device, never transmitted to any server, never shared with any third party, and never used for advertising. We do not collect, store, or see your personal information.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>2. INFORMATION WE ACCESS</h2>
+    <p>BurnReward requests access to the following data types through Apple's HealthKit framework:</p>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Data Type</th>
+          <th>HealthKit Identifier</th>
+          <th>Access Mode</th>
+          <th>Why We Need It</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Active Energy Burned</td>
+          <td>HKQuantityTypeIdentifierActiveEnergyBurned</td>
+          <td><span class="badge">READ</span></td>
+          <td>The core metric — we compare your live calorie burn against your quest goal to show EXP progress and trigger reward milestones.</td>
+        </tr>
+        <tr>
+          <td>Heart Rate</td>
+          <td>HKQuantityTypeIdentifierHeartRate</td>
+          <td><span class="badge">READ</span></td>
+          <td>Displayed live during your workout as a real-time indicator, and averaged at workout end to populate your summary screen.</td>
+        </tr>
+        <tr>
+          <td>Workout Sessions</td>
+          <td>HKWorkoutType</td>
+          <td><span class="badge">READ</span> <span class="badge">WRITE</span></td>
+          <td>We create an HKWorkoutSession to activate the watch's workout sensors at full fidelity and write the completed workout to Health when your quest is finished.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>WHAT WE DO NOT ACCESS</h3>
+    <p>BurnReward does not request and cannot access: body weight, blood oxygen, ECG data, sleep data, menstrual health data, reproductive health data, location (GPS), contacts, camera, microphone, or any other personal or sensitive data type not listed above.</p>
+  </section>
+
+  <section>
+    <h2>3. HOW DATA IS STORED</h2>
+    <p>BurnReward stores the following data <strong style="color:var(--green)">exclusively on your Apple Watch</strong> using Apple's standard on-device storage:</p>
+    <ul>
+      <li><strong>Workout progress</strong> (current calorie count, phase, elapsed time, selected rewards) — stored in <code>UserDefaults</code> on-device so your quest resumes if the app is closed mid-workout. This data is cleared when you start a new quest or tap "NEW QUEST."</li>
+      <li><strong>Workout summary</strong> (total duration, average heart rate, total calories) — stored on-device after a quest is completed and displayed on the earned screen. Cleared when you start a new quest.</li>
+      <li><strong>Complication snapshot</strong> (quest active/inactive, emoji, calorie progress) — written to an App Group container shared between the app and the watch-face complication widget. This stays on-device only.</li>
+    </ul>
+    <div class="highlight">
+      <p>None of this data is ever uploaded to a server, transmitted over a network, or stored in the cloud by BurnReward. It lives entirely on your watch.</p>
+    </div>
+    <p>Completed workouts saved to Apple Health are stored and managed entirely by Apple under Apple's own privacy policy and iCloud data practices. BurnReward has no access to workout records after they are written.</p>
+  </section>
+
+  <section>
+    <h2>4. HOW DATA IS USED</h2>
+    <p>Data accessed by BurnReward is used solely for the following in-app purposes:</p>
+    <ul>
+      <li>Tracking live active calorie burn against your selected food reward goal (EXP progress bar).</li>
+      <li>Displaying your real-time heart rate during a workout session.</li>
+      <li>Triggering haptic milestone notifications at 25%, 50%, 75%, and 100% of your calorie goal.</li>
+      <li>Computing and displaying a workout summary (duration, average heart rate, calories) when your quest is complete.</li>
+      <li>Saving the completed workout to Apple Health so it counts toward your rings and workout history.</li>
+      <li>Updating the watch-face complication to show live quest progress.</li>
+    </ul>
+    <p><strong style="color:var(--red)">We do not use your health data for advertising, analytics, machine learning, profiling, research, or any purpose beyond the in-app features described above.</strong></p>
+  </section>
+
+  <section>
+    <h2>5. DATA SHARING AND THIRD PARTIES</h2>
+    <p>BurnReward does not share your data with anyone.</p>
+    <ul>
+      <li>We do not have servers. There is no backend. No data leaves your device through BurnReward.</li>
+      <li>We do not use any third-party analytics SDKs (no Mixpanel, Firebase, Amplitude, Crashlytics, or equivalent).</li>
+      <li>We do not use any advertising SDKs or frameworks.</li>
+      <li>We do not sell, rent, license, or trade your data in any form.</li>
+      <li>We do not share data with partners, affiliates, or any other entity.</li>
+    </ul>
+    <p>The only external system involved is Apple's HealthKit and the App Store distribution platform, both governed by Apple Inc.'s privacy practices, which you can review at <a href="https://www.apple.com/legal/privacy/" target="_blank">apple.com/legal/privacy</a>.</p>
+  </section>
+
+  <section>
+    <h2>6. HEALTHKIT-SPECIFIC COMMITMENTS</h2>
+    <p>Per Apple's HealthKit developer requirements, we explicitly affirm that BurnReward:</p>
+    <ul>
+      <li>Will not use HealthKit data for advertising or advertising measurement purposes.</li>
+      <li>Will not disclose HealthKit data to third parties without user permission, except as required to provide or improve the app's health or fitness features.</li>
+      <li>Will not use HealthKit data to rebuild a user profile or to associate HealthKit data with other data for purposes beyond the app.</li>
+      <li>Will not sell HealthKit data to data brokers, insurers, financial institutions, or any third party.</li>
+    </ul>
+    <p>These are hard requirements enforced by Apple, and we comply fully.</p>
+  </section>
+
+  <section>
+    <h2>7. CHILDREN'S PRIVACY</h2>
+    <p>BurnReward is not directed to children under the age of 13 (or the equivalent minimum age in your jurisdiction). We do not knowingly collect personal information from children. Because the app collects no personal information from any user and has no server-side data storage, there is no child data at risk. If you are under 13, please ask a parent or guardian before using this app.</p>
+  </section>
+
+  <section>
+    <h2>8. YOUR RIGHTS AND CONTROLS</h2>
+    <h3>REVOKING HEALTHKIT ACCESS</h3>
+    <p>You can revoke BurnReward's access to any HealthKit data type at any time through your Apple Watch: <strong>Settings → Privacy & Security → Health → BurnReward</strong>. Revoking access will prevent the app from reading live calorie and heart rate data; you can still use the app but workout tracking will not function.</p>
+
+    <h3>DELETING YOUR DATA</h3>
+    <p>All BurnReward data stored on your device (quest progress, summaries, complication snapshots) is deleted automatically when you delete the app. You can also clear in-progress quest data at any time by tapping "NEW QUEST" on the earned screen. Workout records previously saved to Apple Health are managed independently through the Health app.</p>
+
+    <h3>GDPR / EEA RESIDENTS</h3>
+    <p>Because BurnReward processes no personal data on any server and transfers no data outside your device, the full GDPR data subject rights framework (access, rectification, erasure, portability) is satisfied by the on-device controls above. There is no server-side data to request, correct, or delete. For any questions, contact us at the address below.</p>
+
+    <h3>CALIFORNIA RESIDENTS (CCPA)</h3>
+    <p>BurnReward does not sell personal information. We do not share personal information with third parties for cross-context behavioral advertising. You have the right to know what personal information we collect — and the honest answer is: none that leaves your device.</p>
+  </section>
+
+  <section>
+    <h2>9. SECURITY</h2>
+    <p>Because BurnReward stores data only on your device and never transmits it, the security of your health data is governed by the security of your Apple Watch itself (passcode, encryption at rest, Secure Enclave). We benefit from Apple's platform-level security protections and do not introduce additional data exposure vectors.</p>
+  </section>
+
+  <section>
+    <h2>10. CHANGES TO THIS POLICY</h2>
+    <p>If we update this Privacy Policy, the new version will be posted at this URL with an updated "Last Updated" date. For material changes (such as adding server-side data processing or analytics), we will notify users through the App Store update notes. Continued use of the app after a policy update constitutes acceptance of the updated terms.</p>
+  </section>
+
+  <section>
+    <h2>11. CONTACT</h2>
+    <p>If you have questions, concerns, or requests related to this Privacy Policy, please contact:</p>
+    <p>
+      <strong style="color:var(--green)">Xavier Caraballo</strong><br>
+      Developer, BurnReward<br>
+      Email: <a href="mailto:xavier.caraballo14@gmail.com">xavier.caraballo14@gmail.com</a>
+    </p>
+  </section>
+
+</main>
+
+<footer>
+  <p>© 2025 Xavier Caraballo · BurnReward</p>
+  <p style="margin-top:10px;">
+    <a href="index.html">HOME</a> &nbsp;·&nbsp;
+    <a href="terms.html">TERMS</a> &nbsp;·&nbsp;
+    <a href="data-compliance.html">DATA & COMPLIANCE</a>
+  </p>
+</footer>
+
+</body>
+</html>
