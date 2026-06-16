@@ -42,13 +42,6 @@ struct WorkoutView: View {
                         heartRateCell
                         stepsCell
                     }
-
-                    #if DEBUG
-                    Button("+50 CAL") { wm.simulateBurn(50) }
-                        .buttonStyle(.bordered)
-                        .tint(.orange)
-                        .font(.pixel(7))
-                    #endif
                 }
                 .padding(.horizontal, 6)
             }
@@ -157,10 +150,12 @@ struct WorkoutView: View {
         HStack(spacing: 4) {
             Text("👟")
                 .font(.system(size: 11))
-            Text("\(wm.steps)")
+            Text(stepsText)
                 .font(.pixel(11))
                 .foregroundStyle(Theme.blue)
                 .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
             Text("STEPS")
                 .font(.pixel(5))
                 .foregroundStyle(.secondary)
@@ -169,6 +164,13 @@ struct WorkoutView: View {
         .padding(.vertical, 5)
         .background(Color(white: 0.08))
         .cornerRadius(4)
+    }
+
+    /// Abbreviates past 9999 (e.g. `12.3K`) so a long workout never breaks the cell.
+    private var stepsText: String {
+        wm.steps > 9999
+            ? String(format: "%.1fK", Double(wm.steps) / 1000)
+            : "\(wm.steps)"
     }
 
     private func statCell(value: String, label: String) -> some View {

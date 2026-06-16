@@ -343,16 +343,6 @@ final class WorkoutManager: NSObject, ObservableObject {
             }
         }
     }
-
-    // MARK: - Debug helpers
-
-    #if DEBUG
-    func simulateBurn(_ amount: Double = 50) {
-        guard phase == .workout else { return }
-        heartRate = Double(Int.random(in: 120...160))  // fake BPM for Simulator
-        checkMilestones(cal: caloriesBurned + amount)
-    }
-    #endif
 }
 
 // MARK: - HKWorkoutSessionDelegate

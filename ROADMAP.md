@@ -31,15 +31,15 @@ Everything below is **built and verified working** on Apple Watch SE (watchOS 10
 
 ---
 
-## v1.0.1 — Pre-TestFlight Fix Batch
+## v1.0.1 — Pre-TestFlight Fix Batch ✅ Shipped
 
-Small polish pass before any external eyes see the app. **Do not invite testers until these are done.**
+Small polish pass before any external eyes see the app.
 
 | # | Item | Type | Notes |
 |---|---|---|---|
-| 1 | Remove `+50 CAL` debug button | Bug / cleanup | Was used for testing the EXP bar without working out. Must not ship. |
-| 2 | Step counter overflows at 4 digits | Bug | Numbers like 1,890 break out of their cell. Fix: auto-scale font below a threshold, or abbreviate to `1.8K` past 999. |
-| 3 | "MAX REACHED · TAP ✓ TO SWAP" header wraps + illegible checkmark | UI | The `✓` is a Unicode glyph rendered in the Press Start 2P pixel font, so it renders poorly, and the line wraps mid-phrase. Fix: replace with the green `checkmark.circle.fill` SF Symbol (same one shown on selected rows), composed inline, and keep the whole line single-line. |
+| 1 | Remove `+50 CAL` debug button | Bug / cleanup | ✅ Removed (`WorkoutView.swift`), plus the now-unused `simulateBurn()` helper in `WorkoutManager.swift`. It was already `#if DEBUG`-gated so it never shipped to TestFlight/App Store builds, but it's gone from the dev build too now. |
+| 2 | Step counter overflows at 4 digits | Bug | ✅ Fixed in `WorkoutView.swift` — `stepsCell` now has `lineLimit(1)` + `minimumScaleFactor` (matching the other stat cells) and abbreviates to e.g. `12.3K` past 9999 steps. |
+| 3 | "MAX REACHED · TAP ✓ TO SWAP" header wraps + illegible checkmark | UI | ✅ Fixed in `PickRewardView.swift` — the Unicode `✓` is replaced with an inline `checkmark.circle.fill` SF Symbol, and the header is forced single-line with `minimumScaleFactor` instead of wrapping. |
 
 ---
 
@@ -126,4 +126,4 @@ Xavier is designing the companion app. Features below are earmarked for that exp
 
 ---
 
-*Last updated: 2026-06-15*
+*Last updated: 2026-06-16*
