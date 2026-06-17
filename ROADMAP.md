@@ -45,6 +45,13 @@ Small polish pass before any external eyes see the app.
 
 ## Phase 2 — TestFlight
 
+> **⚠️ BLOCKER FOUND (2026-06-16):** The project has no iOS "stub" target, so a watch-only
+> build cannot be distributed to App Store Connect / TestFlight — Xcode only offers
+> ad-hoc/enterprise/development. Root cause confirmed via distribution logs (ASC record is
+> `platform=iphoneos`, build is watchOS → no match). **Fix tracked in `MIGRATION.md`:**
+> recreate the project shell from the current watchOS App template (auto-includes the iOS
+> stub) and migrate source files in. Must be done before any upload below can happen.
+
 ### 2a · Internal (you only)
 - [ ] Archive and upload first build via Xcode → Product → Archive → Distribute
 - [ ] Install via TestFlight on your own watch (proves the full archive→install pipeline)
