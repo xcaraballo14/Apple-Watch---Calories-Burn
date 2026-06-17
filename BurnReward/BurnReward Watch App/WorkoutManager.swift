@@ -1,4 +1,5 @@
 import Foundation
+import Combine
 import HealthKit
 import WatchKit
 import WidgetKit
@@ -149,9 +150,14 @@ final class WorkoutManager: NSObject, ObservableObject {
     }
 
     func newGoal() {
+        let session = self.session
+        let builder = self.builder
+        self.session = nil
+        self.builder = nil
+
         session?.end()
-        builder?.endCollection(withEnd: Date()) { [weak self] _, _ in
-            self?.builder?.finishWorkout { _, _ in }
+        builder?.endCollection(withEnd: Date()) { _, _ in
+            builder?.finishWorkout { _, _ in }
         }
         phase = .picking
         selectedRewards = []
