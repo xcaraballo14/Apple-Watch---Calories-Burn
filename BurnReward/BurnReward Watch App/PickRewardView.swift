@@ -75,15 +75,22 @@ struct PickRewardView: View {
     // MARK: - Helper header
 
     private var helperHeader: some View {
-        Text(isFull ? "MAX REACHED · TAP ✓ TO SWAP" : "PICK UP TO 2 REWARDS")
-            .font(.pixel(9))
-            .foregroundStyle(headerColor)
-            .frame(maxWidth: .infinity)
-            .multilineTextAlignment(.center)
-            .scaleEffect(rejectFlash ? 1.12 : 1.0)
-            .animation(.easeOut(duration: 0.18), value: rejectFlash)
-            .listRowBackground(Color.clear)
-            .listRowInsets(EdgeInsets(top: 2, leading: 4, bottom: 4, trailing: 4))
+        Group {
+            if isFull {
+                Text("MAX REACHED · TAP ") + Text(Image(systemName: "checkmark.circle.fill")) + Text(" TO SWAP")
+            } else {
+                Text("PICK UP TO 2 REWARDS")
+            }
+        }
+        .font(.pixel(9))
+        .foregroundStyle(headerColor)
+        .frame(maxWidth: .infinity)
+        .lineLimit(1)
+        .minimumScaleFactor(0.6)
+        .scaleEffect(rejectFlash ? 1.12 : 1.0)
+        .animation(.easeOut(duration: 0.18), value: rejectFlash)
+        .listRowBackground(Color.clear)
+        .listRowInsets(EdgeInsets(top: 2, leading: 4, bottom: 4, trailing: 4))
     }
 
     private var headerColor: Color {

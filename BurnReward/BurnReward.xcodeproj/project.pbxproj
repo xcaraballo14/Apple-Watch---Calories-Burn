@@ -3,260 +3,309 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		95E966DE2FD91FDF00877039 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 95E966DD2FD91FDF00877039 /* PrivacyInfo.xcprivacy */; };
-		AAAA00000000000000000030 /* BurnRewardApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00000000000000000010 /* BurnRewardApp.swift */; };
-		AAAA00000000000000000031 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00000000000000000011 /* ContentView.swift */; };
-		AAAA00000000000000000032 /* PickRewardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00000000000000000012 /* PickRewardView.swift */; };
-		AAAA00000000000000000033 /* WorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00000000000000000013 /* WorkoutView.swift */; };
-		AAAA00000000000000000034 /* EarnedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00000000000000000014 /* EarnedView.swift */; };
-		AAAA00000000000000000035 /* WorkoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00000000000000000015 /* WorkoutManager.swift */; };
-		AAAA00000000000000000036 /* Reward.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00000000000000000016 /* Reward.swift */; };
-		AAAA00000000000000000037 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AAAA00000000000000000017 /* Assets.xcassets */; };
-		AAAA00000000000000000038 /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AAAA00000000000000000020 /* HealthKit.framework */; };
-		AAAA00000000000000000039 /* PixelButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00000000000000000022 /* PixelButtonStyle.swift */; };
-		AAAA00000000000000000040 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00000000000000000023 /* Theme.swift */; };
-		AAAA00000000000000000041 /* Fonts/PressStart2P-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AAAA00000000000000000024 /* Fonts/PressStart2P-Regular.ttf */; };
-		AAAA00000000000000000110 /* SharedState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00000000000000000100 /* SharedState.swift */; };
-		AAAA00000000000000000111 /* SharedState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00000000000000000100 /* SharedState.swift */; };
-		AAAA00000000000000000112 /* BurnRewardComplicationBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00000000000000000101 /* BurnRewardComplicationBundle.swift */; };
-		AAAA00000000000000000113 /* BurnRewardComplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00000000000000000102 /* BurnRewardComplication.swift */; };
-		AAAA00000000000000000114 /* BurnRewardComplication.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = AAAA00000000000000000105 /* BurnRewardComplication.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		AAAA00000000000000000210 /* WorkoutType.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00000000000000000200 /* WorkoutType.swift */; };
-		AAAA00000000000000000211 /* HealthAccessView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00000000000000000201 /* HealthAccessView.swift */; };
+		95DEE8CD2FE2393A00170856 /* BurnReward Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 95DEE8CC2FE2393A00170856 /* BurnReward Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		95DEE9032FE24A4F00170856 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 95DEE9022FE24A4F00170856 /* WidgetKit.framework */; };
+		95DEE9052FE24A4F00170856 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 95DEE9042FE24A4F00170856 /* SwiftUI.framework */; };
+		95DEE9102FE24A5100170856 /* BurnRewardComplicationExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 95DEE9002FE24A4F00170856 /* BurnRewardComplicationExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		AAAA00000000000000000151 /* PBXContainerItemProxy */ = {
+		95DEE8CE2FE2393A00170856 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = AAAA00000000000000000001 /* Project object */;
+			containerPortal = 95DEE8B72FE2393700170856 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = AAAA00000000000000000140;
-			remoteInfo = BurnRewardComplication;
+			remoteGlobalIDString = 95DEE8CB2FE2393A00170856;
+			remoteInfo = "BurnReward Watch App";
+		};
+		95DEE90E2FE24A5100170856 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 95DEE8B72FE2393700170856 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 95DEE8FF2FE24A4F00170856;
+			remoteInfo = BurnRewardComplicationExtension;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		AAAA00000000000000000133 /* Embed App Extensions */ = {
+		95DEE8DC2FE2393B00170856 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				95DEE8CD2FE2393A00170856 /* BurnReward Watch App.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		95DEE9152FE24A5100170856 /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				AAAA00000000000000000114 /* BurnRewardComplication.appex in Embed App Extensions */,
+				95DEE9102FE24A5100170856 /* BurnRewardComplicationExtension.appex in Embed Foundation Extensions */,
 			);
-			name = "Embed App Extensions";
+			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		95E966DD2FD91FDF00877039 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		AAAA00000000000000000010 /* BurnRewardApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BurnRewardApp.swift; sourceTree = "<group>"; };
-		AAAA00000000000000000011 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		AAAA00000000000000000012 /* PickRewardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PickRewardView.swift; sourceTree = "<group>"; };
-		AAAA00000000000000000013 /* WorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutView.swift; sourceTree = "<group>"; };
-		AAAA00000000000000000014 /* EarnedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EarnedView.swift; sourceTree = "<group>"; };
-		AAAA00000000000000000015 /* WorkoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutManager.swift; sourceTree = "<group>"; };
-		AAAA00000000000000000016 /* Reward.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reward.swift; sourceTree = "<group>"; };
-		AAAA00000000000000000017 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		AAAA00000000000000000018 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		AAAA00000000000000000019 /* BurnReward_Watch_App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BurnReward_Watch_App.entitlements; sourceTree = "<group>"; };
-		AAAA00000000000000000020 /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = System/Library/Frameworks/HealthKit.framework; sourceTree = SDKROOT; };
-		AAAA00000000000000000021 /* BurnReward Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "BurnReward Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		AAAA00000000000000000022 /* PixelButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PixelButtonStyle.swift; sourceTree = "<group>"; };
-		AAAA00000000000000000023 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
-		AAAA00000000000000000024 /* Fonts/PressStart2P-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Fonts/PressStart2P-Regular.ttf"; sourceTree = "<group>"; };
-		AAAA00000000000000000100 /* SharedState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedState.swift; sourceTree = "<group>"; };
-		AAAA00000000000000000101 /* BurnRewardComplicationBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BurnRewardComplicationBundle.swift; sourceTree = "<group>"; };
-		AAAA00000000000000000102 /* BurnRewardComplication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BurnRewardComplication.swift; sourceTree = "<group>"; };
-		AAAA00000000000000000103 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		AAAA00000000000000000104 /* BurnRewardComplication.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BurnRewardComplication.entitlements; sourceTree = "<group>"; };
-		AAAA00000000000000000105 /* BurnRewardComplication.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = BurnRewardComplication.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		AAAA00000000000000000200 /* WorkoutType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutType.swift; sourceTree = "<group>"; };
-		AAAA00000000000000000201 /* HealthAccessView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthAccessView.swift; sourceTree = "<group>"; };
+		95DEE8BF2FE2393800170856 /* BurnReward.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BurnReward.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		95DEE8CC2FE2393A00170856 /* BurnReward Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "BurnReward Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		95DEE9002FE24A4F00170856 /* BurnRewardComplicationExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = BurnRewardComplicationExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		95DEE9022FE24A4F00170856 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		95DEE9042FE24A4F00170856 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		95DEE91F2FE2598D00170856 /* BurnRewardComplicationExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BurnRewardComplicationExtension.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		95DEE9112FE24A5100170856 /* Exceptions for "BurnRewardComplication" folder in "BurnRewardComplicationExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 95DEE8FF2FE24A4F00170856 /* BurnRewardComplicationExtension */;
+		};
+		95DEE91D2FE2515700170856 /* Exceptions for "BurnReward Watch App" folder in "BurnRewardComplicationExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				SharedState.swift,
+			);
+			target = 95DEE8FF2FE24A4F00170856 /* BurnRewardComplicationExtension */;
+		};
+		95DEE9212FE25BD700170856 /* Exceptions for "BurnReward Watch App" folder in "BurnReward Watch App" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"BurnReward-Watch-App-Info.plist",
+			);
+			target = 95DEE8CB2FE2393A00170856 /* BurnReward Watch App */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		95DEE8C12FE2393800170856 /* BurnReward */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = BurnReward;
+			sourceTree = "<group>";
+		};
+		95DEE8D02FE2393A00170856 /* BurnReward Watch App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				95DEE9212FE25BD700170856 /* Exceptions for "BurnReward Watch App" folder in "BurnReward Watch App" target */,
+				95DEE91D2FE2515700170856 /* Exceptions for "BurnReward Watch App" folder in "BurnRewardComplicationExtension" target */,
+			);
+			path = "BurnReward Watch App";
+			sourceTree = "<group>";
+		};
+		95DEE9062FE24A4F00170856 /* BurnRewardComplication */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				95DEE9112FE24A5100170856 /* Exceptions for "BurnRewardComplication" folder in "BurnRewardComplicationExtension" target */,
+			);
+			path = BurnRewardComplication;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
-		AAAA00000000000000000051 /* Frameworks */ = {
+		95DEE8BC2FE2393800170856 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AAAA00000000000000000038 /* HealthKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		AAAA00000000000000000131 /* Frameworks */ = {
+		95DEE8C92FE2393A00170856 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		95DEE8FD2FE24A4F00170856 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				95DEE9052FE24A4F00170856 /* SwiftUI.framework in Frameworks */,
+				95DEE9032FE24A4F00170856 /* WidgetKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		AAAA00000000000000000002 = {
+		95DEE8B62FE2393700170856 = {
 			isa = PBXGroup;
 			children = (
-				95E966DD2FD91FDF00877039 /* PrivacyInfo.xcprivacy */,
-				AAAA00000000000000000005 /* BurnReward Watch App */,
-				AAAA00000000000000000120 /* BurnRewardComplication */,
-				AAAA00000000000000000121 /* Shared */,
-				AAAA00000000000000000004 /* Frameworks */,
-				AAAA00000000000000000003 /* Products */,
+				95DEE91F2FE2598D00170856 /* BurnRewardComplicationExtension.entitlements */,
+				95DEE8C12FE2393800170856 /* BurnReward */,
+				95DEE8D02FE2393A00170856 /* BurnReward Watch App */,
+				95DEE9062FE24A4F00170856 /* BurnRewardComplication */,
+				95DEE9012FE24A4F00170856 /* Frameworks */,
+				95DEE8C02FE2393800170856 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		AAAA00000000000000000003 /* Products */ = {
+		95DEE8C02FE2393800170856 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				AAAA00000000000000000021 /* BurnReward Watch App.app */,
-				AAAA00000000000000000105 /* BurnRewardComplication.appex */,
+				95DEE8BF2FE2393800170856 /* BurnReward.app */,
+				95DEE8CC2FE2393A00170856 /* BurnReward Watch App.app */,
+				95DEE9002FE24A4F00170856 /* BurnRewardComplicationExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		AAAA00000000000000000004 /* Frameworks */ = {
+		95DEE9012FE24A4F00170856 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				AAAA00000000000000000020 /* HealthKit.framework */,
+				95DEE9022FE24A4F00170856 /* WidgetKit.framework */,
+				95DEE9042FE24A4F00170856 /* SwiftUI.framework */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		AAAA00000000000000000005 /* BurnReward Watch App */ = {
-			isa = PBXGroup;
-			children = (
-				AAAA00000000000000000010 /* BurnRewardApp.swift */,
-				AAAA00000000000000000011 /* ContentView.swift */,
-				AAAA00000000000000000012 /* PickRewardView.swift */,
-				AAAA00000000000000000013 /* WorkoutView.swift */,
-				AAAA00000000000000000014 /* EarnedView.swift */,
-				AAAA00000000000000000015 /* WorkoutManager.swift */,
-				AAAA00000000000000000016 /* Reward.swift */,
-				AAAA00000000000000000200 /* WorkoutType.swift */,
-				AAAA00000000000000000201 /* HealthAccessView.swift */,
-				AAAA00000000000000000022 /* PixelButtonStyle.swift */,
-				AAAA00000000000000000023 /* Theme.swift */,
-				AAAA00000000000000000024 /* Fonts/PressStart2P-Regular.ttf */,
-				AAAA00000000000000000017 /* Assets.xcassets */,
-				AAAA00000000000000000018 /* Info.plist */,
-				AAAA00000000000000000019 /* BurnReward_Watch_App.entitlements */,
-			);
-			path = "BurnReward Watch App";
-			sourceTree = "<group>";
-		};
-		AAAA00000000000000000120 /* BurnRewardComplication */ = {
-			isa = PBXGroup;
-			children = (
-				AAAA00000000000000000101 /* BurnRewardComplicationBundle.swift */,
-				AAAA00000000000000000102 /* BurnRewardComplication.swift */,
-				AAAA00000000000000000103 /* Info.plist */,
-				AAAA00000000000000000104 /* BurnRewardComplication.entitlements */,
-			);
-			path = BurnRewardComplication;
-			sourceTree = "<group>";
-		};
-		AAAA00000000000000000121 /* Shared */ = {
-			isa = PBXGroup;
-			children = (
-				AAAA00000000000000000100 /* SharedState.swift */,
-			);
-			path = Shared;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		AAAA00000000000000000060 /* BurnReward Watch App */ = {
+		95DEE8BE2FE2393800170856 /* BurnReward */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = AAAA00000000000000000071 /* Build configuration list for PBXNativeTarget "BurnReward Watch App" */;
+			buildConfigurationList = 95DEE8DD2FE2393B00170856 /* Build configuration list for PBXNativeTarget "BurnReward" */;
 			buildPhases = (
-				AAAA00000000000000000050 /* Sources */,
-				AAAA00000000000000000051 /* Frameworks */,
-				AAAA00000000000000000052 /* Resources */,
-				AAAA00000000000000000133 /* Embed App Extensions */,
+				95DEE8BB2FE2393800170856 /* Sources */,
+				95DEE8BC2FE2393800170856 /* Frameworks */,
+				95DEE8BD2FE2393800170856 /* Resources */,
+				95DEE8DC2FE2393B00170856 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				AAAA00000000000000000150 /* PBXTargetDependency */,
+				95DEE8CF2FE2393A00170856 /* PBXTargetDependency */,
 			);
-			name = "BurnReward Watch App";
-			productName = "BurnReward Watch App";
-			productReference = AAAA00000000000000000021 /* BurnReward Watch App.app */;
+			fileSystemSynchronizedGroups = (
+				95DEE8C12FE2393800170856 /* BurnReward */,
+			);
+			name = BurnReward;
+			packageProductDependencies = (
+			);
+			productName = BurnReward;
+			productReference = 95DEE8BF2FE2393800170856 /* BurnReward.app */;
 			productType = "com.apple.product-type.application";
 		};
-		AAAA00000000000000000140 /* BurnRewardComplication */ = {
+		95DEE8CB2FE2393A00170856 /* BurnReward Watch App */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = AAAA00000000000000000162 /* Build configuration list for PBXNativeTarget "BurnRewardComplication" */;
+			buildConfigurationList = 95DEE8D92FE2393B00170856 /* Build configuration list for PBXNativeTarget "BurnReward Watch App" */;
 			buildPhases = (
-				AAAA00000000000000000130 /* Sources */,
-				AAAA00000000000000000131 /* Frameworks */,
-				AAAA00000000000000000132 /* Resources */,
+				95DEE8C82FE2393A00170856 /* Sources */,
+				95DEE8C92FE2393A00170856 /* Frameworks */,
+				95DEE8CA2FE2393A00170856 /* Resources */,
+				95DEE9152FE24A5100170856 /* Embed Foundation Extensions */,
+				95DEE9222FE26E6400170856 /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				95DEE90F2FE24A5100170856 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				95DEE8D02FE2393A00170856 /* BurnReward Watch App */,
+			);
+			name = "BurnReward Watch App";
+			packageProductDependencies = (
+			);
+			productName = "BurnReward Watch App";
+			productReference = 95DEE8CC2FE2393A00170856 /* BurnReward Watch App.app */;
+			productType = "com.apple.product-type.application";
+		};
+		95DEE8FF2FE24A4F00170856 /* BurnRewardComplicationExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 95DEE9122FE24A5100170856 /* Build configuration list for PBXNativeTarget "BurnRewardComplicationExtension" */;
+			buildPhases = (
+				95DEE8FC2FE24A4F00170856 /* Sources */,
+				95DEE8FD2FE24A4F00170856 /* Frameworks */,
+				95DEE8FE2FE24A4F00170856 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = BurnRewardComplication;
-			productName = BurnRewardComplication;
-			productReference = AAAA00000000000000000105 /* BurnRewardComplication.appex */;
+			fileSystemSynchronizedGroups = (
+				95DEE9062FE24A4F00170856 /* BurnRewardComplication */,
+			);
+			name = BurnRewardComplicationExtension;
+			packageProductDependencies = (
+			);
+			productName = BurnRewardComplicationExtension;
+			productReference = 95DEE9002FE24A4F00170856 /* BurnRewardComplicationExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		AAAA00000000000000000001 /* Project object */ = {
+		95DEE8B72FE2393700170856 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1500;
-				LastUpgradeCheck = 1500;
+				LastSwiftUpdateCheck = 2650;
+				LastUpgradeCheck = 2650;
 				TargetAttributes = {
-					AAAA00000000000000000060 = {
-						CreatedOnToolsVersion = 15.0;
+					95DEE8BE2FE2393800170856 = {
+						CreatedOnToolsVersion = 26.5;
+						LastSwiftMigration = 2650;
 					};
-					AAAA00000000000000000140 = {
-						CreatedOnToolsVersion = 15.0;
+					95DEE8CB2FE2393A00170856 = {
+						CreatedOnToolsVersion = 26.5;
+						LastSwiftMigration = 2650;
+					};
+					95DEE8FF2FE24A4F00170856 = {
+						CreatedOnToolsVersion = 26.5;
+						LastSwiftMigration = 2650;
 					};
 				};
 			};
-			buildConfigurationList = AAAA00000000000000000070 /* Build configuration list for PBXProject "BurnReward" */;
-			compatibilityVersion = "Xcode 14.0";
+			buildConfigurationList = 95DEE8BA2FE2393700170856 /* Build configuration list for PBXProject "BurnReward" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
 			);
-			mainGroup = AAAA00000000000000000002;
-			productRefGroup = AAAA00000000000000000003 /* Products */;
+			mainGroup = 95DEE8B62FE2393700170856;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 95DEE8C02FE2393800170856 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				AAAA00000000000000000060 /* BurnReward Watch App */,
-				AAAA00000000000000000140 /* BurnRewardComplication */,
+				95DEE8BE2FE2393800170856 /* BurnReward */,
+				95DEE8CB2FE2393A00170856 /* BurnReward Watch App */,
+				95DEE8FF2FE24A4F00170856 /* BurnRewardComplicationExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		AAAA00000000000000000052 /* Resources */ = {
+		95DEE8BD2FE2393800170856 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				95E966DE2FD91FDF00877039 /* PrivacyInfo.xcprivacy in Resources */,
-				AAAA00000000000000000037 /* Assets.xcassets in Resources */,
-				AAAA00000000000000000041 /* Fonts/PressStart2P-Regular.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		AAAA00000000000000000132 /* Resources */ = {
+		95DEE8CA2FE2393A00170856 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		95DEE8FE2FE24A4F00170856 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -265,52 +314,72 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		95DEE9222FE26E6400170856 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nPLIST=\"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\nif [ -f \"$PLIST\" ]; then\n  /usr/libexec/PlistBuddy -c \"Delete :MinimumOSVersion~ipad\" \"$PLIST\" 2>/dev/null || true\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
-		AAAA00000000000000000050 /* Sources */ = {
+		95DEE8BB2FE2393800170856 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AAAA00000000000000000030 /* BurnRewardApp.swift in Sources */,
-				AAAA00000000000000000031 /* ContentView.swift in Sources */,
-				AAAA00000000000000000032 /* PickRewardView.swift in Sources */,
-				AAAA00000000000000000033 /* WorkoutView.swift in Sources */,
-				AAAA00000000000000000034 /* EarnedView.swift in Sources */,
-				AAAA00000000000000000035 /* WorkoutManager.swift in Sources */,
-				AAAA00000000000000000036 /* Reward.swift in Sources */,
-				AAAA00000000000000000210 /* WorkoutType.swift in Sources */,
-				AAAA00000000000000000211 /* HealthAccessView.swift in Sources */,
-				AAAA00000000000000000039 /* PixelButtonStyle.swift in Sources */,
-				AAAA00000000000000000040 /* Theme.swift in Sources */,
-				AAAA00000000000000000110 /* SharedState.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		AAAA00000000000000000130 /* Sources */ = {
+		95DEE8C82FE2393A00170856 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AAAA00000000000000000112 /* BurnRewardComplicationBundle.swift in Sources */,
-				AAAA00000000000000000113 /* BurnRewardComplication.swift in Sources */,
-				AAAA00000000000000000111 /* SharedState.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		95DEE8FC2FE24A4F00170856 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		AAAA00000000000000000150 /* PBXTargetDependency */ = {
+		95DEE8CF2FE2393A00170856 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = AAAA00000000000000000140 /* BurnRewardComplication */;
-			targetProxy = AAAA00000000000000000151 /* PBXContainerItemProxy */;
+			target = 95DEE8CB2FE2393A00170856 /* BurnReward Watch App */;
+			targetProxy = 95DEE8CE2FE2393A00170856 /* PBXContainerItemProxy */;
+		};
+		95DEE90F2FE24A5100170856 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 95DEE8FF2FE24A4F00170856 /* BurnRewardComplicationExtension */;
+			targetProxy = 95DEE90E2FE24A5100170856 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		AAAA00000000000000000080 /* Debug */ = {
+		95DEE8D72FE2393B00170856 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -321,14 +390,16 @@
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-				CLANG_WARN_OBJC_IMPLICIT_RETAIN_CYCLES = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -337,8 +408,10 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 334V6U8V7S;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -353,21 +426,22 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = watchos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				WATCHOS_DEPLOYMENT_TARGET = 10.0;
 			};
 			name = Debug;
 		};
-		AAAA00000000000000000081 /* Release */ = {
+		95DEE8D82FE2393B00170856 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -378,14 +452,16 @@
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-				CLANG_WARN_OBJC_IMPLICIT_RETAIN_CYCLES = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -394,8 +470,10 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 334V6U8V7S;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -404,155 +482,287 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				SDKROOT = watchos;
 				SWIFT_COMPILATION_MODE = wholemodule;
-				WATCHOS_DEPLOYMENT_TARGET = 10.0;
 			};
 			name = Release;
 		};
-		AAAA00000000000000000082 /* Debug */ = {
+		95DEE8DA2FE2393B00170856 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = "BurnReward Watch App/BurnReward_Watch_App.entitlements";
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = "BurnReward Watch App/BurnReward Watch App.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 334V6U8V7S;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "BurnReward Watch App/Info.plist";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "BurnReward-Watch-App-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = BurnReward;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "BurnReward reads your active calories burned, heart rate, and step count to track progress toward your reward goal.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "BurnReward saves your workouts to Apple Health.";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.burnrewardapp.app;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.xaviercaraballo.burnreward;
+				PRODUCT_BUNDLE_IDENTIFIER = com.burnrewardapp.app.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
-				SKIP_INSTALL = NO;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+				WATCHOS_DEPLOYMENT_TARGET = 26.5;
 			};
 			name = Debug;
 		};
-		AAAA00000000000000000083 /* Release */ = {
+		95DEE8DB2FE2393B00170856 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = "BurnReward Watch App/BurnReward_Watch_App.entitlements";
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = "BurnReward Watch App/BurnReward Watch App.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 334V6U8V7S;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "BurnReward Watch App/Info.plist";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "BurnReward-Watch-App-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = BurnReward;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "BurnReward reads your active calories burned, heart rate, and step count to track progress toward your reward goal.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "BurnReward saves your workouts to Apple Health.";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.burnrewardapp.app;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.xaviercaraballo.burnreward;
+				PRODUCT_BUNDLE_IDENTIFIER = com.burnrewardapp.app.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
-				SKIP_INSTALL = NO;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 26.5;
 			};
 			name = Release;
 		};
-		AAAA00000000000000000160 /* Debug */ = {
+		95DEE8DE2FE2393B00170856 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ANALYZER_NONNULL = YES;
-				CODE_SIGN_ENTITLEMENTS = BurnRewardComplication/BurnRewardComplication.entitlements;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 334V6U8V7S;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = BurnReward;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.burnrewardapp.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		95DEE8DF2FE2393B00170856 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 334V6U8V7S;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = BurnReward;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.burnrewardapp.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		95DEE9132FE24A5100170856 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = BurnRewardComplicationExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 334V6U8V7S;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BurnRewardComplication/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = BurnReward;
+				INFOPLIST_KEY_CFBundleDisplayName = BurnRewardComplication;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
+					"@executable_path/../../../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.xaviercaraballo.burnreward.complication;
+				PRODUCT_BUNDLE_IDENTIFIER = com.burnrewardapp.app.watchkitapp.BurnRewardComplication;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+				WATCHOS_DEPLOYMENT_TARGET = 26.5;
 			};
 			name = Debug;
 		};
-		AAAA00000000000000000161 /* Release */ = {
+		95DEE9142FE24A5100170856 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ANALYZER_NONNULL = YES;
-				CODE_SIGN_ENTITLEMENTS = BurnRewardComplication/BurnRewardComplication.entitlements;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = BurnRewardComplicationExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 334V6U8V7S;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BurnRewardComplication/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = BurnReward;
+				INFOPLIST_KEY_CFBundleDisplayName = BurnRewardComplication;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
+					"@executable_path/../../../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.xaviercaraballo.burnreward.complication;
+				PRODUCT_BUNDLE_IDENTIFIER = com.burnrewardapp.app.watchkitapp.BurnRewardComplication;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 26.5;
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		AAAA00000000000000000070 /* Build configuration list for PBXProject "BurnReward" */ = {
+		95DEE8BA2FE2393700170856 /* Build configuration list for PBXProject "BurnReward" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				AAAA00000000000000000080 /* Debug */,
-				AAAA00000000000000000081 /* Release */,
+				95DEE8D72FE2393B00170856 /* Debug */,
+				95DEE8D82FE2393B00170856 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		AAAA00000000000000000071 /* Build configuration list for PBXNativeTarget "BurnReward Watch App" */ = {
+		95DEE8D92FE2393B00170856 /* Build configuration list for PBXNativeTarget "BurnReward Watch App" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				AAAA00000000000000000082 /* Debug */,
-				AAAA00000000000000000083 /* Release */,
+				95DEE8DA2FE2393B00170856 /* Debug */,
+				95DEE8DB2FE2393B00170856 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		AAAA00000000000000000162 /* Build configuration list for PBXNativeTarget "BurnRewardComplication" */ = {
+		95DEE8DD2FE2393B00170856 /* Build configuration list for PBXNativeTarget "BurnReward" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				AAAA00000000000000000160 /* Debug */,
-				AAAA00000000000000000161 /* Release */,
+				95DEE8DE2FE2393B00170856 /* Debug */,
+				95DEE8DF2FE2393B00170856 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		95DEE9122FE24A5100170856 /* Build configuration list for PBXNativeTarget "BurnRewardComplicationExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				95DEE9132FE24A5100170856 /* Debug */,
+				95DEE9142FE24A5100170856 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = AAAA00000000000000000001 /* Project object */;
+	rootObject = 95DEE8B72FE2393700170856 /* Project object */;
 }

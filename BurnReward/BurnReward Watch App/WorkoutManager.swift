@@ -1,4 +1,5 @@
 import Foundation
+import Combine
 import HealthKit
 import WatchKit
 import WidgetKit
@@ -149,9 +150,14 @@ final class WorkoutManager: NSObject, ObservableObject {
     }
 
     func newGoal() {
+        let session = self.session
+        let builder = self.builder
+        self.session = nil
+        self.builder = nil
+
         session?.end()
-        builder?.endCollection(withEnd: Date()) { [weak self] _, _ in
-            self?.builder?.finishWorkout { _, _ in }
+        builder?.endCollection(withEnd: Date()) { _, _ in
+            builder?.finishWorkout { _, _ in }
         }
         phase = .picking
         selectedRewards = []
@@ -343,16 +349,6 @@ final class WorkoutManager: NSObject, ObservableObject {
             }
         }
     }
-
-    // MARK: - Debug helpers
-
-    #if DEBUG
-    func simulateBurn(_ amount: Double = 50) {
-        guard phase == .workout else { return }
-        heartRate = Double(Int.random(in: 120...160))  // fake BPM for Simulator
-        checkMilestones(cal: caloriesBurned + amount)
-    }
-    #endif
 }
 
 // MARK: - HKWorkoutSessionDelegate
