@@ -45,17 +45,11 @@ Small polish pass before any external eyes see the app.
 
 ## Phase 2 — TestFlight
 
-> **⚠️ BLOCKER FOUND (2026-06-16):** The project has no iOS "stub" target, so a watch-only
-> build cannot be distributed to App Store Connect / TestFlight — Xcode only offers
-> ad-hoc/enterprise/development. Root cause confirmed via distribution logs (ASC record is
-> `platform=iphoneos`, build is watchOS → no match). **Fix tracked in `MIGRATION.md`:**
-> recreate the project shell from the current watchOS App template (auto-includes the iOS
-> stub) and migrate source files in. Must be done before any upload below can happen.
-
-### 2a · Internal (you only)
-- [ ] Archive and upload first build via Xcode → Product → Archive → Distribute
-- [ ] Install via TestFlight on your own watch (proves the full archive→install pipeline)
-- [ ] Answer export compliance (BurnReward uses zero encryption → Exempt)
+### 2a · Internal (you only) ✅ Complete — Build 2 (2026-06-18)
+- [x] Added iOS stub target (`com.burnrewardapp.app`) so ASC accepted the upload
+- [x] Archived and uploaded Build 2 via Xcode → Product → Archive → Distribute
+- [x] Installed via TestFlight on Apple Watch SE (watchOS 10.6.2) — confirmed working end-to-end
+- [x] Export compliance answered (no non-exempt encryption)
 
 ### 2b · Trusted circle (3–5 people)
 - [ ] Create external tester group in App Store Connect
@@ -133,4 +127,4 @@ Xavier is designing the companion app. Features below are earmarked for that exp
 
 ---
 
-*Last updated: 2026-06-16*
+*Last updated: 2026-06-18*
