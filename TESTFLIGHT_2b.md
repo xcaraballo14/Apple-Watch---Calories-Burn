@@ -60,7 +60,7 @@ To try it you'll need:
 
 Steps:
 1. Install TestFlight on your iPhone (App Store, free).
-2. Tap this link on your iPhone: [PASTE PUBLIC LINK HERE]
+2. Tap this link on your iPhone: https://testflight.apple.com/join/CrWXhAya
 3. Accept the invite → install BurnReward → it'll appear on your watch.
 4. Do a quick workout and see if you can earn your reward!
 
@@ -77,9 +77,9 @@ If anything breaks or feels off, screenshot it and let me know. Takes 10 min. �
 - [x] Submitted for Beta App Review (2026-06-20)
 - [x] "What to Test" note filled in App Store Connect
 - [x] Test Information: contact info filled, Sign-in required unchecked
-- [ ] Beta App Review approved by Apple (~1 business day)
-- [ ] Enable public link in App Store Connect → copy URL
-- [ ] Paste public link into invite message
+- [x] Beta App Review approved by Apple (2026-06-20, same day)
+- [x] Enable public link in App Store Connect → copy URL
+- [x] Public link live: https://testflight.apple.com/join/CrWXhAya
 - [ ] Send to 3–5 trusted testers (iPhone + Apple Watch on watchOS 10+ required)
 
 ---
