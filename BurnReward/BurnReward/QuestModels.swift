@@ -314,10 +314,15 @@ struct PersonalRecord: Identifiable {
             return PersonalRecord(kind: kind, value: value(best), detail: "\(best.title) · \(day)", quest: best)
         }
 
-        let biggestBurn = quests.max { $0.calories < $1.calories }
-        let longest = quests.max { $0.duration < $1.duration }
-        let mostSteps = quests.compactMap { q in q.steps.map { ($0, q) } }.max { $0.0 < $1.0 }?.1
-        let topHR = quests.compactMap { q in q.averageHeartRate.map { ($0, q) } }.max { $0.0 < $1.0 }?.1
+        // Only earned quests can hold a record — an unfinished quest never
+        // "wins" a trophy (matches DashboardViewModel.detectRecordBreaks, the
+        // badge ladders, and bestStreak below; keeps the History 🏆 stamp off
+        // UNFINISHED rows). Records stay derived; no new storage.
+        let earned = quests.filter(\.earned)
+        let biggestBurn = earned.max { $0.calories < $1.calories }
+        let longest = earned.max { $0.duration < $1.duration }
+        let mostSteps = earned.compactMap { q in q.steps.map { ($0, q) } }.max { $0.0 < $1.0 }?.1
+        let topHR = earned.compactMap { q in q.averageHeartRate.map { ($0, q) } }.max { $0.0 < $1.0 }?.1
 
         let streak = bestStreak(quests, calendar: calendar)
         let streakRecord = PersonalRecord(

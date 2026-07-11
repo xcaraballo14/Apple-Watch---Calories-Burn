@@ -96,7 +96,10 @@ Small polish pass before any external eyes see the app.
       project — so the file lagged. 29 clears the 28 floor. **Xavier to UNCHECK
       that box on the next Distribute** so the project file is the single source
       of truth. Build-verified clean (zero warnings).
-- [ ] Release-configuration archive builds clean (zero warnings) on a real device
+- [~] Release-configuration archive builds clean (zero warnings) — **Release
+      *compile* verified clean in the simulator 2026-07-11** (optimized `-O`
+      path, zero warnings/errors; catches Release-only issues Debug hides). The
+      final signed **device archive** still has to be done on Xavier's Mac.
 - [x] No debug/QA affordances leak into Release — **audited 2026-07-11.** Zero
       `#if DEBUG` blocks anywhere; all 11 `-BR*` flags read via
       `ProcessInfo…arguments.contains` (inert without the arg, which an App Store
