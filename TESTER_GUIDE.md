@@ -6,7 +6,7 @@ it into a full RPG. First pass takes about 15–20 minutes, then just use it
 normally for a few days and see what breaks.
 
 ## What you need
-- An iPhone (iOS 17+) with an Apple Watch paired (watchOS 10+)
+- An iPhone (iOS 17.6+) with an Apple Watch paired (Series 4 or later, watchOS 10.6+)
 - The TestFlight app (from the App Store)
 - The invite link Xavier sent you
 

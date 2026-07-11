@@ -45,27 +45,33 @@ Thanks for testing! 🔥
 ---
 
 ## Tester invite message
-*Send via iMessage / WhatsApp / email once public link is live*
+*Send via iMessage / WhatsApp / email once the companion build clears review.
+(The original watch-only invite this replaces predates the iPhone app.)*
 
 ```
-Hey! I built a watchOS app called BurnReward and I'd love your help testing it 🔥
+Hey! I built a fitness game for Apple Watch + iPhone called BurnReward
+and I'd love your help testing it 🔥
 
-The idea: pick a reward (a cookie, a burrito, whatever), then earn it by burning
-the calories in a workout. It's a fitness game for your wrist.
+The idea: pick a food reward (a cookie, a burrito, whatever), then earn it
+by burning the calories in a real workout. The iPhone app turns it into a
+full RPG — you level up, earn badges, and chase a weekly challenge.
 
 To try it you'll need:
 • An iPhone (iOS 17.6 or newer)
-• An Apple Watch (watchOS 10 or newer)
+• An Apple Watch (Series 4 or later, watchOS 10.6 or newer)
 • The free "TestFlight" app from the App Store
 
 Steps:
 1. Install TestFlight on your iPhone (App Store, free).
 2. Tap this link on your iPhone: https://testflight.apple.com/join/CrWXhAya
-3. Accept the invite → install BurnReward → it'll appear on your watch.
-4. Do a quick workout and see if you can earn your reward!
+3. Accept the invite → install BurnReward on the iPhone → then open the
+   Watch app and install it on your watch too (scroll down to find it).
+4. Do a quick workout on the watch to earn your first reward — then open
+   the iPhone app and watch your XP, level, and badges update.
 
-It's an early beta so expect rough edges — that's exactly what I want to find.
-If anything breaks or feels off, screenshot it and let me know. Takes 10 min. 🙏
+It's an early beta so expect rough edges — that's exactly what I want to
+find. If anything breaks or feels off, screenshot it and let me know (or
+use "Share Beta Feedback" right in TestFlight). Takes ~15 min. 🙏
 ```
 
 ---
@@ -80,7 +86,12 @@ If anything breaks or feels off, screenshot it and let me know. Takes 10 min. �
 - [x] Beta App Review approved by Apple (2026-06-20, same day)
 - [x] Enable public link in App Store Connect → copy URL
 - [x] Public link live: https://testflight.apple.com/join/CrWXhAya
-- [ ] Send to 3–5 trusted testers (iPhone + Apple Watch on watchOS 10+ required)
+- [ ] **Companion build (29) in Beta App Review** — submitted 2026-07-11,
+      pending (Build 2 above was watch-only; first review cleared same-day)
+- [ ] Once approved: confirm the new build is assigned to the Trusted Circle
+      group, and replace the watch-only "What to Test" with the companion
+      version (`APP_STORE_METADATA.md` §8)
+- [ ] Send to 3–5 trusted testers: invite message above + `TESTER_GUIDE.md`
 
 ---
 
@@ -88,7 +99,7 @@ If anything breaks or feels off, screenshot it and let me know. Takes 10 min. �
 
 Every tester must have:
 - **iPhone** — any model, iOS 17.6 or newer
-- **Apple Watch** — Series 4 or later, watchOS 10.0 or newer
+- **Apple Watch** — Series 4 or later, watchOS 10.6 or newer
 - **TestFlight** — free, from the App Store on their iPhone
 
-*Last updated: 2026-06-20*
+*Last updated: 2026-07-11 (companion era — invite + checklist refreshed)*
