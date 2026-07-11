@@ -130,11 +130,23 @@ Small polish pass before any external eyes see the app.
 
 ### 3c · Screenshots (both platforms now)
 
-- [ ] **iPhone** required size(s) — Home (level + weekly challenge + last quest),
-      character sheet, History with a record stamp, quest XP receipt, Reward
-      Forge (4–6 shots). Capture with `-BRSampleData`; mostly light, maybe one dark
-- [ ] **Apple Watch** — reward picker, live workout, earned screen (410×502 px,
-      see §7 in metadata)
+- [x] **iPhone** — raw functional set captured 2026-07-11 (`Screenshots/iPhone/`,
+      verified 1320×2868, Home/character/history/receipt/forge/alerts + 1 dark).
+      **Superseded by Xavier's own polished marketing set** (device-framed,
+      headline copy, retro art embellishments) covering Home, Alerts, quest
+      receipt, Reward Forge, and the trophy case.
+- [x] **Apple Watch** — Xavier's marketing set includes real Watch UI (live
+      mid-workout stats: calories/BPM/steps, plus the weekly-challenge view),
+      clearing the simulator's sensor-data blocker.
+- [x] Full 8-shot marketing set saved to `Screenshots/Marketing/`, verified
+      1320×2868 (2026-07-11). Two fixes needed before final upload:
+      **`08_your_quest_on_your_wrist.png`** shows "1,450/3,500 XP to LVL 7" —
+      wrong (should read 1,468/1,500, per `01`/`03` and the real app);
+      **`02_see_every_run_walk_and_ride.png`** shows the Cheeseburger row
+      tagged both 🏆 RECORD and UNFINISHED — that's the bug fixed in `686efcc`
+      today, so this screenshot predates the fix and no longer matches the
+      shipped app. Regenerate both from a current build. Other 6 shots
+      verified accurate against real app data/math.
 - [ ] App preview video — optional
 
 ### 3d · Privacy & compliance (updated for the iOS app)
