@@ -52,12 +52,18 @@ Small polish pass before any external eyes see the app.
 - [x] Export compliance answered (no non-exempt encryption)
 
 ### 2b · Trusted circle (3–5 people)
-- [ ] Create external tester group in App Store Connect
-- [ ] Generate TestFlight public link
+- [x] External tester group "Trusted Circle" created in App Store Connect
+      (2026-06-20 — full record: `TESTFLIGHT_2b.md`)
+- [x] Beta App Review **approved** same-day (2026-06-20); public link live:
+      https://testflight.apple.com/join/CrWXhAya
 - [x] Tester onboarding note drafted — `TESTER_GUIDE.md` (covers install on
       both devices, first quest on Watch, companion checks, extras to try,
-      feedback path). Still needs to actually be **sent**.
-- [ ] Requirement to screen for: **iPhone + Apple Watch on watchOS 10+**
+      feedback path). Supersedes the watch-only invite text in
+      `TESTFLIGHT_2b.md`, which predates the companion.
+- [ ] **Send the link + guide to 3–5 trusted testers** (screen for: iPhone +
+      Apple Watch on watchOS 10+). Also refresh the ASC "What to Test" field
+      for the companion first — the current one is watch-only (see
+      `APP_STORE_METADATA.md` §8 for the updated text).
 
 ### 2c · Wider beta
 - [ ] Expand group once core loop is confirmed bug-free by 2b testers
