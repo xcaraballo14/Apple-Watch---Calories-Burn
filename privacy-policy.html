@@ -185,14 +185,14 @@
 <main>
   <div class="hero">
     <h1>PRIVACY POLICY</h1>
-    <p class="meta">Effective Date: June 15, 2025 &nbsp;·&nbsp; Last Updated: June 15, 2025</p>
+    <p class="meta">Effective Date: June 15, 2025 &nbsp;·&nbsp; Last Updated: July 9, 2026</p>
   </div>
 
   <section>
     <h2>1. OVERVIEW</h2>
-    <p>BurnReward ("we", "our", or "the app") is a watchOS fitness application developed by Xavier Caraballo. We are deeply committed to protecting your privacy. This policy explains in plain terms what information BurnReward accesses, why we access it, where it stays, and — critically — what we never do with it.</p>
+    <p>BurnReward ("we", "our", or "the app") is an iPhone app with a bundled Apple Watch app, developed by Xavier Caraballo. We are deeply committed to protecting your privacy. This policy explains in plain terms what information BurnReward accesses, why we access it, where it stays, and — critically — what we never do with it.</p>
     <div class="highlight">
-      <p><strong style="color:var(--green)">The short version:</strong> BurnReward reads your health data exclusively on your Apple Watch. It is processed locally on your device, never transmitted to any server, never shared with any third party, and never used for advertising. We do not collect, store, or see your personal information.</p>
+      <p><strong style="color:var(--green)">The short version:</strong> BurnReward reads your health data on your Apple Watch and iPhone and processes it entirely on your own devices — never transmitted to any server, never shared with any third party, and never used for advertising. We do not collect, store, or see your personal information.</p>
     </div>
   </section>
 
@@ -213,38 +213,56 @@
         <tr>
           <td>Active Energy Burned</td>
           <td>HKQuantityTypeIdentifierActiveEnergyBurned</td>
-          <td><span class="badge">READ</span></td>
-          <td>The core metric — we compare your live calorie burn against your quest goal to show EXP progress and trigger reward milestones.</td>
+          <td><span class="badge">READ</span> Watch (live) · iPhone</td>
+          <td>The core metric. The Watch compares your live calorie burn against your quest goal to show EXP progress and trigger milestones; the iPhone reads the calories on each saved workout to build your quest history, level, and records.</td>
         </tr>
         <tr>
           <td>Heart Rate</td>
           <td>HKQuantityTypeIdentifierHeartRate</td>
-          <td><span class="badge">READ</span></td>
-          <td>Displayed live during your workout as a real-time indicator, and averaged at workout end to populate your summary screen.</td>
+          <td><span class="badge">READ</span> Watch (live) · iPhone</td>
+          <td>Shown live during your workout and averaged at workout end for your summary; the iPhone reads that average for your quest receipt and XP.</td>
+        </tr>
+        <tr>
+          <td>Step Count</td>
+          <td>HKQuantityTypeIdentifierStepCount</td>
+          <td><span class="badge">READ</span> Watch (live) · iPhone</td>
+          <td>Shown live during a quest; the iPhone reads the step total on each saved workout for the quest detail and your "most steps" personal record.</td>
         </tr>
         <tr>
           <td>Workout Sessions</td>
           <td>HKWorkoutType</td>
-          <td><span class="badge">READ</span> <span class="badge">WRITE</span></td>
-          <td>We create an HKWorkoutSession to activate the watch's workout sensors at full fidelity and write the completed workout to Health when your quest is finished.</td>
+          <td><span class="badge">WRITE</span> Watch · <span class="badge">READ</span> iPhone</td>
+          <td>The Watch creates an HKWorkoutSession to run the sensors and writes the completed workout to Health when your quest is finished. The iPhone reads back only the workouts BurnReward saved, to reconstruct your quest history, level, badges, and records.</td>
         </tr>
       </tbody>
     </table>
 
     <h3>WHAT WE DO NOT ACCESS</h3>
     <p>BurnReward does not request and cannot access: body weight, blood oxygen, ECG data, sleep data, menstrual health data, reproductive health data, location (GPS), contacts, camera, microphone, or any other personal or sensitive data type not listed above.</p>
+    <p>If you add a profile photo, you pick it through Apple's system photo picker, which hands BurnReward only the single image you choose — the app is never granted access to your photo library. Your optional display name is text you type in. Both stay on your device (see Section 3).</p>
   </section>
 
   <section>
     <h2>3. HOW DATA IS STORED</h2>
-    <p>BurnReward stores the following data <strong style="color:var(--green)">exclusively on your Apple Watch</strong> using Apple's standard on-device storage:</p>
+    <p>BurnReward stores data <strong style="color:var(--green)">only on your own devices</strong> — never on a server — using Apple's standard on-device storage.</p>
+
+    <h3>ON YOUR APPLE WATCH</h3>
     <ul>
-      <li><strong>Workout progress</strong> (current calorie count, phase, elapsed time, selected rewards) — stored in <code>UserDefaults</code> on-device so your quest resumes if the app is closed mid-workout. This data is cleared when you start a new quest or tap "NEW QUEST."</li>
+      <li><strong>Workout progress</strong> (current calorie count, phase, elapsed time, selected rewards) — stored in <code>UserDefaults</code> on-device so your quest resumes if the app is closed mid-workout. Cleared when you start a new quest.</li>
       <li><strong>Workout summary</strong> (total duration, average heart rate, total calories) — stored on-device after a quest is completed and displayed on the earned screen. Cleared when you start a new quest.</li>
-      <li><strong>Complication snapshot</strong> (quest active/inactive, emoji, calorie progress) — written to an App Group container shared between the app and the watch-face complication widget. This stays on-device only.</li>
+      <li><strong>Complication snapshot &amp; reward library</strong> — the live quest snapshot and the reward list synced from your iPhone, kept in an App Group container shared with the watch-face complication. On-device only.</li>
+    </ul>
+
+    <h3>ON YOUR iPHONE</h3>
+    <p>The iPhone stores <strong>no health data of its own</strong> — your quest history, level, badges, records, and weekly challenge are recomputed from Apple Health each time you open the app. Its on-device <code>UserDefaults</code> holds only:</p>
+    <ul>
+      <li><strong>Your profile</strong> — an optional display name you type and an optional profile photo you pick (saved as a small local image). Both stay on the device and are <strong>never uploaded</strong>.</li>
+      <li><strong>Your reward library</strong> — the custom rewards you create in the Reward Forge and which built-ins you've hidden.</li>
+      <li><strong>Notification preferences</strong> — which reminders you've turned on and the reminder time.</li>
+      <li><strong>Small "already handled" markers</strong> — e.g. which badges and records were already celebrated, and when you last opened the alerts bell, so a notification or toast fires only once.</li>
     </ul>
     <div class="highlight">
-      <p>None of this data is ever uploaded to a server, transmitted over a network, or stored in the cloud by BurnReward. It lives entirely on your watch.</p>
+      <p>None of this data is ever uploaded to a server, transmitted over a network, or stored in the cloud by BurnReward. It lives entirely on your devices. The iPhone and Apple Watch exchange the reward library and live quest progress directly, device-to-device, with no server in between.</p>
     </div>
     <p>Completed workouts saved to Apple Health are stored and managed entirely by Apple under Apple's own privacy policy and iCloud data practices. BurnReward has no access to workout records after they are written.</p>
   </section>
@@ -254,11 +272,13 @@
     <p>Data accessed by BurnReward is used solely for the following in-app purposes:</p>
     <ul>
       <li>Tracking live active calorie burn against your selected food reward goal (EXP progress bar).</li>
-      <li>Displaying your real-time heart rate during a workout session.</li>
+      <li>Displaying your real-time heart rate and steps during a workout session.</li>
       <li>Triggering haptic milestone notifications at 25%, 50%, 75%, and 100% of your calorie goal.</li>
       <li>Computing and displaying a workout summary (duration, average heart rate, calories) when your quest is complete.</li>
       <li>Saving the completed workout to Apple Health so it counts toward your rings and workout history.</li>
       <li>Updating the watch-face complication to show live quest progress.</li>
+      <li>Showing your quest history, level and title, badges, personal records, and weekly challenge on the iPhone — all recomputed from your saved workouts.</li>
+      <li>Scheduling optional local reminders (achievements, streak, and weekly-challenge nudges) on your iPhone, if you turn them on.</li>
     </ul>
     <p><strong style="color:var(--red)">We do not use your health data for advertising, analytics, machine learning, profiling, research, or any purpose beyond the in-app features described above.</strong></p>
   </section>
@@ -272,6 +292,7 @@
       <li>We do not use any advertising SDKs or frameworks.</li>
       <li>We do not sell, rent, license, or trade your data in any form.</li>
       <li>We do not share data with partners, affiliates, or any other entity.</li>
+      <li>Your iPhone and Apple Watch sync directly through Apple's on-device WatchConnectivity and HealthKit workout mirroring — this is device-to-device, never through a BurnReward server.</li>
     </ul>
     <p>The only external system involved is Apple's HealthKit and the App Store distribution platform, both governed by Apple Inc.'s privacy practices, which you can review at <a href="https://www.apple.com/legal/privacy/" target="_blank">apple.com/legal/privacy</a>.</p>
   </section>
@@ -290,16 +311,16 @@
 
   <section>
     <h2>7. CHILDREN'S PRIVACY</h2>
-    <p>BurnReward is not directed to children under the age of 13 (or the equivalent minimum age in your jurisdiction). We do not knowingly collect personal information from children. Because the app collects no personal information from any user and has no server-side data storage, there is no child data at risk. If you are under 13, please ask a parent or guardian before using this app.</p>
+    <p>BurnReward is not directed to children under the age of 13 (or the equivalent minimum age in your jurisdiction). We do not knowingly collect personal information from children. Because the app collects no personal information from any user (an optional display name or profile photo you may add stays on your device) and has no server-side data storage, there is no child data at risk. If you are under 13, please ask a parent or guardian before using this app.</p>
   </section>
 
   <section>
     <h2>8. YOUR RIGHTS AND CONTROLS</h2>
     <h3>REVOKING HEALTHKIT ACCESS</h3>
-    <p>You can revoke BurnReward's access to any HealthKit data type at any time through your Apple Watch: <strong>Settings → Privacy & Security → Health → BurnReward</strong>. Revoking access will prevent the app from reading live calorie and heart rate data; you can still use the app but workout tracking will not function.</p>
+    <p>You can revoke BurnReward's access to any HealthKit data type at any time on your iPhone: <strong>Settings → Privacy &amp; Security → Health → BurnReward</strong> (this controls both the iPhone and Apple Watch apps). Revoking access will prevent the app from reading your calorie, heart rate, and step data; you can still open the app but quest tracking and history will not function.</p>
 
     <h3>DELETING YOUR DATA</h3>
-    <p>All BurnReward data stored on your device (quest progress, summaries, complication snapshots) is deleted automatically when you delete the app. You can also clear in-progress quest data at any time by tapping "NEW QUEST" on the earned screen. Workout records previously saved to Apple Health are managed independently through the Health app.</p>
+    <p>All BurnReward data stored on your devices is deleted automatically when you delete the app — quest progress and summaries on the Apple Watch, and your profile (name and photo), reward library, and preferences on the iPhone. You can also clear in-progress quest data at any time by tapping "NEW QUEST" on the earned screen. Workout records previously saved to Apple Health are managed independently through the Health app.</p>
 
     <h3>GDPR / EEA RESIDENTS</h3>
     <p>Because BurnReward processes no personal data on any server and transfers no data outside your device, the full GDPR data subject rights framework (access, rectification, erasure, portability) is satisfied by the on-device controls above. There is no server-side data to request, correct, or delete. For any questions, contact us at the address below.</p>
@@ -310,7 +331,7 @@
 
   <section>
     <h2>9. SECURITY</h2>
-    <p>Because BurnReward stores data only on your device and never transmits it, the security of your health data is governed by the security of your Apple Watch itself (passcode, encryption at rest, Secure Enclave). We benefit from Apple's platform-level security protections and do not introduce additional data exposure vectors.</p>
+    <p>Because BurnReward stores data only on your devices and never transmits it, the security of your health data is governed by the security of your Apple Watch and iPhone themselves (passcode, encryption at rest, Secure Enclave). We benefit from Apple's platform-level security protections and do not introduce additional data exposure vectors.</p>
   </section>
 
   <section>
@@ -331,7 +352,7 @@
 </main>
 
 <footer>
-  <p>© 2025 Xavier Caraballo · BurnReward</p>
+  <p>© 2025–2026 Xavier Caraballo · BurnReward</p>
   <p style="margin-top:10px;">
     <a href="index.html">HOME</a> &nbsp;·&nbsp;
     <a href="terms.html">TERMS</a> &nbsp;·&nbsp;

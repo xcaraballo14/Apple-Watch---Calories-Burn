@@ -8,11 +8,17 @@ enum AppPhase {
     case picking, workout, earned
 }
 
-/// Whether we can read the data we need to run a quest.
+/// Whether the hardware can run a quest at all. Note there's deliberately no
+/// `.denied` case: HealthKit never tells us reliably whether the user granted
+/// *read* access (it hides that for privacy), and the workout *share* status we
+/// used as a proxy was caught reporting "denied" right after a quest saved with
+/// full data — impossible if access were really off. So we never predict denial;
+/// a genuinely broken permission surfaces as a live quest that collects nothing
+/// (`showNoDataHint` + the loud session-error paths), which is the only signal
+/// HealthKit reports honestly.
 enum HealthAccess {
     case unknown      // not yet asked
-    case granted      // good to go (or not-yet-determined, which still lets us prompt)
-    case denied       // user said no to sharing workouts
+    case granted      // HealthKit is available — let the quest run
     case unavailable  // HealthKit not present on this device
 }
 
@@ -34,10 +40,14 @@ final class WorkoutManager: NSObject, ObservableObject {
     @Published var summaryAvgHR: Int = 0            // average BPM over the workout
     @Published var summaryCalories: Int = 0         // total burned at the finish line
     @Published var healthAccess: HealthAccess = .unknown
+    @Published var sessionError: String? = nil      // live-session failure, surfaced in the UI
+    @Published var receivedFirstSample = false      // true once any live metric has arrived
 
     private var startDate: Date?
+    private var sessionAttachedAt: Date?            // when we attached to a live session
     private var tickTask: Task<Void, Never>?
     private var hapticQuarter = 0  // highest 25% increment already buzzed (0–4)
+    private var lastMirrorSend = Date.distantPast  // throttles live snapshots to the phone
 
     // MARK: - Persistence
 
@@ -51,6 +61,7 @@ final class WorkoutManager: NSObject, ObservableObject {
         static let sumDuration = "br.summaryDuration"
         static let sumAvgHR    = "br.summaryAvgHR"
         static let sumCalories = "br.summaryCalories"
+        static let didRequestAuth = "br.didRequestHealthAuth"
     }
 
     override init() {
@@ -72,9 +83,28 @@ final class WorkoutManager: NSObject, ObservableObject {
         selectedRewards[0...index].reduce(0) { $0 + $1.calories }
     }
 
+    /// The session has been live for a while but HealthKit has delivered nothing —
+    /// the signature of read access being switched off (which raises no error).
+    var showNoDataHint: Bool {
+        guard phase == .workout, sessionError == nil, !receivedFirstSample,
+              let attached = sessionAttachedAt else { return false }
+        return Date().timeIntervalSince(attached) >= 45
+    }
+
     func requestAuthorization() async {
         guard HKHealthStore.isHealthDataAvailable() else {
             healthAccess = .unavailable
+            return
+        }
+        // Present the system sheet at most once per install. HealthKit hides
+        // whether *read* access was granted (privacy — so an app can't infer
+        // your health status), which means statusForAuthorizationRequest keeps
+        // reporting .shouldRequest for our read types forever. Gating on it
+        // therefore re-raised the sheet on every picker appearance and after
+        // every finished quest. A persisted "already asked" flag is the only
+        // signal HealthKit reports reliably.
+        guard !defaults.bool(forKey: Keys.didRequestAuth) else {
+            updateHealthAccess()
             return
         }
         let share: Set<HKSampleType> = [HKWorkoutType.workoutType()]
@@ -85,27 +115,29 @@ final class WorkoutManager: NSObject, ObservableObject {
         ]
         do {
             try await healthStore.requestAuthorization(toShare: share, read: read)
+            defaults.set(true, forKey: Keys.didRequestAuth)
         } catch {
             print("WorkoutManager: authorization error – \(error)")
         }
         updateHealthAccess()
     }
 
-    /// Re-reads the current authorization without prompting. HealthKit hides *read*
-    /// status for privacy, so we use the workout *share* status as a proxy: if the
-    /// user denied sharing workouts, they almost certainly denied calories too.
+    /// Reflects only whether HealthKit exists on this device. We deliberately do
+    /// NOT read `authorizationStatus` here: on device (2026-07-08) it returned
+    /// `.sharingDenied` minutes after a quest saved with full live data —
+    /// impossible if access were really off — so any UI driven by it cries wolf.
+    /// Real permission problems show up as a quest that collects nothing.
     func updateHealthAccess() {
-        guard HKHealthStore.isHealthDataAvailable() else {
-            healthAccess = .unavailable
-            return
-        }
-        switch healthStore.authorizationStatus(for: HKWorkoutType.workoutType()) {
-        case .sharingDenied: healthAccess = .denied
-        default:             healthAccess = .granted  // authorized or notDetermined
-        }
+        healthAccess = HKHealthStore.isHealthDataAvailable() ? .granted : .unavailable
     }
 
-    func startWorkout(for rewards: [Reward], type: WorkoutType = .other) {
+    func startWorkout(for rewards: [Reward], type: WorkoutType = .other) async {
+        // Settle authorization before collection begins — the live data source only
+        // collects types that are determined when collection starts, so a pending
+        // sheet would mean an entire quest with zero data.
+        await requestAuthorization()
+        sessionError = nil
+        receivedFirstSample = false
         selectedRewards = rewards.sorted { $0.calories < $1.calories }
         caloriesBurned = 0
         earnedCount = 0
@@ -137,14 +169,26 @@ final class WorkoutManager: NSObject, ObservableObject {
             builder.delegate = self
             self.session = session
             self.builder = builder
+
             session.startActivity(with: Date())
-            builder.beginCollection(withStart: Date()) { _, _ in }
+            // Show the workout screen immediately; collection starts in the
+            // background. Its failure is surfaced asynchronously (red banner on
+            // the workout screen) instead of gating the UI transition — the
+            // awaited `beginCollection(at:)` variant can stall on device and
+            // leave the button looking dead.
+            sessionAttachedAt = Date()
             phase = .workout
+            startMirroringToPhone(session)
+            beginCollecting(with: builder)
         } catch {
-            print("WorkoutManager: failed to start session – \(error)")
-            #if DEBUG
-            phase = .workout
-            #endif
+            // The session itself couldn't be created — bounce back to the picker
+            // with a visible reason instead of a fake, empty workout screen.
+            stopTicking()
+            startDate = nil
+            selectedRewards = []
+            sessionError = "Quest couldn't start — \(error.localizedDescription)"
+            clearState()
+            return
         }
         persistState()
     }
@@ -155,9 +199,18 @@ final class WorkoutManager: NSObject, ObservableObject {
         self.session = nil
         self.builder = nil
 
+        // If a live workout is being abandoned, still stamp the quest metadata
+        // (earnedCount < rewardCount marks it as unfinished for the iPhone app).
+        let metadata = selectedRewards.isEmpty ? nil : questMetadata()
         session?.end()
         builder?.endCollection(withEnd: Date()) { _, _ in
-            builder?.finishWorkout { _, _ in }
+            if let metadata {
+                builder?.addMetadata(metadata) { _, _ in
+                    builder?.finishWorkout { _, _ in }
+                }
+            } else {
+                builder?.finishWorkout { _, _ in }
+            }
         }
         phase = .picking
         selectedRewards = []
@@ -172,6 +225,9 @@ final class WorkoutManager: NSObject, ObservableObject {
         summaryCalories = 0
         startDate = nil
         hapticQuarter = 0
+        sessionError = nil
+        receivedFirstSample = false
+        sessionAttachedAt = nil
         stopTicking()
         clearState()
     }
@@ -198,10 +254,29 @@ final class WorkoutManager: NSObject, ObservableObject {
         self.session = nil
         self.builder = nil
 
+        let metadata = questMetadata()
         session?.end()
         builder?.endCollection(withEnd: Date()) { _, _ in
-            builder?.finishWorkout { _, _ in }
+            builder?.addMetadata(metadata) { _, _ in
+                builder?.finishWorkout { _, _ in }
+            }
         }
+    }
+
+    /// Quest details attached to the workout before saving, so the iPhone app
+    /// can rebuild history (reward, emoji, goal, earned-or-abandoned) straight
+    /// from HealthKit with no other sync channel.
+    private func questMetadata() -> [String: Any] {
+        [
+            QuestMetadata.schemaVersion: QuestMetadata.currentSchemaVersion,
+            QuestMetadata.rewardNames: selectedRewards.map(\.name)
+                .joined(separator: QuestMetadata.separator),
+            QuestMetadata.rewardEmojis: selectedRewards.map(\.emoji)
+                .joined(separator: QuestMetadata.separator),
+            QuestMetadata.goalCalories: totalGoal,
+            QuestMetadata.earnedCount: earnedCount,
+            QuestMetadata.rewardCount: selectedRewards.count,
+        ]
     }
 
     func checkMilestones(cal: Double) {
@@ -225,6 +300,7 @@ final class WorkoutManager: NSObject, ObservableObject {
                 let justEarned = selectedRewards[earnedCount - 1]
                 WKInterfaceDevice.current().play(.notification)
                 milestoneFlash = justEarned
+                sendLiveSnapshot(force: true)
                 Task {
                     try? await Task.sleep(for: .milliseconds(1200))
                     milestoneFlash = nil
@@ -234,10 +310,12 @@ final class WorkoutManager: NSObject, ObservableObject {
                 phase = .earned
                 stopTicking()
                 WKInterfaceDevice.current().play(.success)
+                sendLiveSnapshot(force: true)
                 finishAndSaveWorkout()
             }
         }
         persistState()
+        sendLiveSnapshot()
     }
 
     // MARK: - Elapsed-time ticker
@@ -286,6 +364,21 @@ final class WorkoutManager: NSObject, ObservableObject {
         publishSnapshot()
     }
 
+    /// Kick off live data collection without blocking the UI. Kept synchronous so
+    /// the completion-handler call doesn't trip the "use the async alternative"
+    /// warning — and, deliberately, so the awaited variant can't stall the
+    /// session start on device. A failure surfaces as a red banner mid-workout.
+    private func beginCollecting(with builder: HKLiveWorkoutBuilder) {
+        builder.beginCollection(withStart: Date()) { [weak self] success, error in
+            guard !success else { return }
+            let message = error?.localizedDescription ?? "HealthKit refused to start collecting."
+            Task { @MainActor [weak self] in
+                guard let self, self.phase == .workout else { return }
+                self.sessionError = "LIVE TRACKING FAILED — \(message)"
+            }
+        }
+    }
+
     /// Mirror the current goal into the shared App Group and refresh the complication.
     private func publishSnapshot() {
         let snapshot = BurnRewardSnapshot(
@@ -304,7 +397,8 @@ final class WorkoutManager: NSObject, ObservableObject {
             !ids.isEmpty
         else { return }
 
-        let rewards = ids.compactMap { id in allRewards.first { $0.id == id } }
+        let catalog = RewardLibraryStore.fullCatalog()
+        let rewards = ids.compactMap { id in catalog.first { $0.id == id } }
         guard !rewards.isEmpty else { clearState(); return }
 
         selectedRewards = rewards.sorted { $0.calories < $1.calories }
@@ -326,6 +420,9 @@ final class WorkoutManager: NSObject, ObservableObject {
 
         // Reconnect to a workout session that may still be running in the background.
         if phase == .workout {
+            // Quarters already passed shouldn't re-buzz when the first sample
+            // arrives after a relaunch — resync the haptic marker to progress.
+            hapticQuarter = min(Int(progress * 4), 4)
             startTicking()
             recoverWorkoutSession()
         }
@@ -346,8 +443,45 @@ final class WorkoutManager: NSObject, ObservableObject {
                 builder.delegate = self
                 self.session = session
                 self.builder = builder
+                self.sessionAttachedAt = Date()
+                self.startMirroringToPhone(session)
             }
         }
+    }
+
+    // MARK: - Live mirroring to iPhone
+
+    /// Mirror the running session to the companion app so it can show the
+    /// quest live. Best-effort: if the phone is unreachable or the companion
+    /// app isn't installed, the watch experience is unaffected.
+    private func startMirroringToPhone(_ session: HKWorkoutSession) {
+        session.startMirroringToCompanionDevice { _, error in
+            if let error {
+                print("WorkoutManager: mirroring unavailable – \(error)")
+            }
+        }
+    }
+
+    /// Push the current quest state over the mirrored session. Throttled to
+    /// roughly one send per second; `force` bypasses the throttle (milestones,
+    /// final earned state).
+    private func sendLiveSnapshot(force: Bool = false) {
+        guard let session, phase == .workout || force else { return }
+        let now = Date()
+        guard force || now.timeIntervalSince(lastMirrorSend) >= 1 else { return }
+        lastMirrorSend = now
+
+        let snapshot = LiveQuestSnapshot(
+            rewardNames: selectedRewards.map(\.name),
+            rewardEmojis: selectedRewards.map(\.emoji),
+            goalCalories: totalGoal,
+            caloriesBurned: caloriesBurned,
+            heartRate: heartRate,
+            earnedCount: earnedCount,
+            startDate: startDate ?? now
+        )
+        guard let data = try? JSONEncoder().encode(snapshot) else { return }
+        session.sendToRemoteWorkoutSession(data: data) { _, _ in }
     }
 }
 
@@ -362,7 +496,11 @@ extension WorkoutManager: HKWorkoutSessionDelegate {
     ) {}
 
     nonisolated func workoutSession(_ session: HKWorkoutSession, didFailWithError error: Error) {
-        print("WorkoutManager: session error – \(error)")
+        let message = error.localizedDescription
+        Task { @MainActor [weak self] in
+            guard let self, self.phase == .workout else { return }
+            self.sessionError = "SESSION ERROR — \(message)"
+        }
     }
 }
 
@@ -397,7 +535,13 @@ extension WorkoutManager: HKLiveWorkoutBuilderDelegate {
 
         Task { @MainActor [weak self] in
             guard let self, self.phase == .workout else { return }
-            if let bpm { self.heartRate = bpm }
+            if cal != nil || bpm != nil || stepCount != nil {
+                self.receivedFirstSample = true
+            }
+            if let bpm {
+                self.heartRate = bpm
+                self.sendLiveSnapshot()
+            }
             if let stepCount { self.steps = Int(stepCount) }
             if let cal { self.checkMilestones(cal: cal) }
         }

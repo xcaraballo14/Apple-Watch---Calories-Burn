@@ -1,6 +1,6 @@
 import Foundation
 
-struct Reward: Identifiable, Hashable {
+struct Reward: Identifiable, Hashable, Codable {
     /// Stable identity (the name) so a selection can be persisted across launches.
     var id: String { name }
     let emoji: String

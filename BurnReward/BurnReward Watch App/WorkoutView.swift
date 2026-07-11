@@ -5,7 +5,7 @@ struct WorkoutView: View {
     @State private var confirmingCancel = false
 
     private var elapsedText: String {
-        String(format: "%d:%02d", wm.elapsedSeconds / 60, wm.elapsedSeconds % 60)
+        WatchFormat.duration(wm.elapsedSeconds)
     }
 
     var body: some View {
@@ -19,6 +19,10 @@ struct WorkoutView: View {
                             Label("BACK", systemImage: "chevron.left")
                                 .font(.pixel(6))
                                 .foregroundStyle(.secondary)
+                                // The label stays small; the tappable area doesn't —
+                                // this is the only escape hatch mid-workout.
+                                .frame(minWidth: 52, minHeight: 32, alignment: .leading)
+                                .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                         Spacer()
@@ -41,6 +45,15 @@ struct WorkoutView: View {
                     HStack(spacing: 6) {
                         heartRateCell
                         stepsCell
+                    }
+
+                    if let error = wm.sessionError {
+                        diagnosticBanner(text: error.uppercased(), color: Theme.red)
+                    } else if wm.showNoDataHint {
+                        diagnosticBanner(
+                            text: "NO SENSOR DATA · ON IPHONE: SETTINGS › PRIVACY & SECURITY › HEALTH › BURNREWARD",
+                            color: Theme.orange
+                        )
                     }
                 }
                 .padding(.horizontal, 6)
@@ -189,6 +202,20 @@ struct WorkoutView: View {
         .padding(.vertical, 5)
         .background(Color(white: 0.08))
         .cornerRadius(4)
+    }
+
+    /// Red = the session itself reported a failure; orange = the session looks
+    /// alive but HealthKit has delivered nothing (usually read access is off).
+    private func diagnosticBanner(text: String, color: Color) -> some View {
+        Text(text)
+            .font(.pixel(6))
+            .foregroundStyle(color)
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 6)
+            .padding(.horizontal, 4)
+            .background(Color(white: 0.08))
+            .cornerRadius(4)
     }
 
     private func milestoneOverlay(reward: Reward) -> some View {

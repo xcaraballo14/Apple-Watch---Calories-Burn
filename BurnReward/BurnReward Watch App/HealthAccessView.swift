@@ -1,8 +1,8 @@
 import SwiftUI
 
-/// Shown when HealthKit is unavailable or the user denied access. Without active
-/// energy we can't track the quest, so we explain what's needed instead of failing
-/// silently. Styled to match the rest of the retro UI.
+/// Shown only when HealthKit itself is unavailable on the hardware — without it
+/// the app can't function at all. A *denied* permission never routes here: the
+/// watch's status read can be stale-wrong, so denial is a picker banner instead.
 struct HealthAccessView: View {
     @EnvironmentObject var wm: WorkoutManager
 
@@ -18,19 +18,11 @@ struct HealthAccessView: View {
                     .foregroundStyle(Theme.yellow)
                     .multilineTextAlignment(.center)
 
-                Text(message)
+                Text("BurnReward needs HealthKit, which isn't available on this device.")
                     .font(.pixel(6))
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .lineSpacing(3)
-
-                if wm.healthAccess == .denied {
-                    Text("ENABLE IN:\nWATCH › PRIVACY › HEALTH")
-                        .font(.pixel(5))
-                        .foregroundStyle(Theme.muted)
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(2)
-                }
 
                 Button("↻ TRY AGAIN") {
                     Task { await wm.requestAuthorization() }
@@ -39,15 +31,6 @@ struct HealthAccessView: View {
                 .padding(.horizontal, 6)
             }
             .padding()
-        }
-    }
-
-    private var message: String {
-        switch wm.healthAccess {
-        case .unavailable:
-            return "BurnReward needs HealthKit, which isn't available on this device."
-        default:
-            return "BurnReward needs active calories to track your quest."
         }
     }
 }

@@ -86,6 +86,16 @@
 			);
 			target = 95DEE8CB2FE2393A00170856 /* BurnReward Watch App */;
 		};
+		95DEE9312FE2AAAA00170856 /* Exceptions for "BurnReward Watch App" folder in "BurnReward" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				LiveQuestSnapshot.swift,
+				QuestMetadata.swift,
+				Reward.swift,
+				RewardLibrary.swift,
+			);
+			target = 95DEE8BE2FE2393800170856 /* BurnReward */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -97,6 +107,7 @@
 		95DEE8D02FE2393A00170856 /* BurnReward Watch App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
+				95DEE9312FE2AAAA00170856 /* Exceptions for "BurnReward Watch App" folder in "BurnReward" target */,
 				95DEE9212FE25BD700170856 /* Exceptions for "BurnReward Watch App" folder in "BurnReward Watch App" target */,
 				95DEE91D2FE2515700170856 /* Exceptions for "BurnReward Watch App" folder in "BurnRewardComplicationExtension" target */,
 			);
@@ -497,7 +508,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = "BurnReward Watch App/BurnReward Watch App.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 29;
 				DEVELOPMENT_TEAM = 334V6U8V7S;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -512,7 +523,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.burnrewardapp.app.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -537,7 +548,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = "BurnReward Watch App/BurnReward Watch App.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 29;
 				DEVELOPMENT_TEAM = 334V6U8V7S;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -552,7 +563,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.burnrewardapp.app.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -575,12 +586,17 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = BurnReward/BurnReward.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 29;
 				DEVELOPMENT_TEAM = 334V6U8V7S;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "BurnReward-iOS-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = BurnReward;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "BurnReward reads the workouts it saved from your Apple Watch to show your quest history, streaks, and level.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "BurnReward never writes health data from your iPhone — workouts are saved to Apple Health by the Apple Watch app.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -591,7 +607,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.burnrewardapp.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -616,12 +632,17 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = BurnReward/BurnReward.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 29;
 				DEVELOPMENT_TEAM = 334V6U8V7S;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "BurnReward-iOS-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = BurnReward;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "BurnReward reads the workouts it saved from your Apple Watch to show your quest history, streaks, and level.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "BurnReward never writes health data from your iPhone — workouts are saved to Apple Health by the Apple Watch app.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -632,7 +653,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.burnrewardapp.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -659,7 +680,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = BurnRewardComplicationExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 29;
 				DEVELOPMENT_TEAM = 334V6U8V7S;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BurnRewardComplication/Info.plist;
@@ -671,7 +692,7 @@
 					"@executable_path/../../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.burnrewardapp.app.watchkitapp.BurnRewardComplication;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -695,7 +716,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = BurnRewardComplicationExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 29;
 				DEVELOPMENT_TEAM = 334V6U8V7S;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BurnRewardComplication/Info.plist;
@@ -707,7 +728,7 @@
 					"@executable_path/../../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.burnrewardapp.app.watchkitapp.BurnRewardComplication;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;

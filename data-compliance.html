@@ -182,7 +182,7 @@
 <main>
   <div class="hero">
     <h1>DATA USE &amp; COMPLIANCE</h1>
-    <p class="meta">Document Version 1.0 &nbsp;·&nbsp; June 15, 2025</p>
+    <p class="meta">Document Version 1.1 &nbsp;·&nbsp; Updated July 9, 2026</p>
     <p class="sub">A complete technical and regulatory reference for every data type BurnReward accesses, why it is needed, how it is stored, and how it meets applicable requirements.</p>
   </div>
 
@@ -192,15 +192,15 @@
     <table>
       <tr><th>Field</th><th>Detail</th></tr>
       <tr><td>App Name</td><td>BurnReward</td></tr>
-      <tr><td>Platform</td><td>watchOS 10.0+ (Apple Watch standalone app)</td></tr>
+      <tr><td>Platform</td><td>iOS 17+ (iPhone app) with a bundled Apple Watch app (watchOS 10+). The watch app also runs standalone.</td></tr>
       <tr><td>Developer</td><td>Xavier Caraballo</td></tr>
       <tr><td>Category</td><td>Health & Fitness</td></tr>
-      <tr><td>Backend / Server</td><td><span class="cross">✗ None</span> — all processing is on-device</td></tr>
+      <tr><td>Backend / Server</td><td><span class="cross">✗ None</span> — all processing is on-device; no code path makes any network request</td></tr>
       <tr><td>Account Required</td><td><span class="cross">✗ No</span> — no login, no registration</td></tr>
       <tr><td>Analytics SDKs</td><td><span class="cross">✗ None</span></td></tr>
       <tr><td>Advertising SDKs</td><td><span class="cross">✗ None</span></td></tr>
       <tr><td>Third-party SDKs</td><td><span class="cross">✗ None</span></td></tr>
-      <tr><td>Network Requests</td><td><span class="cross">✗ None at runtime</span> (Google Fonts loaded on landing page only)</td></tr>
+      <tr><td>Network Requests</td><td><span class="cross">✗ None at runtime</span> (iPhone↔watch sync is device-to-device via WatchConnectivity / HealthKit workout mirroring; Google Fonts load on the landing page only)</td></tr>
       <tr><td>Data Sold</td><td><span class="cross">✗ Never</span></td></tr>
     </table>
   </section>
@@ -208,7 +208,7 @@
   <!-- ─────────────────────────────────────────── -->
   <section>
     <h2>2. HEALTHKIT DATA TYPES — COMPLETE INVENTORY</h2>
-    <p>BurnReward requests the following HealthKit permissions. This is the complete and exhaustive list — no data type is accessed without declaration.</p>
+    <p>BurnReward uses the following HealthKit types across the Apple Watch app (which records the workout) and the iPhone app (which reads the saved workouts back). This is the complete and exhaustive list — no data type is accessed without declaration.</p>
 
     <div class="table-wrap"><table>
       <thead>
@@ -224,38 +224,45 @@
         <tr>
           <td><strong>Active Energy Burned</strong></td>
           <td><code>HKQuantityType(.activeEnergyBurned)</code></td>
-          <td><span class="badge blue">READ</span></td>
-          <td>Core metric. The live kilocalorie sum from the HKLiveWorkoutBuilder is read every time the sensor pushes new data. It is compared against the user's selected calorie goal to update the EXP progress bar and trigger reward milestones at cumulative thresholds.</td>
-          <td>In-memory during workout. Final value persisted on-device via UserDefaults (<code>br.caloriesBurned</code>) until the user starts a new quest. Cleared by tapping "NEW QUEST."</td>
+          <td><span class="badge blue">READ</span><br>Watch (live) · iPhone</td>
+          <td>The Watch reads the live kilocalorie sum from HKLiveWorkoutBuilder during a quest, comparing it to the reward's calorie goal to fill the EXP bar and fire milestone haptics. The iPhone reads the calories stored on each saved BurnReward workout to build quest history, XP, and records.</td>
+          <td>In-memory during the workout; the Watch keeps the current quest's value in UserDefaults until a new quest starts. The iPhone recomputes from HealthKit on every refresh and stores no copy.</td>
         </tr>
         <tr>
           <td><strong>Heart Rate</strong></td>
           <td><code>HKQuantityType(.heartRate)</code></td>
-          <td><span class="badge blue">READ</span></td>
-          <td>The most-recent BPM value is displayed live on the workout screen. The running average from the builder is used to populate the AVG ♥ field in the workout summary.</td>
-          <td>In-memory during workout. Summary average persisted on-device via UserDefaults (<code>br.summaryAvgHR</code>) until a new quest starts.</td>
+          <td><span class="badge blue">READ</span><br>Watch (live) · iPhone</td>
+          <td>The Watch shows live BPM and computes the workout average for the summary. The iPhone reads that average from each saved workout for the quest summary/receipt and the XP intensity factor.</td>
+          <td>In-memory during the workout; the Watch keeps the summary average in UserDefaults until a new quest. The iPhone recomputes from HealthKit, no copy.</td>
+        </tr>
+        <tr>
+          <td><strong>Step Count</strong></td>
+          <td><code>HKQuantityType(.stepCount)</code></td>
+          <td><span class="badge blue">READ</span><br>Watch (live) · iPhone</td>
+          <td>The Watch shows live steps during a quest. The iPhone reads the step total from each saved workout for the quest detail and the "most steps" personal record.</td>
+          <td>In-memory during the workout; the iPhone recomputes from HealthKit on refresh, no copy.</td>
         </tr>
         <tr>
           <td><strong>Workout (HKWorkout)</strong></td>
           <td><code>HKWorkoutType.workoutType()</code></td>
-          <td><span class="badge blue">READ</span> <span class="badge yellow">WRITE</span></td>
-          <td>READ: Used solely to check authorization status (HealthKit hides read-permission state, so workout share-status is used as a proxy to detect if the user has denied access). WRITE: When the user completes all quest goals, the HKWorkoutSession is ended and the HKWorkout record is finalized and saved to Apple Health via HKLiveWorkoutBuilder.finishWorkout(). This makes the session count toward the user's rings and workout history.</td>
-          <td>Once written to HealthKit, the workout record is owned and managed by Apple Health. BurnReward retains no copy and has no further access to it.</td>
+          <td><span class="badge yellow">WRITE</span> Watch<br><span class="badge blue">READ</span> iPhone</td>
+          <td>WRITE (Watch): when the quest's goals are met, the HKWorkoutSession is finalized and the HKWorkout is saved to Apple Health via finishWorkout(), stamped with the reward's name, emoji, and calorie goal as workout metadata, so it counts toward the user's rings. READ (iPhone): the app queries the workouts BurnReward itself saved (matched by app source) and reconstructs the entire quest history, level, badges, records, and weekly challenge from them — nothing is stored separately.</td>
+          <td>Once written, the workout is owned and managed by Apple Health. BurnReward keeps no copy; the iPhone reads it fresh on each refresh.</td>
         </tr>
       </tbody>
     </table></div>
 
     <div class="info">
-      <p><strong style="color:var(--blue)">HealthKit Privacy Note:</strong> Apple's HealthKit framework intentionally does not disclose read-authorization status to apps (it always returns <code>.notDetermined</code> for read types). This is an Apple privacy design decision to prevent apps from inferring which health categories a user has blocked. BurnReward uses the workout <em>share</em> authorization status as a proxy only to determine whether to show the "Health Access Needed" error screen.</p>
+      <p><strong style="color:var(--blue)">HealthKit Privacy Note:</strong> Apple's HealthKit intentionally hides read-authorization status from apps (a privacy design so an app can't infer which categories a user has blocked). BurnReward therefore never drives its UI from HealthKit's read-status APIs — it relies only on real operations (a save succeeding, samples arriving). If a quest collects no sensor data, the Watch shows a one-time "no sensor data" hint pointing to iPhone Settings › Privacy &amp; Security › Health › BurnReward. The iPhone reads only the workouts BurnReward itself saved (matched by app source) — never any other app's health data.</p>
     </div>
   </section>
 
   <!-- ─────────────────────────────────────────── -->
   <section>
     <h2>3. ON-DEVICE STORAGE — COMPLETE INVENTORY</h2>
-    <p>BurnReward stores data exclusively on the user's Apple Watch using two mechanisms: <code>UserDefaults</code> (standard on-device key-value store) and an App Group container shared between the app and the watch-face complication extension.</p>
+    <p>BurnReward stores data exclusively on the user's own devices — never on a server. The Apple Watch uses <code>UserDefaults</code> (standard on-device key-value store) plus an App Group container shared with the watch-face complication; the iPhone uses its own on-device <code>UserDefaults</code>. Nothing here is transmitted off the device.</p>
 
-    <h3>3A. USERDEFAULTS (STANDARD)</h3>
+    <h3>3A. APPLE WATCH — USERDEFAULTS (STANDARD)</h3>
     <table>
       <thead>
         <tr><th>Key</th><th>Data Stored</th><th>Purpose</th><th>When Cleared</th></tr>
@@ -312,8 +319,8 @@
       </tbody>
     </table>
 
-    <h3>3B. APP GROUP CONTAINER (COMPLICATION SHARING)</h3>
-    <p>App Group ID: <code>group.com.burnreward.app</code></p>
+    <h3>3B. APPLE WATCH — APP GROUP CONTAINER</h3>
+    <p>App Group ID: <code>group.com.burnreward.app</code> — shared between the Watch app and its watch-face complication (the iPhone app does not use an App Group).</p>
     <table>
       <thead>
         <tr><th>Key</th><th>Data Stored</th><th>Purpose</th><th>When Cleared</th></tr>
@@ -325,18 +332,90 @@
           <td>Passed to the WidgetKit complication extension so the watch face can display live quest progress (emoji + calorie arc). Updated on every state change.</td>
           <td>Reset to inactive state on new quest start or app deletion</td>
         </tr>
+        <tr>
+          <td>reward library</td>
+          <td>JSON-encoded reward library — reward names, emojis, calorie goals, and which built-in rewards are hidden</td>
+          <td>The library the iPhone forged and synced (via WatchConnectivity) so the watch picker offers the same rewards</td>
+          <td>Overwritten on each sync from the iPhone; cleared on app deletion</td>
+        </tr>
       </tbody>
     </table>
 
+    <h3>3C. iPHONE — USERDEFAULTS (STANDARD)</h3>
+    <p>The iPhone app derives everything it shows from the workouts already saved in Apple Health, so it stores <strong>no health data</strong> of its own. Its <code>UserDefaults</code> holds only the profile fields the user chooses, the user's reward library, notification preferences, and small "already handled" markers so celebrations and prompts fire once.</p>
+    <table>
+      <thead><tr><th>Key</th><th>Data Stored</th><th>Purpose</th><th>When Cleared</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>br.displayName</code></td>
+          <td>String — the display name the user types on their profile (blank by default)</td>
+          <td>Shown on the character sheet and Home header</td>
+          <td>When the user clears it, or on app deletion</td>
+        </tr>
+        <tr>
+          <td><code>br.avatarJPEG</code></td>
+          <td>Data — an optional profile photo the user picks, downscaled to a ~256&nbsp;px JPEG</td>
+          <td>Shown as the profile avatar. Stored locally and <strong>never uploaded</strong></td>
+          <td>When the user removes the photo, or on app deletion</td>
+        </tr>
+        <tr>
+          <td><code>br.rewardLibrary</code></td>
+          <td>JSON — the user's custom reward definitions and built-in show/hide state</td>
+          <td>The Reward Forge library; synced to the watch via WatchConnectivity</td>
+          <td>On app deletion</td>
+        </tr>
+        <tr>
+          <td><code>br.ios.seenBadgeIDs</code></td>
+          <td>Array of badge ID strings</td>
+          <td>Records which badges were already celebrated so a toast fires only once</td>
+          <td>On app deletion</td>
+        </tr>
+        <tr>
+          <td><code>br.ios.prBurn</code>, <code>br.ios.prDuration</code>, <code>br.ios.prSteps</code></td>
+          <td>Integers</td>
+          <td>Your current best burn / duration / steps, used to detect when a new personal record is set</td>
+          <td>On app deletion</td>
+        </tr>
+        <tr>
+          <td><code>br.ios.notifiedLevel</code></td>
+          <td>Integer</td>
+          <td>The last level a notification was sent for, to avoid duplicate level-up alerts</td>
+          <td>On app deletion</td>
+        </tr>
+        <tr>
+          <td><code>br.ios.alertsLastSeen</code></td>
+          <td>Timestamp</td>
+          <td>When the alerts bell was last opened — drives the unread dot</td>
+          <td>On app deletion</td>
+        </tr>
+        <tr>
+          <td><code>br.ios.didRequestHealthAuth</code></td>
+          <td>Boolean</td>
+          <td>One-shot flag so the Health permission sheet is shown at most once</td>
+          <td>On app deletion</td>
+        </tr>
+        <tr>
+          <td><code>br.notifyAchievements</code>, <code>br.notifyStreak</code>, <code>br.notifyChallenge</code>, <code>br.notifyStreakMinutes</code></td>
+          <td>Booleans + an integer (minutes)</td>
+          <td>Notification preferences — which reminders are on, and the reminder time</td>
+          <td>On app deletion</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="info">
+      <p><strong style="color:var(--blue)">Local notifications:</strong> The iPhone schedules badge, level-up, record, streak, and weekly-challenge reminders with <code>UNUserNotificationCenter</code>. They are composed and delivered entirely on-device — there is no push server, no device token, and nothing is transmitted.</p>
+    </div>
+
     <div class="good">
-      <p><strong style="color:var(--green)">Key point:</strong> None of the above data contains personally identifiable information (PII). The stored values are numeric workout metrics, selected food names from a fixed list, and timing data — there are no names, email addresses, device identifiers, or biometric fingerprints stored by BurnReward.</p>
+      <p><strong style="color:var(--green)">Key point:</strong> The only user-provided data is an <em>optional</em> display name and profile photo, both stored on the device and never transmitted. Everything else is numeric workout metrics, reward names from the user's own list, timing data, and app preferences. There are no accounts, no email addresses, no device-identifier tracking, and none of it leaves the device.</p>
     </div>
   </section>
 
   <!-- ─────────────────────────────────────────── -->
   <section>
     <h2>4. DATA FLOWS — ARCHITECTURE DIAGRAM</h2>
-    <p>All data flows are local. There is no outbound network path from BurnReward to any server.</p>
+    <p>All data flows are local — kept on a single device or exchanged directly between the paired iPhone and Apple Watch. There is no outbound network path from BurnReward to any server.</p>
     <table>
       <thead>
         <tr><th>Source</th><th>Flow</th><th>Destination</th><th>Network?</th></tr>
@@ -372,6 +451,30 @@
           <td>Watch face complication (same device)</td>
           <td><span class="cross">✗ No</span></td>
         </tr>
+        <tr>
+          <td>Watch (during a live quest)</td>
+          <td>→ HealthKit workout-session mirroring → LiveQuestSnapshot</td>
+          <td>iPhone "current quest" card (paired device)</td>
+          <td><span class="cross">✗ No server</span> (paired-device only)</td>
+        </tr>
+        <tr>
+          <td>Apple Health (saved workouts)</td>
+          <td>→ HealthKit query → DashboardViewModel (iPhone)</td>
+          <td>In-app UI — quest history, level, badges, records, challenge</td>
+          <td><span class="cross">✗ No</span></td>
+        </tr>
+        <tr>
+          <td>iPhone Reward Forge</td>
+          <td>→ WatchConnectivity <code>updateApplicationContext</code></td>
+          <td>Watch reward library (paired device)</td>
+          <td><span class="cross">✗ No server</span> (paired-device only)</td>
+        </tr>
+        <tr>
+          <td>iPhone (progress state)</td>
+          <td>→ UNUserNotificationCenter (scheduled locally)</td>
+          <td>Local notifications on the same iPhone</td>
+          <td><span class="cross">✗ No</span></td>
+        </tr>
       </tbody>
     </table>
   </section>
@@ -381,14 +484,14 @@
     <h2>5. APPLE APP STORE COMPLIANCE</h2>
 
     <h3>APP STORE CONNECT — DATA NUTRITION LABEL</h3>
-    <p>The following is the accurate App Store "App Privacy" questionnaire response for BurnReward:</p>
+    <p>Apple's "App Privacy" questionnaire defines <em>collection</em> as transmitting data off the device for access beyond servicing the immediate request. BurnReward reads HealthKit entirely on-device, stores everything locally, runs no server, and bundles no analytics or third-party SDKs — so nothing meets that definition. The accurate response is <strong style="color:var(--green)">Data Not Collected</strong>.</p>
     <table>
       <thead>
         <tr><th>Category</th><th>Collected?</th><th>Linked to Identity?</th><th>Used for Tracking?</th></tr>
       </thead>
       <tbody>
         <tr><td>Contact Info</td><td><span class="cross">✗ Not collected</span></td><td>—</td><td>—</td></tr>
-        <tr><td>Health & Fitness</td><td><span class="check">✓ Collected</span> (active energy, heart rate, workout data)</td><td><span class="cross">✗ Not linked to identity</span></td><td><span class="cross">✗ Not used for tracking</span></td></tr>
+        <tr><td>Health & Fitness</td><td><span class="cross">✗ Not collected</span> (read on-device only, never transmitted)</td><td>—</td><td>—</td></tr>
         <tr><td>Financial Info</td><td><span class="cross">✗ Not collected</span></td><td>—</td><td>—</td></tr>
         <tr><td>Location</td><td><span class="cross">✗ Not collected</span></td><td>—</td><td>—</td></tr>
         <tr><td>Sensitive Info</td><td><span class="cross">✗ Not collected</span></td><td>—</td><td>—</td></tr>
@@ -397,23 +500,38 @@
         <tr><td>Diagnostics</td><td><span class="cross">✗ Not collected</span></td><td>—</td><td>—</td></tr>
       </tbody>
     </table>
-    <p>Health & Fitness data (active energy, heart rate, workouts) is collected solely for the app's core "App Functionality" purpose — tracking and displaying the user's calorie burn against their quest goal.</p>
+    <div class="good">
+      <p><strong style="color:var(--green)">Result: Data Not Collected.</strong> Health data (active energy, heart rate, workouts) is read from HealthKit and used only on the device to update the user's quest — never transmitted, stored off-device, sold, or shared. Because it never leaves the device, it is not "collected" under Apple's App Privacy definition, so BurnReward's store privacy label is <strong>Data Not Collected</strong>.</p>
+    </div>
+    <p>This concerns on-device <em>collection</em> for the App Store label only. HealthKit data is still <em>processed</em> on-device to power the app; the broader frameworks that also cover on-device processing (GDPR, CCPA) are addressed in Section 6.</p>
 
     <h3>HEALTHKIT USAGE DESCRIPTIONS (INFO.PLIST)</h3>
-    <p>The following usage strings are declared in the app's Info.plist and presented to the user when HealthKit access is first requested:</p>
-    <table>
-      <thead><tr><th>Key</th><th>String</th></tr></thead>
+    <p>Each target declares its own HealthKit usage strings, shown when access is first requested:</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Target</th><th>Key</th><th>String</th></tr></thead>
       <tbody>
         <tr>
-          <td><code>NSHealthUpdateUsageDescription</code></td>
-          <td>"BurnReward needs to save your workout to Apple Health when your quest is complete."</td>
+          <td>Apple Watch</td>
+          <td><code>NSHealthShareUsageDescription</code></td>
+          <td>"BurnReward reads your active calories burned, heart rate, and step count to track progress toward your reward goal."</td>
         </tr>
         <tr>
+          <td>Apple Watch</td>
+          <td><code>NSHealthUpdateUsageDescription</code></td>
+          <td>"BurnReward saves your workouts to Apple Health."</td>
+        </tr>
+        <tr>
+          <td>iPhone</td>
           <td><code>NSHealthShareUsageDescription</code></td>
-          <td>"BurnReward reads your active calories and heart rate to track your quest progress in real time."</td>
+          <td>"BurnReward reads the workouts it saved from your Apple Watch to show your quest history, streaks, and level."</td>
+        </tr>
+        <tr>
+          <td>iPhone</td>
+          <td><code>NSHealthUpdateUsageDescription</code></td>
+          <td>"BurnReward never writes health data from your iPhone — workouts are saved to Apple Health by the Apple Watch app."</td>
         </tr>
       </tbody>
-    </table>
+    </table></div>
 
     <h3>APPLE'S HEALTHKIT DEVELOPER RULES — COMPLIANCE CHECK</h3>
     <table>
@@ -422,9 +540,9 @@
         <tr><td>Don't use HealthKit data for advertising or advertising measurement</td><td><span class="check">✓ Compliant</span> — no advertising in the app</td></tr>
         <tr><td>Don't disclose HealthKit data to third parties</td><td><span class="check">✓ Compliant</span> — no third parties involved</td></tr>
         <tr><td>Don't sell HealthKit data</td><td><span class="check">✓ Compliant</span> — no data monetization</td></tr>
-        <tr><td>Don't use HealthKit data to rebuild a user profile</td><td><span class="check">✓ Compliant</span> — data is used only for the current active quest</td></tr>
+        <tr><td>Don't use HealthKit data to rebuild a user profile</td><td><span class="check">✓ Compliant</span> — HealthKit builds only the user's own in-app progress (level, history, badges) shown back to them; never for advertising, data mining, or disclosure to third parties</td></tr>
         <tr><td>Include a Privacy Policy</td><td><span class="check">✓ Compliant</span> — see <a href="privacy-policy.html">Privacy Policy</a></td></tr>
-        <tr><td>Request only the types you use</td><td><span class="check">✓ Compliant</span> — three types declared, three types used</td></tr>
+        <tr><td>Request only the types you use</td><td><span class="check">✓ Compliant</span> — four types (active energy, heart rate, step count, workouts). The Watch reads energy/HR/steps and writes workouts; the iPhone reads all four back. No unused types.</td></tr>
       </tbody>
     </table>
   </section>
@@ -445,17 +563,17 @@
         <tr>
           <td>Data minimization</td>
           <td><span class="check">✓</span></td>
-          <td>Only active energy and heart rate are accessed — the minimum needed to provide the core feature</td>
+          <td>Only active energy, heart rate, step count, and the app's own workouts are accessed — the minimum needed for the quest loop and progression. The optional display name and profile photo are user-provided and stored locally only.</td>
         </tr>
         <tr>
           <td>Purpose limitation</td>
           <td><span class="check">✓</span></td>
-          <td>Data is used solely for the declared fitness tracking purpose, nothing else</td>
+          <td>Data is used solely for the declared fitness tracking and progression purpose, nothing else</td>
         </tr>
         <tr>
           <td>Storage limitation</td>
           <td><span class="check">✓</span></td>
-          <td>Quest data is cleared when the user starts a new quest or deletes the app</td>
+          <td>On the Watch, quest state clears when a new quest starts; the iPhone stores no health-derived data at all (it recomputes from HealthKit on each launch). All app data is removed on deletion.</td>
         </tr>
         <tr>
           <td>Data subject access / erasure rights</td>
@@ -502,27 +620,48 @@
   <!-- ─────────────────────────────────────────── -->
   <section>
     <h2>7. ENTITLEMENTS AND CAPABILITIES</h2>
-    <p>The following capabilities are enabled in the app's entitlements file (<code>BurnReward_Watch_App.entitlements</code>):</p>
-    <table>
-      <thead><tr><th>Entitlement</th><th>Value</th><th>Purpose</th></tr></thead>
+    <p>Capabilities are declared per target. The iPhone app uses HealthKit only; the Apple Watch app and its watch-face complication additionally share an App Group. No target requests clinical / health-records access.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Target</th><th>Entitlement</th><th>Value</th><th>Purpose</th></tr></thead>
       <tbody>
         <tr>
-          <td><code>com.apple.security.application-groups</code></td>
-          <td><code>group.com.burnreward.app</code></td>
-          <td>Shares minimal quest snapshot data between the app and the WidgetKit complication extension on the same device</td>
-        </tr>
-        <tr>
+          <td>iPhone app</td>
           <td><code>com.apple.developer.healthkit</code></td>
           <td>true</td>
-          <td>Enables HealthKit access for the Watch App target</td>
+          <td>Reads the workouts BurnReward saved, to rebuild quest history and progression. No App Group; no write access is used.</td>
         </tr>
         <tr>
+          <td>Watch app</td>
+          <td><code>com.apple.developer.healthkit</code></td>
+          <td>true</td>
+          <td>Reads live active energy / heart rate / steps and writes the finished workout to Apple Health</td>
+        </tr>
+        <tr>
+          <td>Watch app</td>
+          <td><code>com.apple.security.application-groups</code></td>
+          <td><code>group.com.burnreward.app</code></td>
+          <td>Shares the quest snapshot and synced reward library with the complication (same device)</td>
+        </tr>
+        <tr>
+          <td>Complication</td>
+          <td><code>com.apple.developer.healthkit</code> + App Group</td>
+          <td>true · <code>group.com.burnreward.app</code></td>
+          <td>Reads the shared snapshot to render the watch-face quest gauge</td>
+        </tr>
+        <tr>
+          <td>Watch app</td>
+          <td><code>WKBackgroundModes</code> (Info.plist)</td>
+          <td><code>workout-processing</code></td>
+          <td>Keeps the HKWorkoutSession running while the app is backgrounded mid-quest</td>
+        </tr>
+        <tr>
+          <td>All</td>
           <td><code>com.apple.developer.healthkit.access</code></td>
           <td>[health-records] — <em>not requested</em></td>
-          <td>Clinical health records access is NOT requested or used</td>
+          <td>Clinical / health-records access is NOT requested or used</td>
         </tr>
       </tbody>
-    </table>
+    </table></div>
   </section>
 
   <!-- ─────────────────────────────────────────── -->
@@ -540,7 +679,7 @@
 </main>
 
 <footer>
-  <p>© 2025 Xavier Caraballo · BurnReward</p>
+  <p>© 2025–2026 Xavier Caraballo · BurnReward</p>
   <p style="margin-top:10px;">
     <a href="index.html">HOME</a> &nbsp;·&nbsp;
     <a href="privacy-policy.html">PRIVACY POLICY</a> &nbsp;·&nbsp;

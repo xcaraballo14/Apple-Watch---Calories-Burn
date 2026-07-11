@@ -4,6 +4,11 @@ Everything you paste into App Store Connect lives here. Copy/paste field by fiel
 Pricing: **Free** at launch (in-app purchases planned for a later version).
 Support email: **burnrewardapp@gmail.com**
 
+> **Refreshed 2026-07-09 for the iOS companion.** BurnReward is now an **iPhone
+> app with a bundled Apple Watch app** — not a watch-only title. The listing,
+> screenshots, and review notes below cover both. The full staged build/submit
+> checklist lives in `ROADMAP.md → Phase 3`; this doc is the copy-paste pack.
+
 ---
 
 ## 1. App Information (App Store Connect → App Information)
@@ -15,7 +20,7 @@ Support email: **burnrewardapp@gmail.com**
 | **Bundle ID** | `com.burnrewardapp.app` |
 | **SKU** | `BURNREWARD001` (any unique internal string) |
 | **Primary Category** | Health & Fitness |
-| **Secondary Category** | Games (optional — reinforces the RPG angle) |
+| **Secondary Category** | Games (reinforces the RPG angle) |
 | **Content Rights** | Does not contain third-party content |
 | **Age Rating** | 4+ (see Section 5 for the questionnaire answers) |
 
@@ -41,7 +46,7 @@ Support email: **burnrewardapp@gmail.com**
 | **Marketing URL** (optional) | `https://xcaraballo14.github.io/Apple-Watch---Calories-Burn/` |
 | **Support email** (in App Review contact + listing) | `burnrewardapp@gmail.com` |
 
-> Support URL technically must be a webpage, not a `mailto:`. Your GitHub Pages site works, and it links to the support email in the footer. If you'd rather have a dedicated support page, say the word and I'll add `support.html`.
+> Support URL must be a webpage, not a `mailto:`. Your GitHub Pages site works and links to the support email in the footer.
 
 ---
 
@@ -49,47 +54,58 @@ Support email: **burnrewardapp@gmail.com**
 
 ### Promotional Text (170 char max — editable any time without review)
 ```
-Turn every workout into a quest. Pick a treat, burn the calories, earn it guilt-free. Your Apple Watch is now a fitness RPG.
+Turn every workout into a quest. Pick a treat, burn the calories, earn it guilt-free — then level up. Your Apple Watch and iPhone are now a fitness RPG.
 ```
 
 ### Description (4000 char max)
 ```
 BURNREWARD — SWEAT NOW. FEAST LATER.
 
-Every treat is a quest. Pick the reward you're craving — a burrito, a milkshake, a slice of pizza — and BurnReward turns its calories into an EXP bar on your wrist. Work out, fill the bar, and earn your treat the honest way.
+Every treat is a quest. Pick the reward you're craving — a burrito, a milkshake, a slice of pizza — and BurnReward turns its calories into an EXP bar. Work out, fill the bar, and earn your treat the honest way.
 
-It's a fitness tracker with the soul of a retro RPG.
+It's a fitness tracker with the soul of a retro RPG — on your wrist and in your pocket.
 
 HOW IT WORKS
-• Pick your reward (or stack up to two for a combo quest)
+• Pick your reward (or stack two for a combo quest)
 • Choose your workout: walk, run, bike, lift, or anything
 • Start the session — your Apple Watch tracks active calories live
-• Watch the EXP bar climb with satisfying haptic milestones at 25%, 50%, and 75%
+• Feel the haptic milestones at 25%, 50%, and 75%
 • Hit 100% and the victory screen fires — reward unlocked
 
-BUILT FOR APPLE WATCH
-• Live calorie and heart-rate tracking powered by HealthKit
-• Real workout sessions — your effort counts toward your Activity rings
-• A watch-face complication shows your quest progress at a glance
-• A full workout summary when you finish: time, average heart rate, calories
-• Pick up right where you left off if you close the app mid-workout
+LEVEL UP YOUR EFFORT (iPhone companion)
+Every quest earns XP and climbs a title ladder from SNACK ROOKIE to FEAST OVERLORD. The iPhone app is your character sheet:
+• A living profile — your level, class affinity, and lifetime totals
+• 30 badges to earn, each showing its progress so your next goal is always in sight
+• Personal records — biggest burn, longest quest, most steps — to chase and beat
+• A fresh weekly challenge every week, built around precision, not raw burn
+• Full quest history with an itemized XP receipt for every workout
+• Optional nudges when you're one quest from a level, a badge, or your weekly challenge
+
+PRECISION IS THE SKILL
+BurnReward rewards landing close to your goal, not overshooting it. The tighter your finish, the bigger the bonus. Control beats chaos.
+
+BUILT ON HEALTHKIT
+• Live calorie and heart-rate tracking from real Apple Watch workout sessions
+• Your effort counts toward your Activity rings
+• A watch-face complication shows quest progress at a glance
+• Craft your own rewards on iPhone — they sync straight to your wrist
 
 NO GUILT, JUST GAMEPLAY
-BurnReward doesn't count what you eat or lecture you about it. It flips the script: do the work, earn the treat, enjoy it. Simple, motivating, and a little bit fun.
+BurnReward doesn't count what you eat or lecture you about it. Do the work, earn the treat, enjoy it. Rest days never break your progress, and it never pushes you to overdo it.
 
-20 built-in rewards from a 150-calorie cookie to a 980-calorie burrito — pick your quest and get moving.
-
-Your health data stays on your device. No accounts, no servers, no ads, no tracking. Ever.
+YOUR DATA STAYS YOURS
+Everything is processed on your device. No accounts, no servers, no ads, no tracking — ever. Your health data never leaves your iPhone and Apple Watch.
 ```
 
 ### Keywords (100 char max, comma-separated, no spaces)
 ```
-fitness,workout,calorie,reward,rpg,gamify,health,exercise,run,walk,motivation,treat,burn,goal,quest
+fitness,workout,calorie,reward,rpg,badge,level,streak,challenge,exercise,run,walk,quest,treat
 ```
+> Tune freely — the app name and subtitle already index, so keywords are for the long tail (progression terms like badge/level/streak/challenge are the companion's hooks).
 
-### What's New in This Version (for v1.0)
+### What's New in This Version (companion launch)
 ```
-First release. Pick a reward, burn the calories, earn your treat. Welcome to the quest.
+BurnReward comes to iPhone. Your quests now level up a full RPG: titles, 30 badges, personal records, weekly challenges, and an XP receipt for every workout — all synced from your Apple Watch, all on your device. Sweat now, feast later.
 ```
 
 ---
@@ -115,41 +131,90 @@ Answer **None / No** to every content category:
 
 ## 6. App Privacy Questionnaire (App Store Connect → App Privacy)
 
-Click path: "Get Started" → for each data type below.
+> ⚠️ **CHANGED — confirm before submitting.** The earlier version of this pack
+> declared *Data Collected → Health (not linked)*. That was the conservative
+> reading. Apple defines "collect" as **transmitting data off the device** for
+> access beyond the real-time request. BurnReward reads HealthKit **on-device
+> only**, stores the profile photo locally, and schedules notifications
+> locally — **nothing is ever transmitted, and there are no third-party SDKs or
+> analytics.** So the accurate answer is **"Data Not Collected."** This is both
+> correct under Apple's definition and the strongest version of your privacy
+> promise. **Action:** confirm you're comfortable with this, and align
+> `data-compliance.html` Section 5 to say the same (it currently mirrors the old
+> "collected" declaration).
 
-**Do you collect data? → YES** (you collect Health data, even though it stays on-device and powers the app).
+**Recommended answer — "Data Not Collected":**
 
-Add ONE data type:
+- Click path: App Privacy → "Get Started" → **"We do not collect data from this app."**
+- Result on your store page: **"Data Not Collected."**
 
-| Question | Answer |
-|---|---|
-| Data type | **Health** (under "Health & Fitness") |
-| Is this data used to track you? | **No** |
-| Is this data linked to the user's identity? | **No** |
-| Purpose | **App Functionality** |
+Why it's justified, point by point:
+- **Health & workouts** — read from HealthKit, computed and displayed on-device, never sent anywhere. Not collected.
+- **Profile photo** — a small JPEG saved in local `UserDefaults`, never uploaded. Not collected.
+- **Notifications** — scheduled locally with `UNUserNotificationCenter`. No push server, no token collection.
+- **No** identifiers, usage data, diagnostics, location, or contacts are gathered.
 
-Then for Fitness (heart rate / workouts), if prompted separately, same answers: **Fitness → not tracking, not linked, App Functionality.**
+> If you'd rather keep the previous conservative declaration (Health → not
+> tracking, not linked, App Functionality), that's still *defensible* — but then
+> revert the ROADMAP Phase 3 note too, so all three docs agree. Pick one and
+> keep them consistent.
 
-Everything else (Contact Info, Identifiers, Usage Data, Diagnostics, Location, etc.): **Not Collected.**
+### 📅 When social features ship — update this label
 
-> This matches the declarations in `data-compliance.html` Section 5. Net result on your store page: "Data Not Linked to You: Health & Fitness."
+The privacy label describes **the version you ship**, not future plans, and you
+can edit it anytime with no penalty — so "Data Not Collected" is correct for the
+v1 companion even though social is on the roadmap. **Don't pre-declare data you
+don't collect yet** (claiming to collect email while the app has no account
+misrepresents the current binary).
+
+When the social milestone lands (accounts, friend feed, guilds — CloudKit first;
+see the v3 platform vision in ROADMAP.md), update App Privacy for that version to
+declare what it *then* actually collects — likely:
+
+- **Contact Info → Email address** (account sign-in). Consider **Sign in with
+  Apple** so users can hide their email behind Apple's private relay.
+- **User Content** (anything shared to a friend feed / guild).
+- **Identifiers** (a user/account ID).
+- Purpose: **App Functionality** (and possibly Product Personalization); tracking
+  **No** as long as there's no cross-app ad tracking.
+
+**What does NOT change:** the core promise holds — raw HealthKit data still never
+leaves the device. Social features are opt-in and account-based, and share
+*derived* stats or social content, not workout data. So the label goes from
+"Data Not Collected" to "collects Contact Info + User Content **for optional
+social, not linked to health data**" — never "uploads your health data." Keep the
+description and `privacy-policy.html` in step with the label at that time.
 
 ---
 
 ## 7. Screenshots (required for submission)
 
-watchOS App Store screenshots. You need at least one set. Capture on a 45mm-class watch (your SE 44mm is fine) or in the Simulator.
+You now need **iPhone** screenshots (primary listing) **and** Apple Watch
+screenshots. Capture the iPhone set in the Simulator with sample data:
+`-BRSampleData` plus a start flag (`-BRStartOnProfile`, `-BRStartOnHistory`,
+`-BRStartOnRewards`, `-BRStartOnAlerts`). Toggle theme with
+`xcrun simctl ui <udid> appearance dark|light`.
 
-**Required size (Apple Watch):** 410 × 502 px (Series 4–9 / SE 44–45mm). App Store Connect accepts this size for all modern watches.
+**iPhone — required size:** one set at 6.9" (1320 × 2868) or 6.7" (1290 × 2796).
+Recommended shot list (4–6):
+1. **Home** — level card with the "→ next title" gap, weekly challenge card, last-quest hero
+2. **Character sheet** — avatar, class affinity, records, trophy case with badge rings
+3. **History** — quest log with a 🏆 RECORD stamp and the weekly burn chart
+4. **Quest receipt** — the itemized XP breakdown (Base → Intensity → Precision → Total)
+5. **Reward Forge** — building a custom reward
+6. *(optional)* **Alerts** — the achievement feed behind the bell
 
-**Recommended shot list (capture 4–5):**
-1. **Pick Reward screen** — the food list with one selected (shows the core hook)
-2. **Workout screen mid-quest** — EXP bar ~60%, live HR and calories visible
-3. **Earned/victory screen** — the celebration with the summary stats
-4. **Watch-face complication** — your face showing the quest gauge
-5. *(optional)* The combo pick (two rewards selected)
+**Apple Watch — required size:** 410 × 502 px (Series 4–9 / SE 44–45mm).
+Recommended shot list (3–5):
+1. **Pick Reward** — food list with one selected
+2. **Workout mid-quest** — EXP bar ~60%, live HR + calories
+3. **Earned / victory** — celebration with summary stats
+4. **Watch-face complication** — the quest gauge
+5. *(optional)* combo pick (two rewards)
 
-> How to capture: on the watch, press **Side button + Digital Crown** together; the screenshot saves to the paired iPhone's Photos. (Enable Settings → General → Screenshots on the watch first.) Or use the Simulator's screenshot button.
+> Watch capture: **Side button + Digital Crown** together (enable Settings →
+> General → Screenshots first); the shot lands in the paired iPhone's Photos.
+> Or use the Simulator screenshot button.
 
 ---
 
@@ -157,13 +222,20 @@ watchOS App Store screenshots. You need at least one set. Capture on a 45mm-clas
 ```
 Thanks for testing BurnReward!
 
-Please grant Health access when prompted (active energy + heart rate),
-then start a quest and go for a short walk or run to see the EXP bar fill.
+ON YOUR APPLE WATCH: grant Health access when prompted (active energy + heart
+rate), then pick a reward and go for a short walk or run to fill the EXP bar and
+earn it.
 
-What to check:
+THEN OPEN THE iPHONE APP and check:
+• Does your finished quest appear in History with the right calories and XP?
+• Do your level / title and the weekly challenge update?
+• Do badges show progress, and did any unlock with a celebration?
+• Turn on notifications in Settings — do you get an achievement or challenge ping?
+
+BACK ON THE WATCH:
 • Does the calorie count climb during a real workout?
 • Do you feel the haptic pulses at 25/50/75%?
-• Does the victory screen show your time, avg heart rate, and calories?
+• Does the victory screen show time, avg heart rate, and calories?
 • If you close the app mid-workout and reopen it, does the quest resume?
 • Does the watch-face complication update?
 
@@ -174,44 +246,52 @@ Report anything weird to burnrewardapp@gmail.com.
 
 ## 9. App Review Notes (Submit for Review → Notes)
 ```
-BurnReward is a standalone watchOS fitness app (no iPhone app required).
+BurnReward is an iPhone app with a bundled Apple Watch app.
+
+WHAT IT DOES: The user picks a food reward, then burns the matching calories in a
+real Apple Watch workout to "earn" it. The iPhone app is the RPG progression
+layer — level, titles, badges, personal records, a weekly challenge, and full
+quest history — all derived from the workouts the watch saves to Apple Health.
 
 TO TEST:
-1. Launch on an Apple Watch (watchOS 10+).
-2. Tap "Allow" on the HealthKit permission prompt (active energy, heart rate, workouts).
-3. Pick a reward and tap SET GOAL to start a workout session.
-4. Active calories from a real workout fill the EXP progress bar. Reaching the
-   goal saves the workout to Apple Health and shows a summary.
+1. Install on an iPhone paired with an Apple Watch (watchOS 10+).
+2. On the watch, tap Allow on the HealthKit prompt (active energy, heart rate,
+   workouts, steps), pick a reward, and start a workout. Active calories fill the
+   EXP bar; reaching the goal saves the workout to Apple Health and shows a summary.
+3. Open the iPhone app to see that quest in History with its XP, plus your level,
+   badges, records, and the weekly challenge updating from it.
 
-NOTE ON SIMULATING DATA: HealthKit calorie data requires real movement, so a
-brief walk is needed to see progress on a physical device.
+NOTES:
+• The Apple Watch app also runs standalone. Real HealthKit calorie data requires
+  actual movement, so a brief walk is needed to see progress on a device.
+• HEALTH DATA is processed entirely on-device — no server, no account, no
+  third-party SDK, no analytics. HealthKit is read only to compute the user's own
+  progress; notifications are scheduled locally. Nothing is transmitted off device.
+• No login credentials are required to review the app.
 
-HEALTH DATA: All health data is processed on-device only. There is no server,
-no account, and no third-party SDK. HealthKit data is used solely to track the
-user's calorie-burn goal. See Privacy Policy:
-https://xcaraballo14.github.io/Apple-Watch---Calories-Burn/privacy-policy.html
-
-No login credentials are required to review the app.
+Privacy Policy: https://xcaraballo14.github.io/Apple-Watch---Calories-Burn/privacy-policy.html
 ```
 
 ---
 
-## 10. Pre-Submission Checklist
+## 10. Pre-Submission Checklist (ASC-paste quick list)
 
-- [ ] Phase 1 done: app runs on your physical watch via Xcode, real calories tracked
-- [ ] Apple ID added to Xcode with the paid Developer Program active
-- [ ] "Automatically manage signing" on for both targets (app + complication)
+- [ ] Full loop verified on a real iPhone + paired watch (see `ROADMAP.md` → Phase 3a)
+- [ ] Apple ID in Xcode with the paid Developer Program active
+- [ ] "Automatically manage signing" on for **all** targets (iOS app, watch app, complication)
+- [ ] Version + build numbers **aligned across all targets** (complication has stranded before)
 - [ ] Archive validates clean (Product → Archive → Validate App)
-- [ ] App record created in App Store Connect with bundle ID `com.burnrewardapp.app`
-- [ ] Complication target bundle ID is `com.burnrewardapp.app.widget` (nested under the app ID)
+- [ ] Bundle IDs correct: app `com.burnrewardapp.app`, complication `com.burnrewardapp.app.widget` (confirm current)
 - [ ] Build uploaded and processed (appears in TestFlight)
-- [ ] Tested via TestFlight on your own watch
-- [ ] Screenshots captured (Section 7)
-- [ ] All listing copy pasted (Section 4)
-- [ ] App Privacy questionnaire completed (Section 6)
+- [ ] iPhone **and** watch screenshots captured (Section 7)
+- [ ] Listing copy pasted (Section 4)
+- [ ] App Privacy completed — "Data Not Collected", confirmed + consistent with `data-compliance.html` (Section 6)
 - [ ] Age rating completed (Section 5)
 - [ ] Privacy Policy + Support URLs set (Section 3)
-- [ ] Submit for Review
+- [ ] Submit for Review with the notes in Section 9
+
+> The full staged build → submit → post-approval checklist lives in
+> `ROADMAP.md → Phase 3`. This section is the App Store Connect paste companion.
 
 ---
 

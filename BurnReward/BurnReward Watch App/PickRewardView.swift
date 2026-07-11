@@ -3,6 +3,7 @@ import WatchKit
 
 struct PickRewardView: View {
     @EnvironmentObject var wm: WorkoutManager
+    @EnvironmentObject var rewardLibrary: RewardLibraryStore
     @State private var selectedIDs: Set<String> = []
     @State private var workoutType: WorkoutType = .walk
     @State private var rejectFlash = false   // pulses the header when a 3rd tap is rejected
@@ -10,7 +11,7 @@ struct PickRewardView: View {
     private let maxSelection = 2
 
     private var selectedRewards: [Reward] {
-        allRewards.filter { selectedIDs.contains($0.id) }
+        rewardLibrary.pickerRewards.filter { selectedIDs.contains($0.id) }
     }
 
     private var combinedCalories: Int {
@@ -21,14 +22,31 @@ struct PickRewardView: View {
 
     var body: some View {
         Group {
+            // Only HealthKit-missing hardware blocks the picker. A .denied status
+            // is advisory (banner below): the watch has been seen reporting a stale
+            // "sharingDenied" minutes after a fully-tracked quest saved fine, so a
+            // hard gate here would brick a working app on a false reading.
             switch wm.healthAccess {
-            case .denied, .unavailable:
+            case .unavailable:
                 HealthAccessView()
             default:
                 picker
             }
         }
         .task { await wm.requestAuthorization() }
+        .alert("QUEST DIDN'T START", isPresented: startErrorShown) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(wm.sessionError ?? "")
+        }
+    }
+
+    /// Start failures leave the phase on .picking, so the error surfaces here.
+    private var startErrorShown: Binding<Bool> {
+        Binding(
+            get: { wm.sessionError != nil && wm.phase == .picking },
+            set: { if !$0 { wm.sessionError = nil } }
+        )
     }
 
     private var picker: some View {
@@ -52,14 +70,16 @@ struct PickRewardView: View {
                     .listRowBackground(Color(white: 0.06))
                 }
 
-                ForEach(allRewards) { reward in
+                ForEach(rewardLibrary.pickerRewards) { reward in
                     rewardRow(for: reward)
                 }
 
                 workoutTypeSection
 
                 Button("SET GOAL ▶") {
-                    wm.startWorkout(for: selectedRewards, type: workoutType)
+                    let rewards = selectedRewards
+                    let type = workoutType
+                    Task { await wm.startWorkout(for: rewards, type: type) }
                 }
                 .buttonStyle(PixelButtonStyle(enabled: !selectedIDs.isEmpty))
                 .disabled(selectedIDs.isEmpty)

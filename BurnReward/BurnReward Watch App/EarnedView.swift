@@ -2,10 +2,11 @@ import SwiftUI
 
 struct EarnedView: View {
     @EnvironmentObject var wm: WorkoutManager
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var animating = false
 
     private var timeText: String {
-        String(format: "%d:%02d", wm.summaryDuration / 60, wm.summaryDuration % 60)
+        WatchFormat.duration(wm.summaryDuration)
     }
 
     var body: some View {
@@ -51,7 +52,9 @@ struct EarnedView: View {
             }
             .padding()
         }
-        .onAppear { animating = true }
+        // Reduce Motion: skip the looping pulse entirely — the celebration
+        // still reads through the haptic, the stars, and the color.
+        .onAppear { if !reduceMotion { animating = true } }
     }
 
     // MARK: - Summary

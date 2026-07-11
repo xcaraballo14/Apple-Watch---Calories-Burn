@@ -20,6 +20,18 @@ extension Font {
     }
 }
 
+/// Watch-side time formatting. Mirrors the iOS `BRFormat.duration` behavior so a
+/// quest that runs past an hour reads "1:15:00", not "75:00".
+enum WatchFormat {
+    /// 1725 s → "28:45"; adds an hours field once the quest passes 60 minutes.
+    static func duration(_ seconds: Int) -> String {
+        let h = seconds / 3600, m = (seconds % 3600) / 60, s = seconds % 60
+        return h > 0
+            ? String(format: "%d:%02d:%02d", h, m, s)
+            : String(format: "%d:%02d", m, s)
+    }
+}
+
 /// Retro CRT scanline overlay to match the site's aesthetic.
 struct ScanlineOverlay: View {
     var body: some View {

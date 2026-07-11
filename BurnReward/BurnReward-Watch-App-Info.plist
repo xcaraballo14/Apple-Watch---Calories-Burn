@@ -10,5 +10,7 @@
 	<array>
 		<string>workout-processing</string>
 	</array>
+	<key>WKRunsIndependentlyOfCompanionApp</key>
+	<true/>
 </dict>
 </plist>
