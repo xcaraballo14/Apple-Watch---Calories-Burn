@@ -24,17 +24,50 @@ struct RewardsView: View {
         }
     }
 
+    private var forgeButton: some View {
+        Button {
+            showBuilder = true
+        } label: {
+            Label("FORGE NEW REWARD", systemImage: "plus.circle.fill")
+                .font(.pixel(10))
+                .foregroundStyle(BRTheme.greenFG)
+        }
+    }
+
     private var rewardList: some View {
             List {
                 Section {
                     if store.customRewards.isEmpty {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("NOTHING FORGED YET")
-                                .font(.pixel(10))
-                                .foregroundStyle(BRTheme.textPrimary)
-                            Text("Create any food with its calorie goal — it lands on your watch picker automatically.")
-                                .font(.footnote)
-                                .foregroundStyle(BRTheme.textMuted)
+                        VStack(alignment: .leading, spacing: 0) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("NOTHING FORGED YET")
+                                    .font(.pixel(10))
+                                    .foregroundStyle(BRTheme.textPrimary)
+                                Text("Create any food with its calorie goal. It lands on your watch picker automatically.")
+                                    .font(.footnote)
+                                    .foregroundStyle(BRTheme.textMuted)
+                            }
+                            .padding(.trailing, 116)
+
+                            Rectangle()
+                                .fill(BRTheme.textMuted.opacity(0.25))
+                                .frame(height: 1)
+                                .padding(.trailing, 116)
+                                .padding(.vertical, 14)
+
+                            forgeButton
+                        }
+                        .overlay(alignment: .bottomTrailing) {
+                            if let anvil = UIImage(named: "forge_anvil") {
+                                Image(uiImage: anvil)
+                                    .resizable()
+                                    .interpolation(.none)
+                                    .scaledToFit()
+                                    .frame(height: 108)
+                                    .offset(x: 4, y: -2)
+                                    .allowsHitTesting(false)
+                                    .accessibilityHidden(true)
+                            }
                         }
                         .padding(.vertical, 4)
                         .listRowBackground(BRTheme.card)
@@ -44,16 +77,10 @@ struct RewardsView: View {
                         }
                         .onDelete { store.deleteCustoms(at: $0) }
                         .onMove { store.moveCustoms(from: $0, to: $1) }
-                    }
 
-                    Button {
-                        showBuilder = true
-                    } label: {
-                        Label("Forge new reward", systemImage: "plus.circle.fill")
-                            .font(.subheadline.weight(.medium))
-                            .foregroundStyle(BRTheme.greenFG)
+                        forgeButton
+                            .listRowBackground(BRTheme.card)
                     }
-                    .listRowBackground(BRTheme.card)
                 } header: {
                     Text("YOUR REWARDS")
                         .font(.pixel(11))
