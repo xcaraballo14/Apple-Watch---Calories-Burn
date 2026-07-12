@@ -381,6 +381,14 @@ struct Badge: Identifiable, Equatable {
     let requirement: String
     let earned: Bool
     let progress: Progress?
+    var flavor: String = ""       // retro one-liner shown in the detail sheet
+    var earnedDate: Date? = nil   // when first satisfied (derived + cached, not stored)
+
+    func withEarnedDate(_ date: Date?) -> Badge {
+        var copy = self
+        copy.earnedDate = date
+        return copy
+    }
 }
 
 /// The full v1 trophy catalog. Every predicate is a pure function of the quest
@@ -451,9 +459,10 @@ enum BadgeCatalog {
         func startHour(_ quest: Quest) -> Int { calendar.component(.hour, from: quest.startDate) }
         func endHour(_ quest: Quest) -> Int { calendar.component(.hour, from: quest.endDate) }
 
-        func badge(_ id: String, _ emoji: String, _ name: String, _ requirement: String, _ earned: Bool,
-                   _ progress: Badge.Progress? = nil) -> Badge {
-            Badge(id: id, emoji: emoji, name: name, requirement: requirement, earned: earned, progress: progress)
+        func badge(_ id: String, _ emoji: String, _ name: String, _ requirement: String, _ flavor: String,
+                   _ earned: Bool, _ progress: Badge.Progress? = nil) -> Badge {
+            Badge(id: id, emoji: emoji, name: name, requirement: requirement,
+                  earned: earned, progress: progress, flavor: flavor)
         }
         // Progress helpers for the quantifiable ladders.
         func cal(_ target: Int) -> Badge.Progress { .init(current: maxBurn, target: target, unit: "cal") }
@@ -464,48 +473,96 @@ enum BadgeCatalog {
 
         return [
             // Onboarding
-            badge("first_burn", "🔥", "First Burn", "Finish your first quest", earnedCount >= 1),
-            badge("decade", "🔟", "Decade", "Complete 10 quests", earnedCount >= 10, questsDone(10)),
-            badge("full_party", "🎲", "Full Party", "Log a quest in all four core classes", coreClassesLogged.count == 4),
+            badge("first_burn", "🔥", "First Burn", "Finish your first quest",
+                  "Every legend starts with a single spark.", earnedCount >= 1),
+            badge("decade", "🔟", "Decade", "Complete 10 quests",
+                  "Ten quests down. The habit is taking hold.", earnedCount >= 10, questsDone(10)),
+            badge("full_party", "🎲", "Full Party", "Log a quest in all four core classes",
+                  "Run, walk, ride, and lift. A true all-rounder.", coreClassesLogged.count == 4),
             // Burn ladder
-            badge("spark", "⚡", "Spark", "Burn 250+ calories in one quest", maxBurn >= 250, cal(250)),
-            badge("inferno", "🌋", "Inferno", "Burn 500+ calories in one quest", maxBurn >= 500, cal(500)),
-            badge("titan", "🏔️", "Titan", "Burn 800+ calories in one quest", maxBurn >= 800, cal(800)),
-            badge("dragon_slayer", "🐉", "Dragon Slayer", "Burn 1,000+ calories in one quest", maxBurn >= 1000, cal(1000)),
+            badge("spark", "⚡", "Spark", "Burn 250+ calories in one quest",
+                  "Your first taste of a real burn.", maxBurn >= 250, cal(250)),
+            badge("inferno", "🌋", "Inferno", "Burn 500+ calories in one quest",
+                  "You brought the heat, and then some.", maxBurn >= 500, cal(500)),
+            badge("titan", "🏔️", "Titan", "Burn 800+ calories in one quest",
+                  "Few ever reach this kind of output.", maxBurn >= 800, cal(800)),
+            badge("dragon_slayer", "🐉", "Dragon Slayer", "Burn 1,000+ calories in one quest",
+                  "A thousand calories in one quest. Monstrous.", maxBurn >= 1000, cal(1000)),
             // Duration ladder
-            badge("long_walk", "🥾", "Long Walk", "A quest lasting 30+ minutes", maxDuration >= 30 * 60, mins(30)),
-            badge("marathoner", "⏱️", "Marathoner", "A quest lasting 60+ minutes", maxDuration >= 60 * 60, mins(60)),
-            badge("endurance_tank", "🛡️", "Endurance Tank", "A quest lasting 90+ minutes", maxDuration >= 90 * 60, mins(90)),
+            badge("long_walk", "🥾", "Long Walk", "A quest lasting 30+ minutes",
+                  "Half an hour of steady, honest effort.", maxDuration >= 30 * 60, mins(30)),
+            badge("marathoner", "⏱️", "Marathoner", "A quest lasting 60+ minutes",
+                  "A full hour on the clock. Relentless.", maxDuration >= 60 * 60, mins(60)),
+            badge("endurance_tank", "🛡️", "Endurance Tank", "A quest lasting 90+ minutes",
+                  "Ninety minutes deep and still standing.", maxDuration >= 90 * 60, mins(90)),
             // Steps ladder
-            badge("foot_soldier", "🐾", "Foot Soldier", "5,000+ steps in one quest", maxSteps >= 5000, steps(5000)),
-            badge("trailblazer", "👣", "Trailblazer", "10,000+ steps in one quest", maxSteps >= 10000, steps(10000)),
-            badge("long_march", "🧗", "Long March", "15,000+ steps in one quest", maxSteps >= 15000, steps(15000)),
+            badge("foot_soldier", "🐾", "Foot Soldier", "5,000+ steps in one quest",
+                  "Five thousand steps, boots on the ground.", maxSteps >= 5000, steps(5000)),
+            badge("trailblazer", "👣", "Trailblazer", "10,000+ steps in one quest",
+                  "Ten thousand steps. You set the trail.", maxSteps >= 10000, steps(10000)),
+            badge("long_march", "🧗", "Long March", "15,000+ steps in one quest",
+                  "Fifteen thousand steps. The march goes on.", maxSteps >= 15000, steps(15000)),
             // Precision ladder
-            badge("strategist", "🧠", "Strategist", "Finish within 10% of the goal", withinGoal(0.10)),
-            badge("sharpshooter", "🎯", "Sharpshooter", "Finish within 5% of the goal", withinGoal(0.05)),
-            badge("needle_threader", "🪡", "Needle Threader", "Finish within 2% of the goal", withinGoal(0.02)),
+            badge("strategist", "🧠", "Strategist", "Finish within 10% of the goal",
+                  "Close to the mark. No wasted motion.", withinGoal(0.10)),
+            badge("sharpshooter", "🎯", "Sharpshooter", "Finish within 5% of the goal",
+                  "Dead-on aim. Barely a calorie to spare.", withinGoal(0.05)),
+            badge("needle_threader", "🪡", "Needle Threader", "Finish within 2% of the goal",
+                  "Within two percent. Surgical precision.", withinGoal(0.02)),
             // Consistency
-            badge("week_warrior", "📅", "Week Warrior", "Reach a 7-day quest streak", bestStreak >= 7,
+            badge("week_warrior", "📅", "Week Warrior", "Reach a 7-day quest streak",
+                  "Seven days straight. Discipline pays.", bestStreak >= 7,
                   .init(current: bestStreak, target: 7, unit: "days")),
-            badge("brick_by_brick", "🧱", "Brick by Brick", "At least one quest a week for 4 weeks", consecutiveWeeks(4)),
-            badge("double_feature", "🌗", "Double Feature", "Two or more quests in one day", byDay.values.contains { $0.count >= 2 }),
+            badge("brick_by_brick", "🧱", "Brick by Brick", "At least one quest a week for 4 weeks",
+                  "One quest a week, laid brick by brick.", consecutiveWeeks(4)),
+            badge("double_feature", "🌗", "Double Feature", "Two or more quests in one day",
+                  "Two quests, one day. Double the glory.", byDay.values.contains { $0.count >= 2 }),
             // Comeback
-            badge("comeback", "🔁", "Comeback", "Earn a quest after a 7+ day break", hasGap(days: 7)),
-            badge("back_from_dead", "🧟", "Back From the Dead", "Earn a quest after a 30+ day break", hasGap(days: 30)),
+            badge("comeback", "🔁", "Comeback", "Earn a quest after a 7+ day break",
+                  "Back after a week away. Welcome home.", hasGap(days: 7)),
+            badge("back_from_dead", "🧟", "Back From the Dead", "Earn a quest after a 30+ day break",
+                  "Thirty days gone, and you rose again.", hasGap(days: 30)),
             // Variety
-            badge("multiclass", "🧩", "Multiclass", "Three different classes in one week", maxClassesInWeek >= 3),
-            badge("class_master", "🧙", "Class Master", "Complete 10 quests in one class", topClassEarned >= 10),
+            badge("multiclass", "🧩", "Multiclass", "Three different classes in one week",
+                  "Three disciplines in a single week.", maxClassesInWeek >= 3),
+            badge("class_master", "🧙", "Class Master", "Complete 10 quests in one class",
+                  "Ten in one class. You've mastered the craft.", topClassEarned >= 10),
             // Time of day
-            badge("dawn_raid", "🌅", "Dawn Raid", "Start a quest before 7 AM", quests.contains { startHour($0) < 7 }),
-            badge("night_owl", "🦉", "Night Owl", "Finish a quest after 9 PM", quests.contains { endHour($0) >= 21 }),
+            badge("dawn_raid", "🌅", "Dawn Raid", "Start a quest before 7 AM",
+                  "Up before dawn while the world sleeps.", quests.contains { startHour($0) < 7 }),
+            badge("night_owl", "🦉", "Night Owl", "Finish a quest after 9 PM",
+                  "Burning bright long after sunset.", quests.contains { endHour($0) >= 21 }),
             // Rewards
-            badge("sweet_ten", "🍭", "Sweet Ten", "Win 10 rewards", rewardsWon >= 10, rewards(10)),
-            badge("paid_in_sweat", "💰", "Paid in Sweat", "Win 25 rewards", rewardsWon >= 25, rewards(25)),
-            badge("combo_king", "👑", "Combo King", "Earn a two-reward combo quest", earned.contains { $0.rewardNames.count >= 2 }),
+            badge("sweet_ten", "🍭", "Sweet Ten", "Win 10 rewards",
+                  "Ten treats earned, every one honest.", rewardsWon >= 10, rewards(10)),
+            badge("paid_in_sweat", "💰", "Paid in Sweat", "Win 25 rewards",
+                  "Twenty-five rewards, paid in full.", rewardsWon >= 25, rewards(25)),
+            badge("combo_king", "👑", "Combo King", "Earn a two-reward combo quest",
+                  "Two treats in one quest. Greedy, but earned.", earned.contains { $0.rewardNames.count >= 2 }),
             // Grind apex
-            badge("centurion", "💯", "Centurion", "Complete 100 quests", earnedCount >= 100, questsDone(100)),
-            badge("legend", "🏛️", "Legend", "Complete 250 quests", earnedCount >= 250, questsDone(250)),
+            badge("centurion", "💯", "Centurion", "Complete 100 quests",
+                  "One hundred quests. A veteran now.", earnedCount >= 100, questsDone(100)),
+            badge("legend", "🏛️", "Legend", "Complete 250 quests",
+                  "Two hundred fifty quests. The name fits.", earnedCount >= 250, questsDone(250)),
         ]
+    }
+
+    /// Date each earned badge was first satisfied — replays the log, reusing
+    /// `all` so the predicates can't drift from the sheet. O(n²) in quest count,
+    /// but n is small; compute once in the setQuests funnel, never per render.
+    static func earnedDates(for quests: [Quest], calendar: Calendar = .current) -> [String: Date] {
+        let sorted = quests.sorted { $0.endDate < $1.endDate }
+        var running: [Quest] = []
+        var dates: [String: Date] = [:]
+        for quest in sorted {
+            running.append(quest)
+            let earned = all(for: running, stats: DashboardStats(quests: running), calendar: calendar)
+                .filter(\.earned)
+            for badge in earned where dates[badge.id] == nil {
+                dates[badge.id] = quest.endDate
+            }
+        }
+        return dates
     }
 }
 

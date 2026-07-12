@@ -20,7 +20,11 @@ struct ProfileView: View {
 
     private var affinities: [ClassAffinity] { ClassAffinity.all(for: model.quests) }
     private var records: [PersonalRecord] { model.records }
-    private var badges: [Badge] { BadgeCatalog.all(for: model.quests, stats: model.stats) }
+    private var badges: [Badge] {
+        let dates = model.badgeEarnedDates
+        return BadgeCatalog.all(for: model.quests, stats: model.stats)
+            .map { $0.withEarnedDate(dates[$0.id]) }
+    }
 
     var body: some View {
         let stats = model.stats
@@ -621,12 +625,29 @@ private struct BadgeDetailSheet: View {
                     .padding(.top, 2)
                 }
 
+                // Earned badges get a flavor line and the date they were first
+                // satisfied (both derived; the +XP reward is deferred to the Ember
+                // Tree, where badge XP belongs to the economy pass).
+                if badge.earned {
+                    VStack(spacing: 8) {
+                        if !badge.flavor.isEmpty {
+                            detailRow(icon: "target", tint: BRTheme.greenFG, label: "CHALLENGE",
+                                      text: badge.flavor, showCheck: true)
+                        }
+                        if let earnedDate = badge.earnedDate {
+                            detailRow(icon: "calendar", tint: BRTheme.blueFG, label: "EARNED ON",
+                                      text: earnedDate.formatted(date: .abbreviated, time: .shortened))
+                        }
+                    }
+                    .padding(.top, 6)
+                }
+
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, 24)
             .padding(.top, 28)
         }
-        .presentationDetents([.height(400)])
+        .presentationDetents([.height(badge.earned ? 544 : 400)])
         .presentationDragIndicator(.visible)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilitySummary)
@@ -638,6 +659,9 @@ private struct BadgeDetailSheet: View {
         if let progress = badge.progress {
             parts.append("Progress: \(progress.current) of \(progress.target) \(spokenUnit(progress.unit)).")
         }
+        if badge.earned, let date = badge.earnedDate {
+            parts.append("Earned \(date.formatted(date: .abbreviated, time: .omitted)).")
+        }
         return parts.joined(separator: " ")
     }
 
@@ -647,6 +671,36 @@ private struct BadgeDetailSheet: View {
         case "min": "minutes"
         default:    unit
         }
+    }
+
+    @ViewBuilder
+    private func detailRow(icon: String, tint: Color, label: String, text: String,
+                           showCheck: Bool = false) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 15))
+                .foregroundStyle(tint)
+                .frame(width: 24)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(label)
+                    .font(.pixel(8))
+                    .foregroundStyle(tint)
+                Text(text)
+                    .font(.footnote)
+                    .foregroundStyle(BRTheme.textMuted)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 4)
+            if showCheck {
+                Image(systemName: "checkmark")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(BRTheme.greenFG)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 10)
+        .padding(.horizontal, 12)
+        .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(BRTheme.card))
     }
 }
 

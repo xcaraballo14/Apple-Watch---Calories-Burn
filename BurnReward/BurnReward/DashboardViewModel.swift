@@ -28,6 +28,11 @@ final class DashboardViewModel: ObservableObject {
     /// reads the list and History rows look up record-holder stamps.
     @Published private(set) var records: [PersonalRecord] = []
 
+    /// When each earned badge was first satisfied (badge id → date), replayed
+    /// from history once per quest-list change. The trophy detail sheet reads it
+    /// for the "earned on" line — derived, never stored.
+    @Published private(set) var badgeEarnedDates: [String: Date] = [:]
+
     /// The bell feed, rebuilt with the quest list: forward-looking nudges +
     /// a replayed history of achievement events. Derived, no backend.
     @Published private(set) var alertNudges: [AlertItem] = []
@@ -95,6 +100,7 @@ final class DashboardViewModel: ObservableObject {
         stats = DashboardStats(quests: newQuests)
         scores = XPEngine.scoreAll(newQuests)
         records = PersonalRecord.all(for: newQuests)
+        badgeEarnedDates = BadgeCatalog.earnedDates(for: newQuests)
         let feed = AlertFeed.build(quests: newQuests, scores: scores, stats: stats)
         alertNudges = feed.nudges
         alertRecent = feed.recent
