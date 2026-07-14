@@ -24,6 +24,30 @@ final class LiveQuestManager: NSObject, ObservableObject {
                 self?.attach(session)
             }
         }
+        // QA screenshot mode: mirroring can't fire in the simulator (no paired
+        // watch session), so these flags seed the live card directly. Inert in
+        // any real install — matches the other -BR* launch flags.
+        let args = ProcessInfo.processInfo.arguments
+        if args.contains("-BRDemoLiveQuestPaused") {
+            live = Self.demoSnapshot(paused: true)
+        } else if args.contains("-BRDemoLiveQuest") {
+            live = Self.demoSnapshot(paused: false)
+        }
+    }
+
+    private static func demoSnapshot(paused: Bool) -> LiveQuestSnapshot {
+        LiveQuestSnapshot(
+            rewardNames: ["Cheeseburger"],
+            rewardEmojis: ["🍔"],
+            goalCalories: 550,
+            caloriesBurned: 264,
+            heartRate: 132,
+            earnedCount: 0,
+            startDate: Date().addingTimeInterval(-(22 * 60 + 41)),
+            isPaused: paused,
+            pausedSeconds: 0,
+            pausedAt: paused ? Date() : nil
+        )
     }
 
     private func attach(_ session: HKWorkoutSession) {

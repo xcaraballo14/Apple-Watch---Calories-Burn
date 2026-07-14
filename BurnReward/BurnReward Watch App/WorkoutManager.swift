@@ -42,12 +42,16 @@ final class WorkoutManager: NSObject, ObservableObject {
     @Published var healthAccess: HealthAccess = .unknown
     @Published var sessionError: String? = nil      // live-session failure, surfaced in the UI
     @Published var receivedFirstSample = false      // true once any live metric has arrived
+    @Published var isPaused = false                 // quest paused (session-state-driven)
 
     private var startDate: Date?
     private var sessionAttachedAt: Date?            // when we attached to a live session
     private var tickTask: Task<Void, Never>?
     private var hapticQuarter = 0  // highest 25% increment already buzzed (0–4)
     private var lastMirrorSend = Date.distantPast  // throttles live snapshots to the phone
+    private var pausedAccumulated: TimeInterval = 0 // total paused time this quest (excluded from elapsed)
+    private var pauseStartedAt: Date?               // when the current pause began (nil while running)
+    private var isDemo = false                      // QA screenshot mode — no HK session, never persists
 
     // MARK: - Persistence
 
@@ -62,11 +66,37 @@ final class WorkoutManager: NSObject, ObservableObject {
         static let sumAvgHR    = "br.summaryAvgHR"
         static let sumCalories = "br.summaryCalories"
         static let didRequestAuth = "br.didRequestHealthAuth"
+        static let paused       = "br.paused"
+        static let pausedAccum  = "br.pausedAccumulated"
+        static let pauseStart   = "br.pauseStartedAt"
     }
 
     override init() {
         super.init()
-        restoreState()
+        // QA screenshot mode: the watch simulator has no tap automation and no
+        // sensor data, so mid-workout states can't be reached by hand. These
+        // flags seed a live-looking quest (no HealthKit session) purely for
+        // screenshots. ProcessInfo-gated — inert in any real install.
+        let args = ProcessInfo.processInfo.arguments
+        if args.contains("-BRDemoPaused") {
+            seedDemoWorkout(paused: true)
+        } else if args.contains("-BRDemoWorkout") {
+            seedDemoWorkout(paused: false)
+        } else {
+            restoreState()
+        }
+    }
+
+    private func seedDemoWorkout(paused: Bool) {
+        isDemo = true
+        selectedRewards = [allRewards.first { $0.name == "Cheeseburger" } ?? allRewards[0]]
+        caloriesBurned = 264
+        heartRate = 132
+        steps = 2841
+        elapsedSeconds = 22 * 60 + 41
+        receivedFirstSample = true
+        phase = .workout
+        isPaused = paused
     }
 
     var totalGoal: Int { selectedRewards.reduce(0) { $0 + $1.calories } }
@@ -145,6 +175,9 @@ final class WorkoutManager: NSObject, ObservableObject {
         heartRate = 0
         steps = 0
         hapticQuarter = 0
+        isPaused = false
+        pausedAccumulated = 0
+        pauseStartedAt = nil
         summaryDuration = 0
         summaryAvgHR = 0
         summaryCalories = 0
@@ -225,6 +258,9 @@ final class WorkoutManager: NSObject, ObservableObject {
         summaryCalories = 0
         startDate = nil
         hapticQuarter = 0
+        isPaused = false
+        pausedAccumulated = 0
+        pauseStartedAt = nil
         sessionError = nil
         receivedFirstSample = false
         sessionAttachedAt = nil
@@ -279,8 +315,51 @@ final class WorkoutManager: NSObject, ObservableObject {
         ]
     }
 
+    // MARK: - Pause / resume
+
+    /// User-initiated pause toggle. The session drives the actual state flip
+    /// through the delegate (one path shared with any system-initiated pause);
+    /// demo mode flips directly since no session exists.
+    func togglePause() {
+        guard phase == .workout else { return }
+        if isDemo {
+            setPaused(!isPaused)
+        } else if isPaused {
+            session?.resume()
+        } else {
+            session?.pause()
+        }
+    }
+
+    /// Single sink for pause-state changes (button, system, recovery). The
+    /// saved HKWorkout's duration is handled by HealthKit's own pause events;
+    /// `pausedAccumulated` only keeps the on-screen timer honest.
+    private func setPaused(_ paused: Bool, at date: Date = Date(), haptic: Bool = true) {
+        guard paused != isPaused else { return }
+        isPaused = paused
+        if paused {
+            pauseStartedAt = date
+            if haptic { WKInterfaceDevice.current().play(.stop) }
+        } else {
+            if let began = pauseStartedAt {
+                pausedAccumulated += date.timeIntervalSince(began)
+            }
+            pauseStartedAt = nil
+            if haptic { WKInterfaceDevice.current().play(.start) }
+        }
+        sendLiveSnapshot(force: true)
+        persistState()
+    }
+
     func checkMilestones(cal: Double) {
         caloriesBurned = cal
+
+        // A straggler sample landing mid-pause shouldn't buzz milestones or
+        // flip phases — record it and wait for resume.
+        guard !isPaused else {
+            persistState()
+            return
+        }
 
         // Subtle haptic pulses at 25 / 50 / 75 % progress (quarter < 4 so we don't double-buzz at 100%)
         let quarter = Int(progress * 4)
@@ -324,8 +403,9 @@ final class WorkoutManager: NSObject, ObservableObject {
         tickTask?.cancel()
         tickTask = Task { @MainActor [weak self] in
             while !Task.isCancelled {
-                if let start = self?.startDate {
-                    self?.elapsedSeconds = Int(Date().timeIntervalSince(start))
+                // Frozen while paused; paused spans are excluded once running again.
+                if let s = self, let start = s.startDate, !s.isPaused {
+                    s.elapsedSeconds = Int(Date().timeIntervalSince(start) - s.pausedAccumulated)
                 }
                 try? await Task.sleep(for: .seconds(1))
             }
@@ -340,6 +420,7 @@ final class WorkoutManager: NSObject, ObservableObject {
     // MARK: - Persistence
 
     private func persistState() {
+        guard !isDemo else { return }  // screenshot mode must never touch real state
         guard phase != .picking, !selectedRewards.isEmpty else {
             clearState()
             return
@@ -351,6 +432,13 @@ final class WorkoutManager: NSObject, ObservableObject {
         if let startDate {
             defaults.set(startDate.timeIntervalSinceReferenceDate, forKey: Keys.startDate)
         }
+        defaults.set(isPaused, forKey: Keys.paused)
+        defaults.set(pausedAccumulated, forKey: Keys.pausedAccum)
+        if let pauseStartedAt {
+            defaults.set(pauseStartedAt.timeIntervalSinceReferenceDate, forKey: Keys.pauseStart)
+        } else {
+            defaults.removeObject(forKey: Keys.pauseStart)
+        }
         defaults.set(summaryDuration, forKey: Keys.sumDuration)
         defaults.set(summaryAvgHR, forKey: Keys.sumAvgHR)
         defaults.set(summaryCalories, forKey: Keys.sumCalories)
@@ -358,8 +446,10 @@ final class WorkoutManager: NSObject, ObservableObject {
     }
 
     private func clearState() {
+        guard !isDemo else { return }  // screenshot mode must never touch real state
         [Keys.rewardIDs, Keys.phase, Keys.earnedCount, Keys.calories, Keys.startDate,
-         Keys.sumDuration, Keys.sumAvgHR, Keys.sumCalories]
+         Keys.sumDuration, Keys.sumAvgHR, Keys.sumCalories,
+         Keys.paused, Keys.pausedAccum, Keys.pauseStart]
             .forEach { defaults.removeObject(forKey: $0) }
         publishSnapshot()
     }
@@ -409,13 +499,25 @@ final class WorkoutManager: NSObject, ObservableObject {
         summaryAvgHR    = defaults.integer(forKey: Keys.sumAvgHR)
         summaryCalories = defaults.integer(forKey: Keys.sumCalories)
 
+        isPaused          = defaults.bool(forKey: Keys.paused)
+        pausedAccumulated = defaults.double(forKey: Keys.pausedAccum)
+        let savedPauseStart = defaults.double(forKey: Keys.pauseStart)
+        pauseStartedAt = savedPauseStart > 0
+            ? Date(timeIntervalSinceReferenceDate: savedPauseStart)
+            : nil
+
         let savedStart = defaults.double(forKey: Keys.startDate)
         if savedStart > 0 {
             startDate = Date(timeIntervalSinceReferenceDate: savedStart)
-            // Once earned the clock is frozen; while working out it keeps ticking.
-            elapsedSeconds = phase == .workout
-                ? Int(Date().timeIntervalSince(startDate!))
-                : summaryDuration
+            if phase == .workout {
+                // Frozen at the pause point if paused, else live wall clock —
+                // either way minus every paused span so far.
+                let reference = isPaused ? (pauseStartedAt ?? Date()) : Date()
+                elapsedSeconds = Int(reference.timeIntervalSince(startDate!) - pausedAccumulated)
+            } else {
+                // Once earned the clock is frozen.
+                elapsedSeconds = summaryDuration
+            }
         }
 
         // Reconnect to a workout session that may still be running in the background.
@@ -445,6 +547,15 @@ final class WorkoutManager: NSObject, ObservableObject {
                 self.builder = builder
                 self.sessionAttachedAt = Date()
                 self.startMirroringToPhone(session)
+                // A session recovered mid-pause reports .paused — sync our flag
+                // (covers pauses persisted before a relaunch AND any state change
+                // we missed while dead). Display-only precision: the saved
+                // workout's duration comes from HealthKit's own pause events.
+                switch session.state {
+                case .paused:  self.setPaused(true, haptic: false)
+                case .running: self.setPaused(false, haptic: false)
+                default: break
+                }
             }
         }
     }
@@ -478,7 +589,10 @@ final class WorkoutManager: NSObject, ObservableObject {
             caloriesBurned: caloriesBurned,
             heartRate: heartRate,
             earnedCount: earnedCount,
-            startDate: startDate ?? now
+            startDate: startDate ?? now,
+            isPaused: isPaused,
+            pausedSeconds: pausedAccumulated,
+            pausedAt: pauseStartedAt
         )
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
         session.sendToRemoteWorkoutSession(data: data) { _, _ in }
@@ -493,7 +607,19 @@ extension WorkoutManager: HKWorkoutSessionDelegate {
         didChangeTo toState: HKWorkoutSessionState,
         from fromState: HKWorkoutSessionState,
         date: Date
-    ) {}
+    ) {
+        // Route EVERY pause/resume through one sink — our button and any
+        // system-initiated change look identical from here. The initial
+        // notRunning → running transition no-ops (isPaused already false).
+        Task { @MainActor [weak self] in
+            guard let self, self.phase == .workout else { return }
+            switch toState {
+            case .paused:  self.setPaused(true, at: date)
+            case .running: self.setPaused(false, at: date)
+            default: break
+            }
+        }
+    }
 
     nonisolated func workoutSession(_ session: HKWorkoutSession, didFailWithError error: Error) {
         let message = error.localizedDescription

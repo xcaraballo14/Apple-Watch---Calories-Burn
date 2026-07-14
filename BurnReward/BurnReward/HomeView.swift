@@ -406,18 +406,22 @@ struct LiveQuestCard: View {
             HStack {
                 HStack(spacing: 6) {
                     Circle()
-                        .fill(BRTheme.alertRed)
+                        .fill(snapshot.isPaused ? BRTheme.orangeFG : BRTheme.alertRed)
                         .frame(width: 8, height: 8)
-                        .opacity(reduceMotion ? 1 : (pulsing ? 0.3 : 1))
+                        // The heartbeat stops while paused — a still dot reads
+                        // "held", not "recording".
+                        .opacity(snapshot.isPaused || reduceMotion ? 1 : (pulsing ? 0.3 : 1))
                         .accessibilityHidden(true)
                     PixelSectionLabel(text: "CURRENT QUEST")
                 }
                 Spacer()
                 TimelineView(.periodic(from: .now, by: 1)) { context in
-                    Text(BRFormat.duration(max(0, context.date.timeIntervalSince(snapshot.startDate))))
+                    // Freezes at the pause point and excludes paused spans —
+                    // the same seconds the watch shows.
+                    Text(BRFormat.duration(snapshot.elapsedSeconds(at: context.date)))
                         .font(.caption.weight(.medium))
                         .monospacedDigit()
-                        .foregroundStyle(BRTheme.textPrimary)
+                        .foregroundStyle(snapshot.isPaused ? BRTheme.textMuted : BRTheme.textPrimary)
                 }
             }
 
@@ -443,6 +447,13 @@ struct LiveQuestCard: View {
                         .padding(.vertical, 6)
                         .padding(.horizontal, 8)
                         .background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(BRTheme.neonGreen))
+                } else if snapshot.isPaused {
+                    Text("PAUSED")
+                        .font(.pixel(11))
+                        .foregroundStyle(BRTheme.orangeFG)
+                        .padding(.vertical, 6)
+                        .padding(.horizontal, 8)
+                        .overlay(RoundedRectangle(cornerRadius: 6, style: .continuous).strokeBorder(BRTheme.orangeFG, lineWidth: 1))
                 } else {
                     Text("LIVE")
                         .font(.pixel(11))
@@ -482,7 +493,7 @@ struct LiveQuestCard: View {
         )
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(
-            "Current quest, live: \(snapshot.title). " +
+            "Current quest, \(snapshot.isPaused ? "paused" : "live"): \(snapshot.title). " +
             "\(Int(snapshot.caloriesBurned)) of \(snapshot.goalCalories) calories, \(snapshot.caloriesLeft) to go." +
             (snapshot.heartRate > 0 ? " Heart rate \(Int(snapshot.heartRate))." : "")
         )

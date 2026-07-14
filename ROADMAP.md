@@ -60,10 +60,9 @@ Small polish pass before any external eyes see the app.
       both devices, first quest on Watch, companion checks, extras to try,
       feedback path). Supersedes the watch-only invite text in
       `TESTFLIGHT_2b.md`, which predates the companion.
-- [ ] **Send the link + guide to 3–5 trusted testers** (screen for: iPhone +
-      Apple Watch on watchOS 10+). Also refresh the ASC "What to Test" field
-      for the companion first — the current one is watch-only (see
-      `APP_STORE_METADATA.md` §8 for the updated text).
+- [x] **Send the link + guide to 3–5 trusted testers** — ✅ 2026-07-14: build 29
+      cleared Beta App Review and the trusted circle is installed and testing
+      ("up and running", Xavier). Feedback triage happens here as it lands.
 
 ### 2c · Wider beta
 - [ ] Expand group once core loop is confirmed bug-free by 2b testers
@@ -87,7 +86,9 @@ Small polish pass before any external eyes see the app.
 ### 3a · Build readiness
 
 - [ ] Submitted build carries all shipped work (character sheet + 30 badges,
-      C6 alerts bell + local notifications, all five retention loops, XP v2.1)
+      C6 alerts bell + local notifications, all five retention loops, XP v2.1,
+      **watch pause button** — W4, built 2026-07-14, needs its internal-
+      TestFlight device pass before the submission archive)
 - [x] Version + build numbers **aligned across every target** — **2026-07-11:**
       all three targets set to **1.1 (build 29)** in the project file (was iOS 9 /
       watch 2 / complication 2). Root cause of the drift found: Xcode Organizer's
@@ -190,7 +191,7 @@ Items to build after the App Store launch, based on real usage and tester feedba
 | W1 | Expanded reward library | High | Add more food options beyond the 20 launch rewards |
 | W2 | Custom reward (user enters any food + calorie count) | High | Power-user feature, often requested |
 | W3 | Streak / history screen on watch | Medium | "You've earned 7 rewards this week" |
-| W4 | Pause workout mid-session | Medium | Currently no pause, only stop |
+| W4 | ✅ Pause workout mid-session | — | **Built 2026-07-14, pulled forward into the v1 submission** — see "Pause button (W4)" section |
 | W5 | Expanded workout types (Yoga, HIIT, Swim, Row, etc.) | Low for watch | Better handled in companion app as a "favorites" config |
 | W6 | Workout type step accuracy note | Low | Inform user that steps are less meaningful for Bike/Lift/Other |
 
@@ -610,6 +611,55 @@ Mockup-first (approved live in the simulator; Xavier: "Love it"):
       the character sheet to the trophy case. Verified light + dark, zero
       warnings. Art spec + filename table: `ART_ASSETS.md`.
 
+### Pause button (W4) — ✅ 2026-07-14 (pulled forward into v1; device pass pending)
+
+First build of the post-v1 vision list, promoted into the v1 submission by
+Xavier's call ("launch a bit later, ships more complete"). Iteration happens
+via **internal TestFlight** (no Beta App Review needed), so folding it in costs
+no extra review cycle — only the final App Store review remains. Mockup-first:
+two entry variants screenshotted on the watch sim; Xavier picked **B** (BACK
+stays; bottom PAUSE button) recolored **orange** for visibility.
+
+- [x] **Watch: pause engine** (`WorkoutManager`) — `togglePause()` calls
+      `HKWorkoutSession.pause()/.resume()`; the previously-empty
+      `didChangeTo` delegate is now the single state sink, so our button and
+      any system-initiated pause take the same path. HealthKit's own pause
+      events keep the *saved* workout's duration honest; `pausedAccumulated` +
+      `pauseStartedAt` keep the on-screen timer honest (frozen while paused,
+      paused spans never count). State persists (3 new UserDefaults keys) and
+      restores across force-close; session recovery re-syncs from
+      `session.state`. Haptics: `.stop` on pause, `.start` on resume (same
+      language as Apple's Workout app). Milestone checks guard against
+      straggler samples landing mid-pause.
+- [x] **Watch: UI** — full-width orange PAUSE button (`PixelButtonStyle`
+      gained `fill`/`shadow` params) at the bottom of the workout screen;
+      BACK stays exactly as shipped. Tap → **pause menu takeover**: blinking
+      "‖ PAUSED" marquee (steady under Reduce Motion), frozen clock, dimmed
+      cal count, green RESUME, red-ghost END QUEST. Ending confirms via the
+      (re-worded) dialog: "End this quest? It saves to history as unfinished"
+      — shared with BACK. VoiceOver labels on every control.
+- [x] **iPhone: live card PAUSED state** — LIVE pill → orange PAUSED pill,
+      pulsing record-dot goes still + orange, timer freezes at the watch's
+      exact second (muted). Fixed a real bug in the process: the card's timer
+      was wall-clock from `startDate`, which would have silently drifted
+      forever after any pause.
+- [x] **Wire format** (`LiveQuestSnapshot`) — new `isPaused`,
+      `pausedSeconds`, `pausedAt` + an `elapsedSeconds(at:)` helper both
+      apps share; custom `decodeIfPresent` decode so old-build payloads
+      still parse. Watch force-sends a snapshot on every pause/resume flip.
+- [x] **QA flags** — watch: `-BRDemoWorkout` / `-BRDemoPaused` seed a
+      live-looking quest with **no HK session** (solves the "watch sim has no
+      tap automation or sensors" screenshot blocker for good; demo never
+      persists, never touches the complication). iOS: `-BRDemoLiveQuest` /
+      `-BRDemoLiveQuestPaused` seed the Home live card. All ProcessInfo-gated,
+      inert in real installs.
+- [x] Both targets build clean, zero warnings; verified in sim: watch running
+      + paused states (Ultra 3), iPhone paused card light + dark.
+- [ ] **Device pass (Xavier, internal TestFlight):** pause mid-quest with real
+      sensors → phone card flips PAUSED → resume → finish → saved workout's
+      duration excludes the paused stretch. Also eyeball the pause menu on the
+      real SE (smallest screen). Then this rides the v1 submission archive.
+
 ### Retention direction — adopted 2026-07-09 (from Xavier's external spec, adapted)
 
 Xavier brought a retention & subscription build spec (drafted with Claude chat).
@@ -777,4 +827,4 @@ required for the core earn-your-treat loop, which stays fully on-device.
 
 ---
 
-*Last updated: 2026-07-10 (UX rounds 1–2: clickable cards · dead-space purge · console tab bar with Xavier's icons · CHARACTER tab · 30 trophy medallions)*
+*Last updated: 2026-07-14 (trusted circle live on build 29 · pause button W4 built + pulled into v1, device pass pending)*

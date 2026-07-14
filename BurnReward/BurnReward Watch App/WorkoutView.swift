@@ -3,6 +3,8 @@ import SwiftUI
 struct WorkoutView: View {
     @EnvironmentObject var wm: WorkoutManager
     @State private var confirmingCancel = false
+    @State private var pausedBlink = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var elapsedText: String {
         WatchFormat.duration(wm.elapsedSeconds)
@@ -19,8 +21,7 @@ struct WorkoutView: View {
                             Label("BACK", systemImage: "chevron.left")
                                 .font(.pixel(6))
                                 .foregroundStyle(.secondary)
-                                // The label stays small; the tappable area doesn't —
-                                // this is the only escape hatch mid-workout.
+                                // The label stays small; the tappable area doesn't.
                                 .frame(minWidth: 52, minHeight: 32, alignment: .leading)
                                 .contentShape(Rectangle())
                         }
@@ -55,6 +56,18 @@ struct WorkoutView: View {
                             color: Theme.orange
                         )
                     }
+
+                    Button {
+                        wm.togglePause()
+                    } label: {
+                        Label("PAUSE", systemImage: "pause.fill")
+                    }
+                    .buttonStyle(PixelButtonStyle(
+                        fill: Theme.orange,
+                        shadow: Color(red: 0.70, green: 0.25, blue: 0.08)
+                    ))
+                    .accessibilityLabel("Pause quest")
+                    .padding(.top, 2)
                 }
                 .padding(.horizontal, 6)
             }
@@ -63,10 +76,81 @@ struct WorkoutView: View {
             if let earned = wm.milestoneFlash {
                 milestoneOverlay(reward: earned)
             }
+
+            // Pause takeover — sits above everything while the quest is paused.
+            if wm.isPaused {
+                pausedMenu
+                    .transition(.opacity)
+            }
         }
-        .confirmationDialog("Change reward?", isPresented: $confirmingCancel) {
-            Button("Go Back", role: .destructive) { wm.newGoal() }
+        .animation(.easeInOut(duration: 0.2), value: wm.isPaused)
+        .confirmationDialog("End this quest?", isPresented: $confirmingCancel) {
+            Button("End Quest", role: .destructive) { wm.newGoal() }
             Button("Keep Going", role: .cancel) {}
+        } message: {
+            Text("It saves to history as unfinished.")
+        }
+    }
+
+    // MARK: - Pause menu
+
+    /// Classic game pause: full-screen takeover with a blinking marquee, the
+    /// frozen clock, and the two choices that matter. Blink respects Reduce
+    /// Motion (steady when on).
+    private var pausedMenu: some View {
+        VStack(spacing: 0) {
+            Spacer(minLength: 2)
+
+            HStack(spacing: 7) {
+                Image(systemName: "pause.fill")
+                    .font(.system(size: 13, weight: .bold))
+                Text("PAUSED")
+                    .font(.pixel(14))
+            }
+            .foregroundStyle(Theme.yellow)
+            .opacity(pausedBlink ? 0.35 : 1)
+            .padding(.bottom, 9)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Quest paused")
+            .accessibilityAddTraits(.isHeader)
+
+            Text(elapsedText)
+                .font(.pixel(11))
+                .foregroundStyle(Theme.blue)
+                .monospacedDigit()
+                .padding(.bottom, 4)
+            Text("\(Int(wm.caloriesBurned)) / \(wm.totalGoal) CAL")
+                .font(.pixel(7))
+                .foregroundStyle(.secondary)
+
+            Spacer(minLength: 8)
+
+            Button("RESUME") { wm.togglePause() }
+                .buttonStyle(PixelButtonStyle())
+                .accessibilityLabel("Resume quest")
+
+            Button {
+                confirmingCancel = true
+            } label: {
+                Text("END QUEST")
+                    .font(.pixel(8))
+                    .foregroundStyle(Theme.red)
+                    .frame(maxWidth: .infinity, minHeight: 32)
+                    .background(Color(white: 0.08))
+                    .cornerRadius(4)
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 6)
+        }
+        .padding(.horizontal, 6)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(.black)
+        .onAppear {
+            pausedBlink = false
+            guard !reduceMotion else { return }
+            withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
+                pausedBlink = true
+            }
         }
     }
 
