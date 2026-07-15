@@ -679,12 +679,14 @@ shipped architecture. Decisions:
   ✅ 5. precision XP bonus (v2.1). **All five free-tier retention loops done.**
   Next: post-launch StoreKit 2 contextual paywall (free tier complete; founder
   pricing) → later: CloudKit social (after a privacy scoping pass).
-- **Post-launch project #1 chosen 2026-07-11: the Ember Tree** (perk tree,
-  PoE-inspired ~32 nodes) — picked over GPS routes. Xavier's external spec was
-  adjudicated and adopted with corrections; the subscription attaches here.
-  **Full decision record: `PERK_TREE.md`** (frozen-snapshot architecture,
-  free-core hybrid, node blueprint, balance TUNE flags). Nothing builds before
-  the App Store submission ships.
+- **Post-launch order (re-set 2026-07-14):** **v1.1 = Record Old Workouts**
+  (tester-requested; designed + adjudicated same day — hybrid calorie
+  estimate, full reward loop, balanced counting, reduced XP via
+  `manualFactor`; **full decision record: `RECORD_OLD_WORKOUTS.md`**) →
+  **v1.2 = the Ember Tree** (perk tree, PoE-inspired ~32 nodes, chosen
+  2026-07-11 over GPS routes; spec adjudicated with corrections; the
+  subscription attaches here — **full decision record: `PERK_TREE.md`**).
+  Nothing builds before the App Store submission ships.
 
 ### Weekly Challenge — ✅ 2026-07-09 (retention loop 1)
 
@@ -789,6 +791,7 @@ not raw overshoot. Precision is the skill.
 | C6 | ✅ Complete 2026-07-09 — in-app alerts inbox (bell) + local notifications (achievements when backgrounded, today-only streak reminder, Settings toggles). All on-device, no server. | Phone handles notification scheduling, watch displays |
 | C7 | Social / share card ("I earned it 🔥") | Shareable graphic of earned reward + stats |
 | C8 | In-app purchases (premium reward packs, themes) | IAP requires iOS app; planned for a later version |
+| C9 | 📋 Record old workouts (manual backfill, 7-day window) | **v1.1 headliner — designed 2026-07-14, see `RECORD_OLD_WORKOUTS.md`.** Phone form → real HKWorkout write; watch untouched |
 
 ---
 
@@ -827,4 +830,4 @@ required for the core earn-your-treat loop, which stays fully on-device.
 
 ---
 
-*Last updated: 2026-07-14 (trusted circle live on build 29 · pause button W4 built + pulled into v1, device pass pending)*
+*Last updated: 2026-07-14 (trusted circle live on build 29 · pause W4 built + pulled into v1 · Record Old Workouts designed → v1.1, Ember Tree → v1.2)*
