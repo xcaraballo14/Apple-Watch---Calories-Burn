@@ -165,6 +165,14 @@ Small polish pass before any external eyes see the app.
 
 ### 3e · Submit
 
+> ⏸️ **ON HOLD — 2026-07-14 (Xavier's call, same day build 30 was verified).**
+> Tester consensus: social is the missing core — "what's the purpose of
+> leveling your character and earning trophies if you can't share it."
+> Launching without the #1-requested feature risks permanent early-review
+> damage. **Social is now the active project**; everything below stays ready
+> (build 30 + the metadata pack in `APP_STORE_METADATA.md` don't expire).
+> The launch gate is re-decided as part of the social scoping.
+
 - [ ] Attach the build to the version, write "What's New"
 - [ ] App Review notes: state it **requires an iPhone + Apple Watch (watchOS 10+)**,
       and how to exercise the loop (pick reward → workout → earn). HealthKit apps
@@ -678,16 +686,15 @@ shipped architecture. Decisions:
   ✅ 5. precision XP bonus (v2.1). **All five free-tier retention loops done.**
   Next: post-launch StoreKit 2 contextual paywall (free tier complete; founder
   pricing) → later: CloudKit social (after a privacy scoping pass).
-- **Post-launch order (re-set 2026-07-14):** **v1.1 = Record Old Workouts +
-  workout-catalog data model** (backfill tester-requested; both designed +
-  adjudicated same day; the backfill form's type picker is built against the
-  full 22-type catalog from day one — records: `RECORD_OLD_WORKOUTS.md`,
-  `WORKOUT_CATALOG.md`) → **v1.15 = catalog UX** (live tracking for all 22
-  types, phone catalog browser + favorites, watch picker rework via the M4
-  sync channel) → **v1.2 = the Ember Tree** (perk tree, PoE-inspired ~32
-  nodes, chosen 2026-07-11 over GPS routes; the subscription attaches here —
-  **decision record: `PERK_TREE.md`**). Nothing builds before the App Store
-  submission ships.
+- **⚡ SUPERSEDED 2026-07-14 (evening): SOCIAL is the active, launch-gating
+  project** — Xavier held the Phase 3e submission on tester consensus and
+  gated the launch on the full social stack (share card → accounts/friends →
+  feed → leaderboards → compliance, Supabase + Sign in with Apple, ~6–8
+  weeks). **Full decision record: `SOCIAL.md`.** The queue below follows the
+  (now social-inclusive) launch:
+  **v1.1 = Record Old Workouts + workout-catalog data model** (records:
+  `RECORD_OLD_WORKOUTS.md`, `WORKOUT_CATALOG.md`) → **v1.15 = catalog UX** →
+  **v1.2 = the Ember Tree** (`PERK_TREE.md`; the subscription attaches here).
 
 ### Weekly Challenge — ✅ 2026-07-09 (retention loop 1)
 
