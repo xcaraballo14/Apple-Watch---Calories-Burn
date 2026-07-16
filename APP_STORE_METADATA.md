@@ -4,10 +4,12 @@ Everything you paste into App Store Connect lives here. Copy/paste field by fiel
 Pricing: **Free** at launch (in-app purchases planned for a later version).
 Support email: **burnrewardapp@gmail.com**
 
-> **Refreshed 2026-07-09 for the iOS companion.** BurnReward is now an **iPhone
-> app with a bundled Apple Watch app** — not a watch-only title. The listing,
-> screenshots, and review notes below cover both. The full staged build/submit
-> checklist lives in `ROADMAP.md → Phase 3`; this doc is the copy-paste pack.
+> **Refreshed 2026-07-09 for the iOS companion; brought current for the
+> submission candidate build 1.1 (30) on 2026-07-14** (adds the watch pause
+> button, medallion art, live quest card). BurnReward is an **iPhone app with
+> a bundled Apple Watch app** — the listing, screenshots, and review notes
+> below cover both. The full staged build/submit checklist lives in
+> `ROADMAP.md → Phase 3`; this doc is the copy-paste pack.
 
 ---
 
@@ -54,30 +56,32 @@ Support email: **burnrewardapp@gmail.com**
 
 ### Promotional Text (170 char max — editable any time without review)
 ```
-Turn every workout into a quest. Pick a treat, burn the calories, earn it guilt-free — then level up. Your Apple Watch and iPhone are now a fitness RPG.
+Turn every workout into a quest. Pick a treat, burn the calories, earn it guilt-free. Then level up: your Apple Watch and iPhone are now a fitness RPG.
 ```
 
 ### Description (4000 char max)
 ```
-BURNREWARD — SWEAT NOW. FEAST LATER.
+BURNREWARD: SWEAT NOW. FEAST LATER.
 
-Every treat is a quest. Pick the reward you're craving — a burrito, a milkshake, a slice of pizza — and BurnReward turns its calories into an EXP bar. Work out, fill the bar, and earn your treat the honest way.
+Every treat is a quest. Pick the reward you're craving (a burrito, a milkshake, a slice of pizza) and BurnReward turns its calories into an EXP bar. Work out, fill the bar, and earn your treat the honest way.
 
-It's a fitness tracker with the soul of a retro RPG — on your wrist and in your pocket.
+It's a fitness tracker with the soul of a retro RPG, on your wrist and in your pocket.
 
 HOW IT WORKS
-• Pick your reward (or stack two for a combo quest)
+• Pick your reward, or stack two for a combo quest
 • Choose your workout: walk, run, bike, lift, or anything
-• Start the session — your Apple Watch tracks active calories live
+• Start the session and your Apple Watch tracks active calories live
 • Feel the haptic milestones at 25%, 50%, and 75%
-• Hit 100% and the victory screen fires — reward unlocked
+• Need a breather? Pause the quest and resume right where you left off
+• Hit 100% and the victory screen fires. Reward unlocked.
 
 LEVEL UP YOUR EFFORT (iPhone companion)
 Every quest earns XP and climbs a title ladder from SNACK ROOKIE to FEAST OVERLORD. The iPhone app is your character sheet:
-• A living profile — your level, class affinity, and lifetime totals
-• 30 badges to earn, each showing its progress so your next goal is always in sight
-• Personal records — biggest burn, longest quest, most steps — to chase and beat
+• A living profile: your level, class affinity, and lifetime totals
+• 30 hand-drawn pixel-art badges to earn, each showing its progress so your next goal is always in sight
+• Personal records to chase and beat: biggest burn, longest quest, most steps
 • A fresh weekly challenge every week, built around precision, not raw burn
+• A live quest card: your wrist's workout streams to your phone in real time
 • Full quest history with an itemized XP receipt for every workout
 • Optional nudges when you're one quest from a level, a badge, or your weekly challenge
 
@@ -88,24 +92,24 @@ BUILT ON HEALTHKIT
 • Live calorie and heart-rate tracking from real Apple Watch workout sessions
 • Your effort counts toward your Activity rings
 • A watch-face complication shows quest progress at a glance
-• Craft your own rewards on iPhone — they sync straight to your wrist
+• Forge your own rewards on iPhone. They sync straight to your wrist.
 
 NO GUILT, JUST GAMEPLAY
 BurnReward doesn't count what you eat or lecture you about it. Do the work, earn the treat, enjoy it. Rest days never break your progress, and it never pushes you to overdo it.
 
 YOUR DATA STAYS YOURS
-Everything is processed on your device. No accounts, no servers, no ads, no tracking — ever. Your health data never leaves your iPhone and Apple Watch.
+Everything is processed on your device. No accounts, no servers, no ads, no tracking. Ever. Your health data never leaves your iPhone and Apple Watch.
 ```
 
 ### Keywords (100 char max, comma-separated, no spaces)
 ```
-fitness,workout,calorie,reward,rpg,badge,level,streak,challenge,exercise,run,walk,quest,treat
+fitness,workout,calorie,reward,rpg,badge,level,streak,challenge,exercise,run,walk,quest,treat,game
 ```
-> Tune freely — the app name and subtitle already index, so keywords are for the long tail (progression terms like badge/level/streak/challenge are the companion's hooks).
+> 98/100 chars. Tune freely — the app name and subtitle already index, so keywords are for the long tail (progression terms like badge/level/streak/challenge are the companion's hooks).
 
-### What's New in This Version (companion launch)
+### What's New in This Version (v1.1 — first App Store release)
 ```
-BurnReward comes to iPhone. Your quests now level up a full RPG: titles, 30 badges, personal records, weekly challenges, and an XP receipt for every workout — all synced from your Apple Watch, all on your device. Sweat now, feast later.
+BurnReward arrives on the App Store. Pick a treat, earn it with a real Apple Watch workout, and level up a full RPG on your iPhone: titles, 30 pixel-art badges, personal records, weekly challenges, and an XP receipt for every quest. Pause mid-workout when life interrupts. Everything stays on your device. Sweat now, feast later.
 ```
 
 ---
@@ -235,6 +239,9 @@ THEN OPEN THE iPHONE APP and check:
 BACK ON THE WATCH:
 • Does the calorie count climb during a real workout?
 • Do you feel the haptic pulses at 25/50/75%?
+• Scroll down mid-quest and tap the orange PAUSE button. Does the timer freeze,
+  and does RESUME pick up exactly where it stopped? (Check the iPhone too —
+  the live quest card should read PAUSED.)
 • Does the victory screen show time, avg heart rate, and calories?
 • If you close the app mid-workout and reopen it, does the quest resume?
 • Does the watch-face complication update?
@@ -250,21 +257,26 @@ BurnReward is an iPhone app with a bundled Apple Watch app.
 
 WHAT IT DOES: The user picks a food reward, then burns the matching calories in a
 real Apple Watch workout to "earn" it. The iPhone app is the RPG progression
-layer — level, titles, badges, personal records, a weekly challenge, and full
-quest history — all derived from the workouts the watch saves to Apple Health.
+layer (level, titles, badges, personal records, a weekly challenge, and full
+quest history), all derived from the workouts the watch saves to Apple Health.
 
 TO TEST:
 1. Install on an iPhone paired with an Apple Watch (watchOS 10+).
 2. On the watch, tap Allow on the HealthKit prompt (active energy, heart rate,
    workouts, steps), pick a reward, and start a workout. Active calories fill the
    EXP bar; reaching the goal saves the workout to Apple Health and shows a summary.
-3. Open the iPhone app to see that quest in History with its XP, plus your level,
-   badges, records, and the weekly challenge updating from it.
+3. Optional: scroll down on the workout screen and tap the orange PAUSE button.
+   The quest freezes (timer stops, session pauses); RESUME continues it, and
+   END QUEST abandons it after a confirmation.
+4. Open the iPhone app to see that quest in History with its XP, plus your level,
+   badges, records, and the weekly challenge updating from it. If the iPhone app
+   is open during a watch workout, Home shows a live CURRENT QUEST card
+   (it reads PAUSED while the watch is paused).
 
 NOTES:
 • The Apple Watch app also runs standalone. Real HealthKit calorie data requires
   actual movement, so a brief walk is needed to see progress on a device.
-• HEALTH DATA is processed entirely on-device — no server, no account, no
+• HEALTH DATA is processed entirely on-device: no server, no account, no
   third-party SDK, no analytics. HealthKit is read only to compute the user's own
   progress; notifications are scheduled locally. Nothing is transmitted off device.
 • No login credentials are required to review the app.
@@ -279,11 +291,11 @@ Privacy Policy: https://xcaraballo14.github.io/Apple-Watch---Calories-Burn/priva
 - [ ] Full loop verified on a real iPhone + paired watch (see `ROADMAP.md` → Phase 3a)
 - [ ] Apple ID in Xcode with the paid Developer Program active
 - [ ] "Automatically manage signing" on for **all** targets (iOS app, watch app, complication)
-- [ ] Version + build numbers **aligned across all targets** (complication has stranded before)
-- [ ] Archive validates clean (Product → Archive → Validate App)
+- [x] Version + build numbers **aligned across all targets** — all three at 1.1 (30), 2026-07-14
+- [x] Archive validates clean — build 30 archived + device-verified (pause works) 2026-07-14
 - [ ] Bundle IDs correct: app `com.burnrewardapp.app`, complication `com.burnrewardapp.app.widget` (confirm current)
-- [ ] Build uploaded and processed (appears in TestFlight)
-- [ ] iPhone **and** watch screenshots captured (Section 7)
+- [x] Build uploaded and processed — 1.1 (30) on internal TestFlight, the submission candidate
+- [x] iPhone **and** watch screenshots — Xavier's 8-shot marketing set final (02/08 fixes confirmed 2026-07-14)
 - [ ] Listing copy pasted (Section 4)
 - [ ] App Privacy completed — "Data Not Collected", confirmed + consistent with `data-compliance.html` (Section 6)
 - [ ] Age rating completed (Section 5)

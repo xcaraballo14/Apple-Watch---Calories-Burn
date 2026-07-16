@@ -78,10 +78,11 @@ Small polish pass before any external eyes see the app.
 ## Phase 3 — App Store Submission
 
 > **Expanded 2026-07-09** for the iOS companion — the earlier list was watch-only.
-> Listing copy + screenshot specs live in `APP_STORE_METADATA.md`; **that doc
-> predates the companion — refresh it for the iOS app before submitting.**
-> The app is now an **iPhone app with a bundled Apple Watch app**, not a
-> watch-only title — plan screenshots, description, and privacy around both.
+> Listing copy + review notes live in `APP_STORE_METADATA.md`, **refreshed for
+> the companion 2026-07-09 and brought current for build 1.1 (30) on
+> 2026-07-14** (pause button, medallion art, live quest card) — it's the
+> ready-to-paste pack. The app is an **iPhone app with a bundled Apple Watch
+> app**; screenshots, description, and privacy all cover both.
 
 ### 3a · Build readiness
 
