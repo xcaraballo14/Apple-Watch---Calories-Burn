@@ -70,9 +70,9 @@ v1 catalog (free labels on the same profile); BRAWLER launches as three.
 3. **v1 catalog = 22 entries** (table below).
 4. **Class roster = 4 shipped core + MONK + BRAWLER + PLAYMAKER + intentional
    WILDCARD.** STRIDER/WAYFARER/OUTRIDER/JUGGERNAUT untouchable (Xavier's,
-   shipped). ⚠️ **PLAYMAKER is a locked *working* name** — rename window open
-   until the v1.15 build (GLADIATOR is the noted alternate; collides slightly
-   with BRAWLER's lane). Zero mechanical impact either way.
+   shipped). **PLAYMAKER confirmed final by Xavier 2026-07-14** (GLADIATOR
+   considered and passed on). All seven class names are now canon — same
+   don't-rename status as the level-title ladder.
 5. **Sequencing: data model in v1.1, UX in v1.15.** v1.1's backfill form
    offers all 22 types (coherent: backfill exists precisely for workouts done
    without the watch — a yoga class is the canonical case; it lands in MONK
