@@ -14,7 +14,7 @@ Everything below is **built and verified working** on Apple Watch SE (watchOS 10
 | Reward picker (up to 2 rewards) | ✅ | Combo quest supported |
 | 20 built-in rewards (150–980 cal) | ✅ | Cookie → Burrito |
 | Workout type selector (Walk/Run/Bike/Lift/Other) | ✅ | Maps to correct HKWorkoutActivityType |
-| Live calorie tracking (HKWorkoutSession) | ✅ | Active energy, same engine as built-in Workout app |
+| Live calorie tracking (HKWorkoutSession) | ✅ | Active energy via HealthKit — Apple optimizes energy estimation per workout type |
 | Live heart rate tracking | ✅ | |
 | Live step counter | ✅ | Via HKLiveWorkoutDataSource |
 | EXP progress bar | ✅ | Yellow fill, climbs in real time |
@@ -192,8 +192,8 @@ Items to build after the App Store launch, based on real usage and tester feedba
 | W2 | Custom reward (user enters any food + calorie count) | High | Power-user feature, often requested |
 | W3 | Streak / history screen on watch | Medium | "You've earned 7 rewards this week" |
 | W4 | ✅ Pause workout mid-session | — | **Built 2026-07-14, pulled forward into the v1 submission** — see "Pause button (W4)" section |
-| W5 | Expanded workout types (Yoga, HIIT, Swim, Row, etc.) | Low for watch | Better handled in companion app as a "favorites" config |
-| W6 | Workout type step accuracy note | Low | Inform user that steps are less meaningful for Bike/Lift/Other |
+| W5 | 📋 Expanded workout types (22-entry catalog) | **Designed 2026-07-14** | **See `WORKOUT_CATALOG.md`** — data model rides v1.1, live tracking + favorites picker = v1.15 |
+| W6 | ✅ Workout type step accuracy | — | Subsumed by per-type Metrics Profiles (steps flag per type) — `WORKOUT_CATALOG.md` |
 
 ---
 
@@ -679,14 +679,16 @@ shipped architecture. Decisions:
   ✅ 5. precision XP bonus (v2.1). **All five free-tier retention loops done.**
   Next: post-launch StoreKit 2 contextual paywall (free tier complete; founder
   pricing) → later: CloudKit social (after a privacy scoping pass).
-- **Post-launch order (re-set 2026-07-14):** **v1.1 = Record Old Workouts**
-  (tester-requested; designed + adjudicated same day — hybrid calorie
-  estimate, full reward loop, balanced counting, reduced XP via
-  `manualFactor`; **full decision record: `RECORD_OLD_WORKOUTS.md`**) →
-  **v1.2 = the Ember Tree** (perk tree, PoE-inspired ~32 nodes, chosen
-  2026-07-11 over GPS routes; spec adjudicated with corrections; the
-  subscription attaches here — **full decision record: `PERK_TREE.md`**).
-  Nothing builds before the App Store submission ships.
+- **Post-launch order (re-set 2026-07-14):** **v1.1 = Record Old Workouts +
+  workout-catalog data model** (backfill tester-requested; both designed +
+  adjudicated same day; the backfill form's type picker is built against the
+  full 22-type catalog from day one — records: `RECORD_OLD_WORKOUTS.md`,
+  `WORKOUT_CATALOG.md`) → **v1.15 = catalog UX** (live tracking for all 22
+  types, phone catalog browser + favorites, watch picker rework via the M4
+  sync channel) → **v1.2 = the Ember Tree** (perk tree, PoE-inspired ~32
+  nodes, chosen 2026-07-11 over GPS routes; the subscription attaches here —
+  **decision record: `PERK_TREE.md`**). Nothing builds before the App Store
+  submission ships.
 
 ### Weekly Challenge — ✅ 2026-07-09 (retention loop 1)
 
@@ -785,7 +787,7 @@ not raw overshoot. Precision is the skill.
 |---|---|---|
 | C1 | ✅ BurnReward source icon in iPhone Health app | Comes free with the real iOS app (Milestone 1) |
 | C2 | ✅ Full workout history & stats (all-time rewards earned, calories burned, streaks) | Built in Milestone 1 — HealthKit is the source of truth, no sync code |
-| C3 | Expanded workout type catalog + watch favorites config | HealthKit has 100+ types; phone = config depth, watch = quick 5-chip picker |
+| C3 | 📋 Expanded workout type catalog + watch favorites config | **Designed 2026-07-14, `WORKOUT_CATALOG.md`** — 22 types, 9 metrics profiles, 7 classes + WILDCARD; phone = catalog + favorites, watch picker shows favorites (M4 sync pattern) |
 | C4 | ✅ Custom reward builder (name + calorie count + emoji) | Built 2026-07-04 — Milestone 4 |
 | C5 | ✅ Reward library editor (add / hide / reorder) | Built 2026-07-04 — Milestone 4 |
 | C6 | ✅ Complete 2026-07-09 — in-app alerts inbox (bell) + local notifications (achievements when backgrounded, today-only streak reminder, Settings toggles). All on-device, no server. | Phone handles notification scheduling, watch displays |
@@ -830,4 +832,4 @@ required for the core earn-your-treat loop, which stays fully on-device.
 
 ---
 
-*Last updated: 2026-07-14 (trusted circle live on build 29 · pause W4 built + pulled into v1 · Record Old Workouts designed → v1.1, Ember Tree → v1.2)*
+*Last updated: 2026-07-14 (trusted circle live on build 29 · pause W4 built + pulled into v1 · Record Old Workouts designed → v1.1 · workout catalog designed → data model v1.1, UX v1.15 · Ember Tree → v1.2)*
