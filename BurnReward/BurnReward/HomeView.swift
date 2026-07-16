@@ -81,7 +81,12 @@ struct HomeView: View {
             .toolbar(.hidden, for: .navigationBar)   // Home keeps its custom header
             .navigationDestination(for: Quest.self) { quest in
                 QuestDetailView(quest: quest, xp: model.xpBreakdown(for: quest),
-                                recordKinds: model.recordKinds(for: quest))
+                                recordKinds: model.recordKinds(for: quest),
+                                shareContext: ShareContext(
+                                    level: model.stats.levelProgress.level,
+                                    rankTitle: LevelEngine.title(for: model.stats.levelProgress.level),
+                                    playerName: displayName
+                                ))
             }
         }
         .sheet(isPresented: $showAlerts) { NotificationsView(model: model) }

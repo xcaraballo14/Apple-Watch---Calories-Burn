@@ -16,7 +16,16 @@ struct ProfileView: View {
     @State private var selectedBadge: Badge?
     @State private var showSettings = false
     @State private var demoReceiptQuest: Quest?   // -BRDemoQuestReceipt: presents a quest receipt for screenshots
+    @State private var demoShareCard: ShareCardKind?  // -BRDemoShareCard[Badge]: presents the share card for screenshots
     @Environment(\.dismiss) private var dismiss
+
+    /// Identity stamped onto share cards (level + rank + optional name).
+    private var shareContext: ShareContext {
+        let level = model.stats.levelProgress.level
+        return ShareContext(level: level,
+                            rankTitle: LevelEngine.title(for: level),
+                            playerName: displayName)
+    }
 
     private var affinities: [ClassAffinity] { ClassAffinity.all(for: model.quests) }
     private var records: [PersonalRecord] { model.records }
@@ -73,16 +82,24 @@ struct ProfileView: View {
             .sheet(isPresented: $showSettings) { SettingsView(model: model) }
             .navigationDestination(for: Quest.self) { quest in
                 QuestDetailView(quest: quest, xp: model.xpBreakdown(for: quest),
-                                recordKinds: model.recordKinds(for: quest))
+                                recordKinds: model.recordKinds(for: quest),
+                                shareContext: shareContext)
             }
             .sheet(item: $selectedBadge) { badge in
-                BadgeDetailSheet(badge: badge)
+                BadgeDetailSheet(badge: badge, shareContext: shareContext)
             }
             .sheet(item: $demoReceiptQuest) { quest in
                 NavigationStack {
                     QuestDetailView(quest: quest, xp: model.xpBreakdown(for: quest),
-                                    recordKinds: model.recordKinds(for: quest))
+                                    recordKinds: model.recordKinds(for: quest),
+                                    shareContext: shareContext)
                 }
+            }
+            .sheet(item: $demoShareCard) { kind in
+                ShareCardSheet(kind: kind,
+                               level: shareContext.level,
+                               rankTitle: shareContext.rankTitle,
+                               playerName: shareContext.playerName)
             }
             .onAppear {
                 // `-BRDemoBadgeSheet` / `-BRDemoBadgeSheetEarned` open a locked /
@@ -98,6 +115,19 @@ struct ProfileView: View {
                 }
                 if arguments.contains("-BRDemoQuestReceipt"), demoReceiptQuest == nil {
                     demoReceiptQuest = model.quests.first { $0.earned }
+                }
+                // `-BRDemoShareCard` / `-BRDemoShareCardBadge` present the social
+                // share card (quest / badge variant) for simulator screenshots.
+                if demoShareCard == nil {
+                    if arguments.contains("-BRDemoShareCardBadge") {
+                        if let badge = badges.first(where: { $0.id == "inferno" && $0.earned }) {
+                            demoShareCard = .badge(badge)
+                        }
+                    } else if arguments.contains("-BRDemoShareCard") {
+                        if let quest = model.quests.first(where: { $0.earned && $0.goalCalories != nil }) {
+                            demoShareCard = .quest(quest, xpTotal: model.xpBreakdown(for: quest).total)
+                        }
+                    }
                 }
                 if presentedAsTab, arguments.contains("-BRStartOnSettings") {
                     showSettings = true
@@ -540,6 +570,9 @@ struct ProfileView: View {
 /// locked badge reads as a goal instead of a mystery.
 private struct BadgeDetailSheet: View {
     let badge: Badge
+    /// Player identity for the share card; nil hides the share button.
+    var shareContext: ShareContext? = nil
+    @State private var showShareCard = false
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -642,12 +675,26 @@ private struct BadgeDetailSheet: View {
                     .padding(.top, 6)
                 }
 
+                // Earned trophies can leave the building — social P0.
+                if badge.earned, shareContext != nil {
+                    ShareWinButton { showShareCard = true }
+                        .padding(.top, 12)
+                }
+
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, 24)
             .padding(.top, 28)
         }
-        .presentationDetents([.height(badge.earned ? 544 : 400)])
+        .sheet(isPresented: $showShareCard) {
+            if let shareContext {
+                ShareCardSheet(kind: .badge(badge),
+                               level: shareContext.level,
+                               rankTitle: shareContext.rankTitle,
+                               playerName: shareContext.playerName)
+            }
+        }
+        .presentationDetents([.height(badge.earned ? 614 : 400)])
         .presentationDragIndicator(.visible)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilitySummary)

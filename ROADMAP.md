@@ -838,4 +838,4 @@ required for the core earn-your-treat loop, which stays fully on-device.
 
 ---
 
-*Last updated: 2026-07-14 (trusted circle live on build 29 · pause W4 built + pulled into v1 · Record Old Workouts designed → v1.1 · workout catalog designed → data model v1.1, UX v1.15 · Ember Tree → v1.2)*
+*Last updated: 2026-07-16 (launch held for social — SOCIAL.md · Supabase project live · social P0 share card built: quest + badge cards, ShareLink export, earned-only entry points)*

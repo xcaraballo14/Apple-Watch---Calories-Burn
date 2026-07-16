@@ -3,6 +3,15 @@ import SwiftUI
 
 struct HistoryView: View {
     @ObservedObject var model: DashboardViewModel
+    @AppStorage("br.displayName") private var displayName = ""
+
+    /// Identity stamped onto share cards (level + rank + optional name).
+    private var shareContext: ShareContext {
+        let level = model.stats.levelProgress.level
+        return ShareContext(level: level,
+                            rankTitle: LevelEngine.title(for: level),
+                            playerName: displayName)
+    }
     /// nil = ALL. Otherwise a class key ("RUN"/"WALK"/"BIKE"/"LIFT"/"OTHER"),
     /// bucketed exactly like the character sheet's class affinity.
     @State private var classFilter: String?
@@ -62,7 +71,9 @@ struct HistoryView: View {
             // immediately (pushed quest details keep their own nav bars).
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: Quest.self) {
-                QuestDetailView(quest: $0, xp: model.xpBreakdown(for: $0), recordKinds: model.recordKinds(for: $0))
+                QuestDetailView(quest: $0, xp: model.xpBreakdown(for: $0),
+                                recordKinds: model.recordKinds(for: $0),
+                                shareContext: shareContext)
             }
         }
     }
@@ -286,6 +297,9 @@ struct QuestDetailView: View {
     let xp: XPBreakdown
     /// Records this quest currently holds — rendered as gold stamps.
     var recordKinds: [PersonalRecord.Kind] = []
+    /// Player identity for the share card; nil hides the share button.
+    var shareContext: ShareContext? = nil
+    @State private var showShareCard = false
 
     private func recordStamp(_ kind: PersonalRecord.Kind) -> (emoji: String, label: String)? {
         switch kind {
@@ -401,11 +415,25 @@ struct QuestDetailView: View {
                         .accessibilityElement(children: .combine)
                     }
                     .brCard(padding: 0)
+
+                    // Earned wins can leave the building — social P0.
+                    if quest.earned, shareContext != nil {
+                        ShareWinButton { showShareCard = true }
+                            .padding(.top, 2)
+                    }
                 }
                 .padding(16)
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showShareCard) {
+            if let shareContext {
+                ShareCardSheet(kind: .quest(quest, xpTotal: xp.total),
+                               level: shareContext.level,
+                               rankTitle: shareContext.rankTitle,
+                               playerName: shareContext.playerName)
+            }
+        }
     }
 
     private func detailRow(_ label: String, _ value: String, valueColor: Color = BRTheme.textPrimary, isLast: Bool = false) -> some View {

@@ -48,6 +48,17 @@ v1.15 catalog UX, v1.2 Ember Tree.
   database layer.
 - iPhone-only in v1 — **the watch app is untouched by this entire project.**
 
+### Project config (Xavier created 2026-07-14 — P1 unblocked)
+
+- **Project URL:** `https://djofkmbxtzxdljongnqu.supabase.co`
+- **Publishable key:** `sb_publishable_2ZXntTG_lcclsg2t1z1Qdw_vGWxMC32`
+  (client-safe by design — it ships inside the app binary; RLS is the actual
+  security boundary)
+- The `service_role` key stays in the Supabase dashboard only — never in the
+  repo, the app, or chat.
+- Verified live 2026-07-14: Auth healthy (GoTrue v2.193.0); REST root
+  correctly refuses publishable-key introspection (new-key-system behavior).
+
 ## Data model (sketch — finalized in P1)
 
 | Table | Shape | Notes |
@@ -86,9 +97,18 @@ Required by Guideline 1.2 (UGC) + 5.1.1(v) (accounts) — all launch-gating:
 
 ## Build phases (each drops to the trusted circle; store waits for all)
 
-- **P0 — Share card (no backend, ships first).** Retro share graphic rendered
-  on-device: medallion art, level + title, quest stats; share sheet. Reused
-  later as the feed post visual. Mockup-first.
+- **P0 — Share card — ✅ BUILT 2026-07-16 (mockup-first, Xavier locked).**
+  `ShareCardView.swift`: always-dark gold-chrome card, two variants — quest
+  (emoji, full EXP bar, CAL/TIME/XP cells, conditional 🎯 precision flex line)
+  and badge (medallion art, flavor, earned date) — both signed
+  "NAME · LVL n · RANK". Entry points: green SHARE THIS WIN button on earned
+  quest receipts (Home/LOG/CHARACTER paths) and earned badge sheets
+  (detent 544→614); earned-only, no button on unfinished/locked. Export:
+  `ImageRenderer` @3x (~990 px PNG, transparent corners), `ShareLink` +
+  Save-to-Photos (`NSPhotoLibraryAddUsageDescription` added, add-only) with
+  success haptic + "Saved ✓" feedback. No HR on the card (health rule). QA
+  flags: `-BRDemoShareCard[Badge]`. Sim-verified; share-sheet/Photos taps are
+  Xavier's hand-check. Rides the next TestFlight drop.
 - **P1 — Accounts + profiles + friends.** Xavier creates the Supabase project
   (setup handoff below); SIWA; username claim (filtered); avatar (pixel picker
   + photo upload w/ SCA gate); friend request/accept; friend profile view
