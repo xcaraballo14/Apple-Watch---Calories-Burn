@@ -140,14 +140,11 @@ Small polish pass before any external eyes see the app.
       mid-workout stats: calories/BPM/steps, plus the weekly-challenge view),
       clearing the simulator's sensor-data blocker.
 - [x] Full 8-shot marketing set saved to `Screenshots/Marketing/`, verified
-      1320×2868 (2026-07-11). Two fixes needed before final upload:
-      **`08_your_quest_on_your_wrist.png`** shows "1,450/3,500 XP to LVL 7" —
-      wrong (should read 1,468/1,500, per `01`/`03` and the real app);
-      **`02_see_every_run_walk_and_ride.png`** shows the Cheeseburger row
-      tagged both 🏆 RECORD and UNFINISHED — that's the bug fixed in `686efcc`
-      today, so this screenshot predates the fix and no longer matches the
-      shipped app. Regenerate both from a current build. Other 6 shots
-      verified accurate against real app data/math.
+      1320×2868 (2026-07-11). The two audit-flagged shots (`02` showed the
+      pre-`686efcc` RECORD+UNFINISHED bug; `08` had a stale XP threshold)
+      were **fixed by Xavier — confirmed done 2026-07-14**. Screenshots are
+      submission-ready. (Housekeeping only: the repo folder still holds the
+      07-11 exports — drop the final versions in whenever, for the archive.)
 - [ ] App preview video — optional
 
 ### 3d · Privacy & compliance (updated for the iOS app)
