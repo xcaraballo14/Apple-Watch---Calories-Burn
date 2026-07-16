@@ -8,6 +8,11 @@ import UIKit
 struct RetroTabBar: View {
     @Binding var selected: AppTab
 
+    /// The bar's laid-out height above the home-indicator area: 8 top padding
+    /// + 48 item minHeight + 2 bottom padding. `RootView` reserves exactly
+    /// this much window safe area so all content ends above the bar.
+    static let height: CGFloat = 58
+
     private let items: [(tab: AppTab, icon: String, label: String)] = [
         (.home, "tab_home", "HOME"),
         (.history, "tab_log", "LOG"),

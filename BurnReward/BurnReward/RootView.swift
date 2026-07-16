@@ -24,28 +24,28 @@ struct RootView: View {
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            HomeView(model: model, liveManager: liveManager, selectedTab: $selectedTab)
-                .toolbar(.hidden, for: .tabBar)
+            tabPage(HomeView(model: model, liveManager: liveManager, selectedTab: $selectedTab))
                 .tag(AppTab.home)
 
-            HistoryView(model: model)
-                .toolbar(.hidden, for: .tabBar)
+            tabPage(HistoryView(model: model))
                 .tag(AppTab.history)
 
-            RewardsView(store: rewardStore)
-                .toolbar(.hidden, for: .tabBar)
+            tabPage(RewardsView(store: rewardStore))
                 .tag(AppTab.rewards)
 
-            ProfileView(model: model, presentedAsTab: true)
-                .toolbar(.hidden, for: .tabBar)
+            tabPage(ProfileView(model: model, presentedAsTab: true))
                 .tag(AppTab.character)
         }
-        // The system tab bar is hidden on every tab; this console bar replaces
-        // it — full-width, edge-to-edge, into the home-indicator area.
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            RetroTabBar(selected: $selectedTab)
-        }
         .tint(BRTheme.greenFG)
+        // The console bar draws as a plain overlay; the space it occupies is
+        // reserved at the WINDOW level (additionalSafeAreaInsets, below) so
+        // every page and pushed screen automatically ends above it. The
+        // offset cancels that same reservation for the bar itself, putting it
+        // back at the physical bottom.
+        .overlay(alignment: .bottom) {
+            RetroTabBar(selected: $selectedTab)
+                .offset(y: RetroTabBar.height)
+        }
         // Celebration toast (badge unlocks + record breaks) — sits above the
         // TabView so it shows no matter which tab the refresh lands on. One at
         // a time; the queue in the model feeds the next when this one dismisses.
@@ -65,6 +65,7 @@ struct RootView: View {
         }
         .animation(reduceMotion ? .easeInOut(duration: 0.2) : .spring(duration: 0.45),
                    value: model.celebrations.first?.id)
+        .onAppear(perform: reserveTabBarSpace)
         .task {
             liveManager.onQuestEnded = { [weak model] in
                 // The watch is still finalizing the HKWorkout save when the
@@ -76,6 +77,29 @@ struct RootView: View {
             }
             await model.refresh()
         }
+    }
+
+    /// Hides the system tab bar on a page (the console bar replaces it).
+    private func tabPage(_ content: some View) -> some View {
+        content.toolbar(.hidden, for: .tabBar)
+    }
+
+    /// The console bar isn't a real tab bar, so UIKit reserves no space for
+    /// it. SwiftUI's `safeAreaInset` can't fix that — it doesn't propagate
+    /// through UIKit-backed containers (TabView pages, NavigationStack), so
+    /// bottom content hid behind the bar and could never scroll above it.
+    /// Reserving the bar's height in the window root's
+    /// `additionalSafeAreaInsets` does what a real tab bar does: every
+    /// safe-area-aware layout — every tab, every pushed detail, every future
+    /// screen — ends above the bar automatically. Sheets present in their own
+    /// containers and correctly ignore it (no bar there).
+    private func reserveTabBarSpace() {
+        let windows = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap(\.windows)
+        guard let window = windows.first(where: \.isKeyWindow) ?? windows.first,
+              let root = window.rootViewController else { return }
+        root.additionalSafeAreaInsets.bottom = RetroTabBar.height
     }
 }
 
