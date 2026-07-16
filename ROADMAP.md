@@ -653,11 +653,11 @@ stays; bottom PAUSE button) recolored **orange** for visibility.
       inert in real installs.
 - [x] Both targets build clean, zero warnings; verified in sim: watch running
       + paused states (Ultra 3), iPhone paused card light + dark.
-- [x] **Device pass — ✅ 2026-07-14:** Xavier archived build **1.1 (30)** and
-      confirmed pause works on his watch (real sensors, real SE screen).
-      Build 30 is the v1 submission candidate. (Two low-risk spot-checks worth
-      a glance when convenient: iPhone live card shows PAUSED during a pause,
-      and the saved workout's duration in Health excludes the paused stretch.)
+- [x] **Device pass — ✅ 2026-07-14, fully verified:** Xavier archived build
+      **1.1 (30)** and confirmed pause works as intended on his watch (real
+      sensors, real SE screen) **including in the Health app** — the saved
+      workout reflects the pause correctly. Build 30 is the v1 submission
+      candidate; W4 is closed end to end.
 
 ### Retention direction — adopted 2026-07-09 (from Xavier's external spec, adapted)
 
