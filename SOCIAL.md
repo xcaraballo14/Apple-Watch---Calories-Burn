@@ -109,10 +109,29 @@ Required by Guideline 1.2 (UGC) + 5.1.1(v) (accounts) — all launch-gating:
   success haptic + "Saved ✓" feedback. No HR on the card (health rule). QA
   flags: `-BRDemoShareCard[Badge]`. Sim-verified; share-sheet/Photos taps are
   Xavier's hand-check. Rides the next TestFlight drop.
-- **P1 — Accounts + profiles + friends.** Xavier creates the Supabase project
-  (setup handoff below); SIWA; username claim (filtered); avatar (pixel picker
-  + photo upload w/ SCA gate); friend request/accept; friend profile view
-  (level, title, trophy case from badge_ids).
+- **P1 — Accounts + profiles + friends. 🔧 IN PROGRESS (foundation landed
+  2026-07-16):**
+  - ✅ **Schema + RLS** — `supabase/p1_schema.sql`: profiles (username
+    regex-constrained, avatar kind/ref, level/title/badge_ids with sanity
+    caps) + friendships (pending/accepted/blocked, unordered-pair unique
+    index). Policies: profiles readable by any *signed-in* player (game
+    identity is the public layer — enables friend search; health data can't
+    exist here), writes self-only; friendship inserts requester-only +
+    pending-only + blocked-pair-proof, addressee answers (accept/block),
+    either side severs. ⚠️ Xavier must run it in the SQL editor.
+  - ✅ **`SupabaseAPI.swift`** — dependency-free client (deliberate: no
+    third-party SDK in the binary, keeps the audited privacy story; revisit
+    at P2 if realtime justifies supabase-swift). GoTrue native-SIWA id_token
+    exchange + auto-refresh, session in **Keychain** (never UserDefaults),
+    PostgREST CRUD generics, Apple-nonce helpers (raw + SHA-256), row models.
+    @MainActor like every app manager. Zero warnings.
+  - ✅ **Sign in with Apple entitlement** added to the iOS target.
+  - ⚠️ Xavier dashboard step 2: enable the **Apple provider** in Supabase
+    Auth (native flow: add bundle ID `com.burnrewardapp.app` to the
+    provider's Client IDs; no secret needed for id_token exchange).
+  - ⏳ Next: UI round (mockup-first) — sign-in moment, username claim,
+    avatar picker, friends list/search/requests, friend profile view.
+    Placement decision pending (5th tab vs CHARACTER section vs Home entry).
 - **P2 — Feed.** share_events + captions; share-to-feed flow from the quest
   receipt / badge unlock moments; feed screen (new tab or bell-adjacent —
   mockup decides); Realtime for live updates.
