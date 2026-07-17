@@ -109,8 +109,8 @@ Required by Guideline 1.2 (UGC) + 5.1.1(v) (accounts) — all launch-gating:
   success haptic + "Saved ✓" feedback. No HR on the card (health rule). QA
   flags: `-BRDemoShareCard[Badge]`. Sim-verified; share-sheet/Photos taps are
   Xavier's hand-check. Rides the next TestFlight drop.
-- **P1 — Accounts + profiles + friends. 🔧 IN PROGRESS (foundation landed
-  2026-07-16):**
+- **P1 — Accounts + profiles + friends. ✅ COMPLETE 2026-07-17 — first real
+  account landed in the `profiles` table.**
   - ✅ **Schema + RLS** — `supabase/p1_schema.sql`: profiles (username
     regex-constrained, avatar kind/ref, level/title/badge_ids with sanity
     caps) + friendships (pending/accepted/blocked, unordered-pair unique
@@ -138,9 +138,28 @@ Required by Guideline 1.2 (UGC) + 5.1.1(v) (accounts) — all launch-gating:
     DB unique index (no check-then-write race), friend
     request/accept/decline/remove, exact-username search, friend profile with
     their trophy case, level/title/badge sync on quest-list change.
-  - ⏳ **Next: Xavier's first real sign-in** (device, or a sim signed into an
-    Apple ID) — sign in → claim a name → confirm the row lands in the
-    dashboard's Table Editor. Then P1.5 (pixel avatars) or straight to P2.
+  - ✅ **First real sign-in 2026-07-17** — signed in with Apple on device,
+    claimed a username, row confirmed in the `profiles` Table Editor. Full
+    chain proven: SIWA → Supabase auth → RLS-protected write → cloud identity.
+  - ⚠️ **The -7003 ghost (write it down so it never eats another night):**
+    adding the Sign in with Apple capability by hand-editing the entitlements
+    file put the key in the binary and the profile, but Apple's **auth server**
+    never got a valid client registration — Xcode's auto-registration during
+    an archive (3:08 AM) half-wrote it. Symptom: sheet renders fully, then
+    "Sign Up Not Completed"; device console shows
+    `AKAuthenticationError Code=-7003` with `AKClientBundleID=com.burnrewardapp.app`.
+    NOT 2FA, restrictions, network, or the device account (Strava SIWA worked
+    fine — the isolation test). **Cure:** developer.apple.com → Identifiers →
+    the App ID → **uncheck** Sign in with Apple → Save → **re-check** →
+    Configure as **primary App ID** → Save → **wait ~10 min for the auth fleet
+    to propagate** → Clean Build Folder → run. The off/on forces Apple to
+    delete + recreate the client registration. (The `-54`/LaunchServices lines
+    and the trailing `1001` in the log are unrelated noise.)
+  - 🧹 Pre-submission cleanup: the `print("SIWA failure …")` diagnostic in
+    `GuildManager` (added to catch -7003) — remove or `#if DEBUG`-gate it in
+    the Phase 3a hygiene pass.
+  - **Next: P1.5** (Xavier's pixel avatar set replacing initial-circles) or
+    straight to **P2 — the activity feed**.
   - ✅ **Placement ruled (Xavier 2026-07-16): social lives on a 5th tab —
     GUILD** (HOME · LOG · FORGE · GUILD · CHARACTER; icon: `Art/tab_guild.png`
     by Xavier, SF-symbol fallback until drawn). **Sign-in moment: one-time
