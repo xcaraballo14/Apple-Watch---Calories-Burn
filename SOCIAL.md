@@ -129,9 +129,15 @@ Required by Guideline 1.2 (UGC) + 5.1.1(v) (accounts) — all launch-gating:
   - ⚠️ Xavier dashboard step 2: enable the **Apple provider** in Supabase
     Auth (native flow: add bundle ID `com.burnrewardapp.app` to the
     provider's Client IDs; no secret needed for id_token exchange).
-  - ⏳ Next: UI round (mockup-first) — sign-in moment, username claim,
-    avatar picker, friends list/search/requests, friend profile view.
-    Placement decision pending (5th tab vs CHARACTER section vs Home entry).
+  - ✅ **Placement ruled (Xavier 2026-07-16): social lives on a 5th tab —
+    GUILD** (HOME · LOG · FORGE · GUILD · CHARACTER; icon: `Art/tab_guild.png`
+    by Xavier, SF-symbol fallback until drawn). **Sign-in moment: one-time
+    skippable prompt at app launch** (Xavier's call over my lazy-gate rec —
+    more sign-ups; the prompt shows once per install, NOT NOW is permanent
+    until the user opens GUILD, and the core loop stays account-free).
+  - ⏳ Next: UI round (mockup-first) — launch prompt, GUILD signed-out /
+    username claim / friends home states, add-friend search, friend profile
+    view; then wiring to SupabaseAPI.
 - **P2 — Feed.** share_events + captions; share-to-feed flow from the quest
   receipt / badge unlock moments; feed screen (new tab or bell-adjacent —
   mockup decides); Realtime for live updates.

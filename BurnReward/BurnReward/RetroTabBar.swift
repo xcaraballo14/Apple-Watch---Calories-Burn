@@ -13,17 +13,20 @@ struct RetroTabBar: View {
     /// this much window safe area so all content ends above the bar.
     static let height: CGFloat = 58
 
-    private let items: [(tab: AppTab, icon: String, label: String)] = [
-        (.home, "tab_home", "HOME"),
-        (.history, "tab_log", "LOG"),
-        (.rewards, "tab_forge", "FORGE"),
-        (.character, "tab_character", "CHARACTER"),
+    // GUILD's pixel icon is pending from Xavier (Art/tab_guild.png loads by
+    // convention the moment it exists); the SF fallback carries until then.
+    private let items: [(tab: AppTab, icon: String, fallback: String, label: String)] = [
+        (.home, "tab_home", "house.fill", "HOME"),
+        (.history, "tab_log", "book.closed.fill", "LOG"),
+        (.rewards, "tab_forge", "hammer.fill", "FORGE"),
+        (.guild, "tab_guild", "person.2.fill", "GUILD"),
+        (.character, "tab_character", "person.fill", "CHARACTER"),
     ]
 
     var body: some View {
         HStack(spacing: 0) {
             ForEach(items, id: \.tab) { item in
-                barItem(item.tab, icon: item.icon, label: item.label)
+                barItem(item.tab, icon: item.icon, fallback: item.fallback, label: item.label)
             }
         }
         .padding(.top, 8)
@@ -37,7 +40,7 @@ struct RetroTabBar: View {
         )
     }
 
-    private func barItem(_ tab: AppTab, icon: String, label: String) -> some View {
+    private func barItem(_ tab: AppTab, icon: String, fallback: String, label: String) -> some View {
         let isSelected = selected == tab
         return Button {
             selected = tab
@@ -47,7 +50,7 @@ struct RetroTabBar: View {
                 Rectangle()
                     .fill(isSelected ? BRTheme.neonGreen : Color.clear)
                     .frame(width: 22, height: 2)
-                iconImage(icon)
+                iconImage(icon, fallback: fallback)
                     .frame(width: 24, height: 24)
                 Text(label)
                     .font(.pixel(6))
@@ -64,9 +67,9 @@ struct RetroTabBar: View {
     }
 
     /// Xavier's pixel icon (template-tinted, nearest-neighbor so it stays
-    /// crisp); falls back to an SF Symbol if the asset is ever missing.
+    /// crisp); falls back to a per-item SF Symbol while the art is pending.
     @ViewBuilder
-    private func iconImage(_ name: String) -> some View {
+    private func iconImage(_ name: String, fallback: String) -> some View {
         if let ui = UIImage(named: name) {
             Image(uiImage: ui)
                 .renderingMode(.template)
@@ -74,8 +77,8 @@ struct RetroTabBar: View {
                 .interpolation(.none)
                 .scaledToFit()
         } else {
-            Image(systemName: "square.dashed")
-                .font(.system(size: 20))
+            Image(systemName: fallback)
+                .font(.system(size: 19))
         }
     }
 }

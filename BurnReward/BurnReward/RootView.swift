@@ -3,7 +3,7 @@ import SwiftUI
 import UIKit
 
 enum AppTab: Hashable {
-    case home, history, rewards, character
+    case home, history, rewards, guild, character
 }
 
 struct RootView: View {
@@ -19,8 +19,16 @@ struct RootView: View {
         if arguments.contains("-BRStartOnRewards") { return .rewards }
         if arguments.contains("-BRStartOnProfile") { return .character }
         if arguments.contains("-BRStartOnSettings") { return .character }
+        if arguments.contains("-BRStartOnGuild") || arguments.contains("-BRDemoGuild")
+            || arguments.contains("-BRDemoGuildClaim")
+            || arguments.contains("-BRDemoAddFriend") { return .guild }
         return .home
     }()
+    /// One-time launch sign-in prompt (Xavier's ruling). Mockup phase: the
+    /// sheet only appears under `-BRDemoSignInPrompt`; the real once-per-
+    /// install logic arrives with the auth wiring so an unwired prompt can
+    /// never ship.
+    @State private var showSignInPrompt = false
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -33,8 +41,14 @@ struct RootView: View {
             tabPage(RewardsView(store: rewardStore))
                 .tag(AppTab.rewards)
 
+            tabPage(GuildView())
+                .tag(AppTab.guild)
+
             tabPage(ProfileView(model: model, presentedAsTab: true))
                 .tag(AppTab.character)
+        }
+        .sheet(isPresented: $showSignInPrompt) {
+            GuildSignInPrompt { selectedTab = .guild }
         }
         .tint(BRTheme.greenFG)
         // The console bar draws as a plain overlay; the space it occupies is
@@ -65,7 +79,12 @@ struct RootView: View {
         }
         .animation(reduceMotion ? .easeInOut(duration: 0.2) : .spring(duration: 0.45),
                    value: model.celebrations.first?.id)
-        .onAppear(perform: reserveTabBarSpace)
+        .onAppear {
+            reserveTabBarSpace()
+            if ProcessInfo.processInfo.arguments.contains("-BRDemoSignInPrompt") {
+                showSignInPrompt = true
+            }
+        }
         .task {
             liveManager.onQuestEnded = { [weak model] in
                 // The watch is still finalizing the HKWorkout save when the
