@@ -188,7 +188,11 @@ struct GuildView: View {
             Task { await guild.handleAppleCompletion(result) }
         }
         .signInWithAppleButtonStyle(.white)
+        // Apple's button enforces width ≤ 375 internally; matching it here
+        // keeps Auto Layout from logging broken-constraint noise.
+        .frame(maxWidth: 375)
         .frame(height: 50)
+        .frame(maxWidth: .infinity)
         .disabled(guild.isWorking)
         .opacity(guild.isWorking ? 0.6 : 1)
         .accessibilityLabel("Sign in with Apple")
@@ -691,6 +695,7 @@ struct GuildSignInPrompt: View {
                 }
             }
             .signInWithAppleButtonStyle(.white)
+            .frame(maxWidth: 375)
             .frame(height: 50)
             .padding(.horizontal, 28)
             .padding(.top, 26)

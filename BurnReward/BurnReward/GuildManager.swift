@@ -67,6 +67,10 @@ final class GuildManager: ObservableObject {
     func handleAppleCompletion(_ result: Result<ASAuthorization, Error>) async {
         switch result {
         case .failure(let error):
+            // Diagnostic: surface the exact underlying failure in the console
+            // ("SIWA failure" filter) — Apple's sheet hides the reason.
+            let nsError = error as NSError
+            print("SIWA failure — domain: \(nsError.domain), code: \(nsError.code), userInfo: \(nsError.userInfo)")
             // The user cancelling the sheet isn't an error worth shouting about.
             if (error as? ASAuthorizationError)?.code != .canceled {
                 errorMessage = error.localizedDescription
