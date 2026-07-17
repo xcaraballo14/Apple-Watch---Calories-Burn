@@ -10,7 +10,10 @@ struct RootView: View {
     @StateObject private var model = DashboardViewModel()
     @StateObject private var liveManager = LiveQuestManager()
     @StateObject private var rewardStore = RewardStore()
+    @StateObject private var guild = GuildManager()
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// The launch sign-in prompt is offered at most once per install.
+    @AppStorage("br.guildPromptShown") private var guildPromptShown = false
     /// `-BRStartOn{History,Rewards,Profile,Settings}` pick the initial tab
     /// (simulator screenshots). Profile and Settings both live on CHARACTER now.
     @State private var selectedTab: AppTab = {
@@ -41,14 +44,17 @@ struct RootView: View {
             tabPage(RewardsView(store: rewardStore))
                 .tag(AppTab.rewards)
 
-            tabPage(GuildView())
+            tabPage(GuildView(guild: guild,
+                              level: model.stats.levelProgress.level,
+                              rankTitle: LevelEngine.title(for: model.stats.levelProgress.level),
+                              badgeIDs: earnedBadgeIDs))
                 .tag(AppTab.guild)
 
             tabPage(ProfileView(model: model, presentedAsTab: true))
                 .tag(AppTab.character)
         }
         .sheet(isPresented: $showSignInPrompt) {
-            GuildSignInPrompt { selectedTab = .guild }
+            GuildSignInPrompt(guild: guild) { selectedTab = .guild }
         }
         .tint(BRTheme.greenFG)
         // The console bar draws as a plain overlay; the space it occupies is
@@ -85,6 +91,17 @@ struct RootView: View {
                 showSignInPrompt = true
             }
         }
+        .onChange(of: model.quests) { _, _ in
+            // Level/title/badges are derived from the quest list — push the new
+            // summary up whenever it changes so friends see it current.
+            Task {
+                await guild.syncProfile(
+                    level: model.stats.levelProgress.level,
+                    title: LevelEngine.title(for: model.stats.levelProgress.level),
+                    badgeIDs: earnedBadgeIDs
+                )
+            }
+        }
         .task {
             liveManager.onQuestEnded = { [weak model] in
                 // The watch is still finalizing the HKWorkout save when the
@@ -101,6 +118,14 @@ struct RootView: View {
     /// Hides the system tab bar on a page (the console bar replaces it).
     private func tabPage(_ content: some View) -> some View {
         content.toolbar(.hidden, for: .tabBar)
+    }
+
+    /// Earned badge ids — the only trophy data that ever leaves the device,
+    /// and only once the player has opted into the guild.
+    private var earnedBadgeIDs: [String] {
+        BadgeCatalog.all(for: model.quests, stats: model.stats)
+            .filter(\.earned)
+            .map(\.id)
     }
 
     /// The console bar isn't a real tab bar, so UIKit reserves no space for

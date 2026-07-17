@@ -1,48 +1,33 @@
 import AuthenticationServices
 import SwiftUI
 
-/// UI state for the GUILD tab. Real transitions come from SupabaseAPI at
-/// wiring time; the demo flags below seed each state so the simulator can
-/// screenshot every screen without tap automation.
-enum GuildState {
-    case signedOut
-    case needsUsername
-    case ready(profile: SocialProfile, friends: [SocialProfile], incoming: [SocialProfile])
-}
-
 /// The social pillar: sign in, claim a name, run your party. Everything here
 /// is opt-in and account-based — the core loop never needs it.
 struct GuildView: View {
-    @State private var state: GuildState
+    @ObservedObject var guild: GuildManager
+    /// Local game identity, pushed up so friends see it current.
+    let level: Int
+    let rankTitle: String
+    let badgeIDs: [String]
+
     @State private var showAddFriend = false
     @State private var claimText = ""
 
-    init() {
-        let arguments = ProcessInfo.processInfo.arguments
-        if arguments.contains("-BRDemoGuild") || arguments.contains("-BRDemoAddFriend") {
-            _state = State(initialValue: .ready(
-                profile: Self.demoMe,
-                friends: Self.demoFriends,
-                incoming: Self.demoIncoming
-            ))
-        } else if arguments.contains("-BRDemoGuildClaim") {
-            _state = State(initialValue: .needsUsername)
-            _claimText = State(initialValue: "xavier_pr")
-        } else {
-            _state = State(initialValue: .signedOut)
-        }
-        // `-BRDemoAddFriend` presents the recruit sheet at launch (the
-        // simulator has no tap automation).
-        if arguments.contains("-BRDemoAddFriend") {
+    init(guild: GuildManager, level: Int, rankTitle: String, badgeIDs: [String]) {
+        self.guild = guild
+        self.level = level
+        self.rankTitle = rankTitle
+        self.badgeIDs = badgeIDs
+        if ProcessInfo.processInfo.arguments.contains("-BRDemoAddFriend") {
             _showAddFriend = State(initialValue: true)
+        }
+        if ProcessInfo.processInfo.arguments.contains("-BRDemoGuildClaim") {
+            _claimText = State(initialValue: "xavier_pr")
         }
     }
 
     /// The splash carries its own big wordmark — no header on top of it.
-    private var showsHeader: Bool {
-        if case .signedOut = state { return false }
-        return true
-    }
+    private var showsHeader: Bool { guild.phase != .signedOut }
 
     var body: some View {
         NavigationStack {
@@ -52,17 +37,31 @@ struct GuildView: View {
                 }
                 ZStack {
                     BRTheme.bg.ignoresSafeArea()
-                    switch state {
-                    case .signedOut:      signedOutView
-                    case .needsUsername:  claimUsernameView
-                    case .ready(let me, let friends, let incoming):
-                        guildHome(me: me, friends: friends, incoming: incoming)
+                    switch guild.phase {
+                    case .signedOut:     signedOutView
+                    case .needsUsername: claimUsernameView
+                    case .ready:         guildHome
                     }
                 }
             }
             .background(BRTheme.bg)
             .toolbar(.hidden, for: .navigationBar)
-            .sheet(isPresented: $showAddFriend) { AddFriendSheet() }
+            .navigationDestination(for: SocialProfile.self) { profile in
+                FriendProfileView(profile: profile, guild: guild)
+            }
+            .sheet(isPresented: $showAddFriend) { AddFriendSheet(guild: guild) }
+            .alert("Guild", isPresented: Binding(
+                get: { guild.errorMessage != nil },
+                set: { if !$0 { guild.errorMessage = nil } }
+            )) {
+                Button("OK", role: .cancel) { guild.errorMessage = nil }
+            } message: {
+                Text(guild.errorMessage ?? "")
+            }
+            .task {
+                await guild.restore()
+                await guild.syncProfile(level: level, title: rankTitle, badgeIDs: badgeIDs)
+            }
         }
     }
 
@@ -171,15 +170,8 @@ struct GuildView: View {
                     }
                 }
 
-                SignInWithAppleButton(.signIn) { _ in
-                    // Wiring round: configure nonce + requested scopes.
-                } onCompletion: { _ in
-                    // Wiring round: SupabaseAPI.signInWithApple.
-                }
-                .signInWithAppleButtonStyle(.white)
-                .frame(height: 50)
-                .padding(.top, 4)
-                .accessibilityLabel("Sign in with Apple")
+                appleSignInButton
+                    .padding(.top, 4)
 
                 Text("One tap. Apple hides your email. No password.")
                     .font(.caption)
@@ -187,6 +179,19 @@ struct GuildView: View {
             }
             .padding(16)
         }
+    }
+
+    private var appleSignInButton: some View {
+        SignInWithAppleButton(.signIn) { request in
+            guild.prepareAppleRequest(request)
+        } onCompletion: { result in
+            Task { await guild.handleAppleCompletion(result) }
+        }
+        .signInWithAppleButtonStyle(.white)
+        .frame(height: 50)
+        .disabled(guild.isWorking)
+        .opacity(guild.isWorking ? 0.6 : 1)
+        .accessibilityLabel("Sign in with Apple")
     }
 
     private func guildPanel(@ViewBuilder content: () -> some View) -> some View {
@@ -270,6 +275,10 @@ struct GuildView: View {
 
     // MARK: - Username claim
 
+    private var claimProblem: String? {
+        claimText.isEmpty ? nil : GuildManager.validate(username: claimText)
+    }
+
     private var claimUsernameView: some View {
         ScrollView {
             VStack(spacing: 0) {
@@ -291,6 +300,8 @@ struct GuildView: View {
                 TextField("username", text: $claimText)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
+                    .submitLabel(.done)
+                    .onSubmit { submitClaim() }
                     .font(.system(.title3, design: .monospaced).weight(.medium))
                     .multilineTextAlignment(.center)
                     .padding(.vertical, 14)
@@ -299,32 +310,31 @@ struct GuildView: View {
                             .fill(BRTheme.card)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                    .strokeBorder(BRTheme.greenFG, lineWidth: 1.5)
+                                    .strokeBorder(claimProblem == nil ? BRTheme.greenFG : BRTheme.alertRed,
+                                                  lineWidth: 1.5)
                             )
                     )
                     .padding(.horizontal, 40)
                     .padding(.top, 22)
                     .accessibilityLabel("Choose your username")
 
-                Text("3–16 characters · a–z 0–9 _")
+                Text(claimProblem ?? "3–16 characters · a–z 0–9 _")
                     .font(.pixel(7))
-                    .foregroundStyle(BRTheme.textMuted)
+                    .foregroundStyle(claimProblem == nil ? BRTheme.textMuted : BRTheme.alertRed)
                     .padding(.top, 10)
 
-                Button {
-                    // Wiring round: insert profile row (username availability
-                    // enforced by the unique index; 409 → taken).
-                } label: {
-                    Text("CLAIM IT")
+                Button(action: submitClaim) {
+                    Text(guild.isWorking ? "CLAIMING…" : "CLAIM IT")
                         .font(.pixel(11))
                         .foregroundStyle(BRTheme.onNeonGreen)
                         .frame(maxWidth: .infinity, minHeight: 48)
                         .background(
                             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .fill(BRTheme.neonGreen)
+                                .fill(canClaim ? BRTheme.neonGreen : BRTheme.track)
                         )
                 }
                 .buttonStyle(.plain)
+                .disabled(!canClaim)
                 .padding(.horizontal, 40)
                 .padding(.top, 22)
                 .accessibilityLabel("Claim this username")
@@ -333,17 +343,31 @@ struct GuildView: View {
         }
     }
 
+    private var canClaim: Bool {
+        !guild.isWorking && !claimText.isEmpty && claimProblem == nil
+    }
+
+    private func submitClaim() {
+        guard canClaim else { return }
+        Task {
+            await guild.claim(username: claimText, level: level,
+                              title: rankTitle, badgeIDs: badgeIDs)
+        }
+    }
+
     // MARK: - Guild home (signed in)
 
-    private func guildHome(me: SocialProfile, friends: [SocialProfile], incoming: [SocialProfile]) -> some View {
+    private var guildHome: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                guildCard(me: me, friendCount: friends.count)
+                if let me = guild.me {
+                    guildCard(me: me, friendCount: guild.friends.count)
+                }
 
-                if !incoming.isEmpty {
+                if !guild.incoming.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
                         PixelSectionLabel(text: "KNOCKING AT THE GATE")
-                        ForEach(incoming) { requester in
+                        ForEach(guild.incoming) { requester in
                             requestRow(requester)
                         }
                     }
@@ -353,11 +377,11 @@ struct GuildView: View {
                     HStack {
                         PixelSectionLabel(text: "PARTY MEMBERS")
                         Spacer()
-                        Text("\(friends.count)")
+                        Text("\(guild.friends.count)")
                             .font(.pixel(10))
                             .foregroundStyle(BRTheme.textMuted)
                     }
-                    if friends.isEmpty {
+                    if guild.friends.isEmpty {
                         Text("No party members yet. Every guild starts with one brave recruit.")
                             .font(.footnote)
                             .foregroundStyle(BRTheme.textMuted)
@@ -365,7 +389,7 @@ struct GuildView: View {
                             .padding(16)
                             .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(BRTheme.card))
                     } else {
-                        ForEach(friends) { friend in
+                        ForEach(guild.friends) { friend in
                             friendRow(friend)
                         }
                     }
@@ -388,6 +412,7 @@ struct GuildView: View {
             }
             .padding(16)
         }
+        .refreshable { await guild.loadGuild() }
     }
 
     private func guildCard(me: SocialProfile, friendCount: Int) -> some View {
@@ -461,7 +486,7 @@ struct GuildView: View {
             }
             Spacer()
             Button {
-                // Wiring round: accept (status → accepted).
+                Task { await guild.accept(requester) }
             } label: {
                 Text("ACCEPT")
                     .font(.pixel(8))
@@ -473,7 +498,7 @@ struct GuildView: View {
             .buttonStyle(.plain)
             .accessibilityLabel("Accept \(requester.username)")
             Button {
-                // Wiring round: decline (delete row).
+                Task { await guild.decline(requester) }
             } label: {
                 Image(systemName: "xmark")
                     .font(.system(size: 13, weight: .bold))
@@ -494,30 +519,94 @@ struct GuildView: View {
                 )
         )
     }
+}
 
-    // MARK: - Demo data (screenshots only; ProcessInfo-gated)
+/// A party member's sheet: their identity and the trophies they've earned.
+/// Everything shown is what they chose to share — no health data exists here.
+struct FriendProfileView: View {
+    let profile: SocialProfile
+    @ObservedObject var guild: GuildManager
+    @State private var confirmingRemove = false
+    @Environment(\.dismiss) private var dismiss
 
-    private static let demoMe = SocialProfile(
-        id: UUID(), username: "xavier_pr", avatarKind: "pixel", avatarRef: "flame",
-        level: 6, title: "SNACK SLAYER",
-        badgeIDs: ["first_burn", "decade", "spark", "inferno"]
-    )
-    private static let demoFriends = [
-        SocialProfile(id: UUID(), username: "mika_runs", avatarKind: "pixel", avatarRef: "bolt",
-                      level: 8, title: "DUNGEON DINER", badgeIDs: ["first_burn", "trailblazer"]),
-        SocialProfile(id: UUID(), username: "carlos_lifts", avatarKind: "pixel", avatarRef: "sword",
-                      level: 4, title: "TREAT APPRENTICE", badgeIDs: ["first_burn"]),
-        SocialProfile(id: UUID(), username: "ana_walks", avatarKind: "pixel", avatarRef: "boot",
-                      level: 11, title: "FEAST PHANTOM", badgeIDs: ["first_burn", "legend"]),
-    ]
-    private static let demoIncoming = [
-        SocialProfile(id: UUID(), username: "pedro_bikes", avatarKind: "pixel", avatarRef: "wheel",
-                      level: 3, title: "SNACK ROOKIE", badgeIDs: []),
-    ]
+    var body: some View {
+        ZStack {
+            BRTheme.bg.ignoresSafeArea()
+            ScrollView {
+                VStack(spacing: 16) {
+                    GuildAvatar(profile: profile, size: 96)
+                        .padding(.top, 8)
+                    Text("@\(profile.username)")
+                        .font(.title3.weight(.semibold))
+                        .foregroundStyle(BRTheme.textPrimary)
+                    Text("LVL \(profile.level) · \(profile.title)")
+                        .font(.pixel(10))
+                        .foregroundStyle(BRTheme.yellowFG)
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            PixelSectionLabel(text: "TROPHIES")
+                            Spacer()
+                            Text("\(profile.badgeIDs.count) earned")
+                                .font(.pixel(8))
+                                .foregroundStyle(BRTheme.textMuted)
+                        }
+                        if profile.badgeIDs.isEmpty {
+                            Text("No trophies yet — early days.")
+                                .font(.footnote)
+                                .foregroundStyle(BRTheme.textMuted)
+                        } else {
+                            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10),
+                                                     count: 4), spacing: 14) {
+                                ForEach(profile.badgeIDs, id: \.self) { id in
+                                    if let art = UIImage(named: "badge_\(id)") {
+                                        Image(uiImage: art)
+                                            .resizable()
+                                            .interpolation(.none)
+                                            .scaledToFit()
+                                            .frame(height: 46)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(14)
+                    .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(BRTheme.card))
+
+                    Button {
+                        confirmingRemove = true
+                    } label: {
+                        Text("REMOVE FROM PARTY")
+                            .font(.pixel(8))
+                            .foregroundStyle(BRTheme.alertRed)
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                            .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(BRTheme.card))
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.top, 4)
+                }
+                .padding(16)
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .confirmationDialog("Remove @\(profile.username) from your party?",
+                            isPresented: $confirmingRemove, titleVisibility: .visible) {
+            Button("Remove", role: .destructive) {
+                Task {
+                    await guild.remove(profile)
+                    dismiss()
+                }
+            }
+            Button("Keep", role: .cancel) {}
+        } message: {
+            Text("You can always recruit them again.")
+        }
+    }
 }
 
 /// Pixel avatar placeholder: initial-on-dark circle until Xavier's avatar art
-/// set lands (photo avatars come with the SCA gate at wiring time).
+/// set lands (photo avatars come with the SCA gate at P1.5).
 struct GuildAvatar: View {
     let profile: SocialProfile
     let size: CGFloat
@@ -536,7 +625,7 @@ struct GuildAvatar: View {
     }
 }
 
-/// The recruitment pitch — shared by the launch prompt and the signed-out tab.
+/// The recruitment pitch — used by the one-time launch prompt.
 struct GuildPitch: View {
     var body: some View {
         VStack(spacing: 0) {
@@ -581,6 +670,7 @@ struct GuildPitch: View {
 
 /// One-time launch prompt (Xavier's ruling: prompt at launch, skippable).
 struct GuildSignInPrompt: View {
+    @ObservedObject var guild: GuildManager
     @Environment(\.dismiss) private var dismiss
     let onJoin: () -> Void
 
@@ -589,10 +679,16 @@ struct GuildSignInPrompt: View {
             Spacer(minLength: 12)
             GuildPitch()
 
-            SignInWithAppleButton(.signIn) { _ in
-                // Wiring round: nonce + scopes.
-            } onCompletion: { _ in
-                // Wiring round: SupabaseAPI.signInWithApple → onJoin().
+            SignInWithAppleButton(.signIn) { request in
+                guild.prepareAppleRequest(request)
+            } onCompletion: { result in
+                Task {
+                    await guild.handleAppleCompletion(result)
+                    if guild.phase != .signedOut {
+                        dismiss()
+                        onJoin()
+                    }
+                }
             }
             .signInWithAppleButtonStyle(.white)
             .frame(height: 50)
@@ -622,10 +718,13 @@ struct GuildSignInPrompt: View {
     }
 }
 
-/// Recruit-by-username search (wired to profile select at wiring time).
+/// Recruit by exact username.
 struct AddFriendSheet: View {
+    @ObservedObject var guild: GuildManager
     @Environment(\.dismiss) private var dismiss
     @State private var query = ""
+    @State private var found: SocialProfile?
+    @State private var searched = false
 
     var body: some View {
         VStack(spacing: 18) {
@@ -643,6 +742,8 @@ struct AddFriendSheet: View {
             TextField("Search by username", text: $query)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
+                .submitLabel(.search)
+                .onSubmit(runSearch)
                 .font(.system(.body, design: .monospaced))
                 .padding(12)
                 .background(
@@ -655,20 +756,78 @@ struct AddFriendSheet: View {
                 )
                 .accessibilityLabel("Search by username")
 
-            Text("Ask your friend for their guild name — exact matches only.")
-                .font(.caption)
-                .foregroundStyle(BRTheme.textMuted)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            if let found {
+                resultRow(found)
+            } else if searched && !guild.isWorking {
+                Text("No adventurer goes by @\(query.lowercased()).")
+                    .font(.footnote)
+                    .foregroundStyle(BRTheme.textMuted)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                Text("Ask your friend for their guild name — exact matches only.")
+                    .font(.caption)
+                    .foregroundStyle(BRTheme.textMuted)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
 
             Spacer()
         }
         .padding(.horizontal, 20)
         .background(BRTheme.bg)
-        .presentationDetents([.height(300)])
+        .presentationDetents([.height(340)])
         .presentationDragIndicator(.visible)
     }
-}
 
-#Preview("Guild — home") {
-    GuildView()
+    private func resultRow(_ profile: SocialProfile) -> some View {
+        let alreadyFriend = guild.friends.contains { $0.id == profile.id }
+        let requested = guild.outgoingIDs.contains(profile.id)
+        let isMe = profile.id == guild.me?.id
+        return HStack(spacing: 12) {
+            GuildAvatar(profile: profile, size: 40)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("@\(profile.username)")
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(BRTheme.textPrimary)
+                Text("LVL \(profile.level) · \(profile.title)")
+                    .font(.pixel(7))
+                    .foregroundStyle(BRTheme.textMuted)
+            }
+            Spacer()
+            if isMe {
+                Text("THAT'S YOU")
+                    .font(.pixel(7))
+                    .foregroundStyle(BRTheme.textMuted)
+            } else if alreadyFriend {
+                Text("IN PARTY")
+                    .font(.pixel(7))
+                    .foregroundStyle(BRTheme.greenFG)
+            } else if requested {
+                Text("ASKED")
+                    .font(.pixel(7))
+                    .foregroundStyle(BRTheme.textMuted)
+            } else {
+                Button {
+                    Task { await guild.sendRequest(to: profile) }
+                } label: {
+                    Text("RECRUIT")
+                        .font(.pixel(8))
+                        .foregroundStyle(BRTheme.onNeonGreen)
+                        .padding(.horizontal, 12)
+                        .frame(minHeight: 34)
+                        .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(BRTheme.neonGreen))
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Send a request to \(profile.username)")
+            }
+        }
+        .padding(12)
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(BRTheme.card))
+    }
+
+    private func runSearch() {
+        Task {
+            searched = true
+            found = await guild.search(username: query)
+        }
+    }
 }
