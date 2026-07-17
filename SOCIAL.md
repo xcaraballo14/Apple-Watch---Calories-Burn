@@ -126,9 +126,21 @@ Required by Guideline 1.2 (UGC) + 5.1.1(v) (accounts) — all launch-gating:
     PostgREST CRUD generics, Apple-nonce helpers (raw + SHA-256), row models.
     @MainActor like every app manager. Zero warnings.
   - ✅ **Sign in with Apple entitlement** added to the iOS target.
-  - ⚠️ Xavier dashboard step 2: enable the **Apple provider** in Supabase
-    Auth (native flow: add bundle ID `com.burnrewardapp.app` to the
-    provider's Client IDs; no secret needed for id_token exchange).
+  - ✅ **Backend live — Xavier ran the SQL + enabled the Apple provider
+    2026-07-17.** Verified from the outside: both tables exist (a control
+    table 404s, so the schema cache is real), **RLS bites** (anonymous insert
+    → `42501 new row violates row-level security policy` — nothing written),
+    and the Apple provider parses id_tokens (`Unable to detect issuer` on a
+    bogus token, which only happens once the provider is found; a disabled
+    provider errors differently).
+  - ✅ **Wiring landed 2026-07-17** (`GuildManager.swift`): SIWA with
+    per-request nonce, Keychain session + auto-refresh, username claim via
+    DB unique index (no check-then-write race), friend
+    request/accept/decline/remove, exact-username search, friend profile with
+    their trophy case, level/title/badge sync on quest-list change.
+  - ⏳ **Next: Xavier's first real sign-in** (device, or a sim signed into an
+    Apple ID) — sign in → claim a name → confirm the row lands in the
+    dashboard's Table Editor. Then P1.5 (pixel avatars) or straight to P2.
   - ✅ **Placement ruled (Xavier 2026-07-16): social lives on a 5th tab —
     GUILD** (HOME · LOG · FORGE · GUILD · CHARACTER; icon: `Art/tab_guild.png`
     by Xavier, SF-symbol fallback until drawn). **Sign-in moment: one-time
