@@ -1,6 +1,25 @@
 import AuthenticationServices
 import SwiftUI
 
+/// The two faces of a signed-in guild.
+enum GuildSegment: CaseIterable {
+    case feed, party
+
+    var label: String {
+        switch self {
+        case .feed:  "FEED"
+        case .party: "PARTY"
+        }
+    }
+
+    var spokenLabel: String {
+        switch self {
+        case .feed:  "Feed — what your party has been burning"
+        case .party: "Party — your friends and requests"
+        }
+    }
+}
+
 /// The social pillar: sign in, claim a name, run your party. Everything here
 /// is opt-in and account-based — the core loop never needs it.
 struct GuildView: View {
@@ -12,6 +31,11 @@ struct GuildView: View {
 
     @State private var showAddFriend = false
     @State private var claimText = ""
+    /// The guild home has two faces: what your party did (FEED) and who your
+    /// party is (PARTY). Feed leads — it's the reason people open the tab.
+    @State private var segment: GuildSegment = .feed
+    @ObservedObject private var feed = FeedManager.shared
+    @State private var showPostSheet = false
 
     init(guild: GuildManager, level: Int, rankTitle: String, badgeIDs: [String]) {
         self.guild = guild
@@ -23,6 +47,13 @@ struct GuildView: View {
         }
         if ProcessInfo.processInfo.arguments.contains("-BRDemoGuildClaim") {
             _claimText = State(initialValue: "xavier_pr")
+        }
+        let arguments = ProcessInfo.processInfo.arguments
+        if arguments.contains("-BRDemoParty") {
+            _segment = State(initialValue: .party)
+        }
+        if arguments.contains("-BRDemoPostSheet") || arguments.contains("-BRDemoPostPhotos") {
+            _showPostSheet = State(initialValue: true)
         }
     }
 
@@ -50,6 +81,14 @@ struct GuildView: View {
                 FriendProfileView(profile: profile, guild: guild)
             }
             .sheet(isPresented: $showAddFriend) { AddFriendSheet(guild: guild) }
+            .sheet(isPresented: $showPostSheet) {
+                // Mockup surface only — the real entry point is the quest
+                // receipt / badge unlock share sheet (P0's ShareCardSheet).
+                PostToGuildSheet(headline: "EARNED CHOCOLATE MILKSHAKE",
+                                 emoji: "🥤",
+                                 detail: "412 cal · 43:00 · +508 XP",
+                                 onPost: { _, _ in })   // mockup surface only
+            }
             .alert("Guild", isPresented: Binding(
                 get: { guild.errorMessage != nil },
                 set: { if !$0 { guild.errorMessage = nil } }
@@ -61,6 +100,7 @@ struct GuildView: View {
             .task {
                 await guild.restore()
                 await guild.syncProfile(level: level, title: rankTitle, badgeIDs: badgeIDs)
+                await feed.refresh()
             }
         }
     }
@@ -361,13 +401,69 @@ struct GuildView: View {
 
     // MARK: - Guild home (signed in)
 
+    /// Your card and the FEED/PARTY switch stay pinned; only the list below
+    /// scrolls, so identity and navigation never scroll away.
     private var guildHome: some View {
+        VStack(spacing: 12) {
+            if let me = guild.me {
+                guildCard(me: me, friendCount: guild.friends.count)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 4)
+            }
+            segmentPicker
+                .padding(.horizontal, 16)
+            switch segment {
+            case .feed:
+                FeedView(events: feed.events,
+                         hasFriends: !guild.friends.isEmpty,
+                         onReact: { event, reaction in
+                             Task { await feed.react(event, reaction) }
+                         },
+                         onRecruit: { showAddFriend = true })
+                .refreshable { await feed.refresh() }
+            case .party:
+                partyList
+            }
+        }
+    }
+
+    private var segmentPicker: some View {
+        HStack(spacing: 6) {
+            ForEach(GuildSegment.allCases, id: \.self) { option in
+                let selected = segment == option
+                Button {
+                    segment = option
+                } label: {
+                    HStack(spacing: 6) {
+                        Text(option.label)
+                            .font(.pixel(9))
+                        // Pending requests are the one thing worth a nudge.
+                        if option == .party, !guild.incoming.isEmpty {
+                            Text("\(guild.incoming.count)")
+                                .font(.pixel(7))
+                                .foregroundStyle(BRTheme.onNeonGreen)
+                                .padding(.horizontal, 5)
+                                .padding(.vertical, 2)
+                                .background(Capsule().fill(BRTheme.gold))
+                        }
+                    }
+                    .foregroundStyle(selected ? BRTheme.onNeonGreen : BRTheme.textMuted)
+                    .frame(maxWidth: .infinity, minHeight: 40)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .fill(selected ? BRTheme.neonGreen : BRTheme.track)
+                    )
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(option.spokenLabel)
+                .accessibilityAddTraits(selected ? [.isSelected, .isButton] : .isButton)
+            }
+        }
+    }
+
+    private var partyList: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                if let me = guild.me {
-                    guildCard(me: me, friendCount: guild.friends.count)
-                }
-
                 if !guild.incoming.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
                         PixelSectionLabel(text: "KNOCKING AT THE GATE")
@@ -425,7 +521,9 @@ struct GuildView: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text("@\(me.username)")
                     .font(.body.weight(.semibold))
-                    .foregroundStyle(BRTheme.textPrimary)
+                    // The card is always the dark island — light text in BOTH
+                    // themes, or the name vanishes in light mode.
+                    .foregroundStyle(.white)
                 Text("LVL \(me.level) · \(me.title)")
                     .font(.pixel(8))
                     .foregroundStyle(BRTheme.yellowFG)

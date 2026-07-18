@@ -261,6 +261,35 @@ struct ShareCardSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var cardImage: UIImage?
     @State private var justSaved = false
+    @State private var showPostSheet = false
+
+    /// The guild button only exists for players who've opted in. Read at body
+    /// time rather than observed: the sheet is built fresh on each present, and
+    /// sign-in state can't change while it's open.
+    private var canPostToGuild: Bool { SupabaseAPI.shared.isSignedIn }
+
+    /// The post's summary payload — the same numbers already on the card, and
+    /// nothing more. Badge and level-up posts carry no health data at all.
+    private var guildPayload: (kind: String, payload: SharePayload, detail: String) {
+        switch kind {
+        case .quest(let quest, let xpTotal):
+            let seconds = Int(quest.duration)
+            return ("quest",
+                    SharePayload(reward: quest.title, emoji: quest.emoji,
+                                 calories: quest.calories, seconds: seconds, xp: xpTotal),
+                    "\(quest.calories) cal · \(durationText(seconds)) · +\(xpTotal) XP")
+        case .badge(let badge):
+            return ("badge",
+                    SharePayload(badgeID: badge.id, name: badge.name),
+                    badge.requirement)
+        }
+    }
+
+    private func durationText(_ seconds: Int) -> String {
+        let m = seconds / 60, s = seconds % 60
+        if m >= 60 { return String(format: "%d:%02d:%02d", m / 60, m % 60, s) }
+        return String(format: "%d:%02d", m, s)
+    }
 
     private var shareTitle: String {
         switch kind {
@@ -309,6 +338,26 @@ struct ShareCardSheet: View {
                     .buttonStyle(.plain)
                     .accessibilityLabel("Share this card")
 
+                    // Posting to the guild is a separate, deliberate act from
+                    // sharing the image outward — different audience, different
+                    // data (a summary row, not a picture).
+                    if canPostToGuild {
+                        Button {
+                            showPostSheet = true
+                        } label: {
+                            Label("POST TO GUILD", systemImage: "person.2.fill")
+                                .font(.pixel(10))
+                                .foregroundStyle(BRTheme.greenFG)
+                                .frame(maxWidth: .infinity, minHeight: 48)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                        .strokeBorder(BRTheme.greenFG, lineWidth: 1.5)
+                                )
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Post this win to your guild")
+                    }
+
                     Button {
                         save(cardImage)
                     } label: {
@@ -330,6 +379,35 @@ struct ShareCardSheet: View {
         }
         .background(BRTheme.bg)
         .onAppear(perform: renderCard)
+        .sheet(isPresented: $showPostSheet) {
+            let post = guildPayload
+            PostToGuildSheet(
+                headline: postHeadline,
+                emoji: postEmoji,
+                detail: post.detail
+            ) { caption, photos in
+                Task {
+                    if await FeedManager.shared.post(kind: post.kind, payload: post.payload,
+                                                     caption: caption, photos: photos) {
+                        dismiss()   // posted — close the share sheet behind it too
+                    }
+                }
+            }
+        }
+    }
+
+    private var postHeadline: String {
+        switch kind {
+        case .quest(let quest, _): "EARNED \(quest.title.uppercased())"
+        case .badge(let badge):    "UNLOCKED \(badge.name.uppercased())"
+        }
+    }
+
+    private var postEmoji: String {
+        switch kind {
+        case .quest(let quest, _): quest.emoji
+        case .badge(let badge):    badge.emoji
+        }
     }
 
     /// Exports the card exactly as previewed. `scale: 3` turns the 330 pt

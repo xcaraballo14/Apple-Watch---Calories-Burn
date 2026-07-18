@@ -35,8 +35,18 @@ final class GuildManager: ObservableObject {
         isDemo = arguments.contains("-BRDemoGuild")
             || arguments.contains("-BRDemoGuildClaim")
             || arguments.contains("-BRDemoAddFriend")
+            || arguments.contains("-BRDemoFeed")
+            || arguments.contains("-BRDemoParty")
+            || arguments.contains("-BRDemoFeedEmpty")
+            || arguments.contains("-BRDemoPostSheet")
+            || arguments.contains("-BRDemoFeedTail")
+            || arguments.contains("-BRDemoPostPhotos")
         if arguments.contains("-BRDemoGuildClaim") {
             phase = .needsUsername
+        } else if arguments.contains("-BRDemoFeedEmpty") {
+            // Signed in, nobody recruited yet — the day-one feed.
+            phase = .ready
+            me = DemoGuild.me
         } else if isDemo {
             phase = .ready
             me = DemoGuild.me

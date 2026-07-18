@@ -24,7 +24,12 @@ struct RootView: View {
         if arguments.contains("-BRStartOnSettings") { return .character }
         if arguments.contains("-BRStartOnGuild") || arguments.contains("-BRDemoGuild")
             || arguments.contains("-BRDemoGuildClaim")
-            || arguments.contains("-BRDemoAddFriend") { return .guild }
+            || arguments.contains("-BRDemoAddFriend")
+            || arguments.contains("-BRDemoFeed") || arguments.contains("-BRDemoParty")
+            || arguments.contains("-BRDemoFeedEmpty")
+            || arguments.contains("-BRDemoPostSheet")
+            || arguments.contains("-BRDemoFeedTail")
+            || arguments.contains("-BRDemoPostPhotos") { return .guild }
         return .home
     }()
     /// One-time launch sign-in prompt (Xavier's ruling). Mockup phase: the

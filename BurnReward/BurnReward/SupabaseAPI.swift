@@ -157,6 +157,52 @@ final class SupabaseAPI {
         _ = try await rest("DELETE", table: table, query: query, body: nil as Never?)
     }
 
+    // MARK: - Storage
+
+    /// Uploads bytes to a private bucket. `path` must start with the signed-in
+    /// user's id — the storage policies in `p2_schema.sql` reject anything
+    /// else, so a modified client can't write into someone else's folder.
+    func upload(bucket: String, path: String, data: Data,
+                contentType: String = "image/jpeg") async throws {
+        let token = try await freshAccessToken()
+        var request = URLRequest(
+            url: baseURL.appending(path: "/storage/v1/object/\(bucket)/\(path)")
+        )
+        request.httpMethod = "POST"
+        request.setValue(publishableKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue(contentType, forHTTPHeaderField: "Content-Type")
+        request.httpBody = data
+        _ = try await perform(request)
+    }
+
+    /// Downloads a private object. Reads are authorized per-request, so a path
+    /// alone is never enough to see someone's photo — RLS still has to agree
+    /// that you're a friend of the owner.
+    func download(bucket: String, path: String) async throws -> Data {
+        let token = try await freshAccessToken()
+        var request = URLRequest(
+            url: baseURL.appending(path: "/storage/v1/object/\(bucket)/\(path)")
+        )
+        request.setValue(publishableKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        return try await perform(request)
+    }
+
+    func removeObjects(bucket: String, paths: [String]) async throws {
+        guard !paths.isEmpty else { return }
+        let token = try await freshAccessToken()
+        var request = URLRequest(url: baseURL.appending(path: "/storage/v1/object/\(bucket)"))
+        request.httpMethod = "DELETE"
+        request.setValue(publishableKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try encoder.encode(["prefixes": paths])
+        _ = try await perform(request)
+    }
+
+    // MARK: - REST plumbing
+
     private func rest<Body: Encodable>(
         _ method: String, table: String, query: [URLQueryItem], body: Body?
     ) async throws -> Data {
@@ -301,5 +347,78 @@ struct FriendshipRow: Codable, Hashable {
 
     enum CodingKeys: String, CodingKey {
         case requester, addressee, status
+    }
+}
+
+// MARK: - Row models (match supabase/p2_schema.sql)
+
+/// A post. `payload` holds only the summary fields for its kind — never raw
+/// HealthKit samples, heart rate, routes, or exact workout timestamps.
+struct ShareEventRow: Codable, Identifiable, Hashable {
+    let id: UUID
+    let userID: UUID
+    let kind: String
+    let payload: SharePayload
+    let caption: String?
+    let photoPaths: [String]
+    let createdAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case id, kind, payload, caption
+        case userID = "user_id"
+        case photoPaths = "photo_paths"
+        case createdAt = "created_at"
+    }
+}
+
+/// The union of every kind's fields — each post fills in only its own. Kept
+/// flat and optional rather than an enum so PostgREST's jsonb round-trips
+/// without a custom decoder.
+struct SharePayload: Codable, Hashable {
+    // quest
+    var reward: String?
+    var emoji: String?
+    var calories: Int?
+    var seconds: Int?
+    var xp: Int?
+    // badge
+    var badgeID: String?
+    var name: String?
+    // levelup
+    var level: Int?
+    var title: String?
+
+    enum CodingKeys: String, CodingKey {
+        case reward, emoji, calories, seconds, xp, name, level, title
+        case badgeID = "badge_id"
+    }
+}
+
+/// What a post is being created with. Separate from `ShareEventRow` because
+/// the server fills in id and created_at.
+struct NewShareEvent: Encodable {
+    let id: UUID
+    let userID: UUID
+    let kind: String
+    let payload: SharePayload
+    let caption: String?
+    let photoPaths: [String]
+
+    enum CodingKeys: String, CodingKey {
+        case id, kind, payload, caption
+        case userID = "user_id"
+        case photoPaths = "photo_paths"
+    }
+}
+
+struct ReactionRow: Codable, Hashable {
+    let eventID: UUID
+    let userID: UUID
+    var reaction: String
+
+    enum CodingKeys: String, CodingKey {
+        case reaction
+        case eventID = "event_id"
+        case userID = "user_id"
     }
 }

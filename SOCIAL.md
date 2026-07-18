@@ -169,9 +169,51 @@ Required by Guideline 1.2 (UGC) + 5.1.1(v) (accounts) — all launch-gating:
   - ⏳ Next: UI round (mockup-first) — launch prompt, GUILD signed-out /
     username claim / friends home states, add-friend search, friend profile
     view; then wiring to SupabaseAPI.
-- **P2 — Feed.** share_events + captions; share-to-feed flow from the quest
-  receipt / badge unlock moments; feed screen (new tab or bell-adjacent —
-  mockup decides); Realtime for live updates.
+- **P2 — Feed. 🔨 BUILT 2026-07-18, awaiting the SQL run + device pass.**
+  - **Placement ruled:** the GUILD tab gained a `FEED | PARTY` switch rather
+    than a sixth tab. Feed leads (it's why people open the tab); PARTY carries
+    a gold count badge when requests are waiting.
+  - **Card layout (Xavier's mockup, 2026-07-18):** header → headline/caption →
+    photos → **stats console** → **reaction console**. The two consoles share a
+    frame, dividers, and colour language so the card reads as one machine. The
+    stats redesign was Xavier's explicit ask: icon + full word + a 16pt value,
+    one panel instead of three loose chips.
+  - **Reactions, not comments (Xavier, 2026-07-18).** Closed palette: 🔥 BURN ·
+    💪 STRONG · 👑 LEGEND · ⚔️ RESPECT, one per player per post (the DB primary
+    key enforces it). A fixed set has **no abuse surface and no moderation
+    queue** — which is exactly what free-text comments would have cost. Xavier
+    asked for comments mid-session, heard the cost, and kept the ruling.
+    Comments revisit post-launch with a real moderation budget; **⚔️ CHALLENGE
+    from his mockup is deferred to P3** (it needs its own design).
+  - **Photos: up to 3 per post, swipeable** (Xavier upgraded from my
+    one-photo rec), on all three post kinds. Single photos skip the carousel
+    chrome entirely.
+  - ⚠️ **EXIF is the load-bearing safety step.** `PostPhotoPipeline` never
+    uploads the picked file — it re-renders through a bitmap context and writes
+    fresh JPEG bytes with empty EXIF/GPS/TIFF dictionaries. A raw camera photo
+    carries the coordinates it was taken at; uploading one would publish a
+    tester's home address *invisibly*. Downscale to 1440px long edge / q0.75
+    (~200KB) happens in the same pass. **Never "optimize" the redraw away for
+    already-small images — the redraw is the strip.**
+  - **Posting is explicit only** (Xavier's dial): POST TO GUILD lives in P0's
+    ShareCardSheet, gated on being signed in. Nothing auto-publishes.
+  - **Realtime deferred to P3** (Xavier's call after the explainer): a
+    friends-only feed updates a few times a day, so pull-to-refresh loses
+    nothing, and posts arriving mid-scroll would shift content under the thumb.
+    The hand-rolled websocket earns its keep when notifications exist. The
+    dependency-free client survives P2 intact — **`supabase-swift` still not
+    needed**, correcting the original plan above.
+  - **Caption filter is a wordlist + URL stripper, and is documented as such.**
+    Verified against 8 cases incl. the Scunthorpe problem (whole-word matching,
+    no substring false positives). It is *not* moderation — report/block +
+    the `hidden` kill switch in P4 are.
+  - ⏳ **Blocked on Xavier:** (1) run `supabase/p2_schema.sql`; (2) add the
+    **Sensitive Content Analysis** capability in Xcode → Signing &
+    Capabilities. Without (2) the on-device nudity screen silently no-ops
+    (`analysisPolicy == .disabled`) — the code degrades gracefully but the
+    safety net is simply absent. Do it through Xcode's UI so the App ID
+    auto-registers; hand-editing the entitlements file is what caused the
+    -7003 ghost below.
 - **P3 — Leaderboards.** weekly_xp posting (opt-in toggle); friends weekly
   XP board; ties into the existing weekly-challenge screen real estate
   (mockup decides). Guardrail: weekly aggregates only — rest days never shown,
