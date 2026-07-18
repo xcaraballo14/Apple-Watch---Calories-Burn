@@ -87,7 +87,7 @@ struct GuildView: View {
                 PostToGuildSheet(headline: "EARNED CHOCOLATE MILKSHAKE",
                                  emoji: "🥤",
                                  detail: "412 cal · 43:00 · +508 XP",
-                                 onPost: { _, _ in })   // mockup surface only
+                                 onPost: { _, _ in true })   // mockup surface only
             }
             .alert("Guild", isPresented: Binding(
                 get: { guild.errorMessage != nil },
@@ -96,6 +96,14 @@ struct GuildView: View {
                 Button("OK", role: .cancel) { guild.errorMessage = nil }
             } message: {
                 Text(guild.errorMessage ?? "")
+            }
+            .alert("Feed", isPresented: Binding(
+                get: { feed.errorMessage != nil },
+                set: { if !$0 { feed.errorMessage = nil } }
+            )) {
+                Button("OK", role: .cancel) { feed.errorMessage = nil }
+            } message: {
+                Text(feed.errorMessage ?? "")
             }
             .task {
                 await guild.restore()

@@ -262,6 +262,7 @@ struct ShareCardSheet: View {
     @State private var cardImage: UIImage?
     @State private var justSaved = false
     @State private var showPostSheet = false
+    @ObservedObject private var feed = FeedManager.shared
 
     /// The guild button only exists for players who've opted in. Read at body
     /// time rather than observed: the sheet is built fresh on each present, and
@@ -379,6 +380,16 @@ struct ShareCardSheet: View {
         }
         .background(BRTheme.bg)
         .onAppear(perform: renderCard)
+        // A post that fails has to say so. Without this the storage 403 read
+        // as "the button does nothing", which cost a full device test.
+        .alert("Couldn't post", isPresented: Binding(
+            get: { feed.errorMessage != nil },
+            set: { if !$0 { feed.errorMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) { feed.errorMessage = nil }
+        } message: {
+            Text(feed.errorMessage ?? "")
+        }
         .sheet(isPresented: $showPostSheet) {
             let post = guildPayload
             PostToGuildSheet(
@@ -386,12 +397,12 @@ struct ShareCardSheet: View {
                 emoji: postEmoji,
                 detail: post.detail
             ) { caption, photos in
-                Task {
-                    if await FeedManager.shared.post(kind: post.kind, payload: post.payload,
-                                                     caption: caption, photos: photos) {
-                        dismiss()   // posted — close the share sheet behind it too
-                    }
-                }
+                let posted = await FeedManager.shared.post(
+                    kind: post.kind, payload: post.payload,
+                    caption: caption, photos: photos
+                )
+                if posted { dismiss() }   // close the share sheet behind it too
+                return posted
             }
         }
     }

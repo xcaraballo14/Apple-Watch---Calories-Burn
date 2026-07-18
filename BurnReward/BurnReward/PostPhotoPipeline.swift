@@ -113,8 +113,14 @@ enum PostPhotoPipeline {
     /// `<user_id>/<event_id>/<n>.jpg` — the first segment is what the storage
     /// policies in p2_schema.sql key ownership off, so this shape is part of
     /// the security model, not a naming convenience.
+    ///
+    /// ⚠️ **`.lowercased()` is load-bearing.** Swift renders UUIDs uppercase;
+    /// Postgres renders `auth.uid()::text` lowercase (RFC 4122 canonical form).
+    /// The storage policy compares those two as *strings*, so an uppercase path
+    /// fails the ownership check and every upload comes back 403 — which is
+    /// exactly what happened on the first device test. Don't "tidy" this away.
     static func path(user: UUID, event: UUID, index: Int) -> String {
-        "\(user.uuidString)/\(event.uuidString)/\(index).jpg"
+        "\(user.uuidString.lowercased())/\(event.uuidString.lowercased())/\(index).jpg"
     }
 }
 

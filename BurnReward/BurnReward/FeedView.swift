@@ -548,11 +548,16 @@ struct PostToGuildSheet: View {
     let headline: String
     let emoji: String
     let detail: String
-    let onPost: (String, [UIImage]) -> Void
+    /// Returns whether the post actually landed. The sheet stays open on
+    /// failure so the player can see why and retry — dismissing regardless
+    /// turned a 403 into "nothing happened", which is how the storage
+    /// permission bug stayed invisible through a whole device test.
+    let onPost: (String, [UIImage]) async -> Bool
     @Environment(\.dismiss) private var dismiss
     @State private var caption = ""
     @State private var photos: [UIImage] = []
     @State private var photoItems: [PhotosPickerItem] = []
+    @State private var isPosting = false
     @FocusState private var captionFocused: Bool
 
     private let limit = 100
@@ -561,7 +566,7 @@ struct PostToGuildSheet: View {
     private let maxPhotos = 3
 
     init(headline: String, emoji: String, detail: String,
-         onPost: @escaping (String, [UIImage]) -> Void) {
+         onPost: @escaping (String, [UIImage]) async -> Bool) {
         self.headline = headline
         self.emoji = emoji
         self.detail = detail
@@ -614,19 +619,32 @@ struct PostToGuildSheet: View {
                     photoSection
                     privacyNote
                     Button {
-                        onPost(caption.trimmingCharacters(in: .whitespacesAndNewlines), photos)
-                        dismiss()
-                    } label: {
-                        Text("POST TO GUILD")
-                            .font(.pixel(11))
-                            .foregroundStyle(BRTheme.onNeonGreen)
-                            .frame(maxWidth: .infinity, minHeight: 50)
-                            .background(
-                                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                    .fill(BRTheme.neonGreen)
+                        guard !isPosting else { return }
+                        isPosting = true
+                        Task {
+                            let posted = await onPost(
+                                caption.trimmingCharacters(in: .whitespacesAndNewlines), photos
                             )
+                            isPosting = false
+                            if posted { dismiss() }
+                        }
+                    } label: {
+                        HStack(spacing: 8) {
+                            if isPosting {
+                                ProgressView().tint(BRTheme.onNeonGreen)
+                            }
+                            Text(isPosting ? postingLabel : "POST TO GUILD")
+                                .font(.pixel(11))
+                                .foregroundStyle(BRTheme.onNeonGreen)
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 50)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .fill(BRTheme.neonGreen.opacity(isPosting ? 0.6 : 1))
+                        )
                     }
                     .buttonStyle(.plain)
+                    .disabled(isPosting)
                     .accessibilityLabel("Post this win to your guild")
                 }
                 .padding(16)
@@ -716,6 +734,12 @@ struct PostToGuildSheet: View {
                 photoItems = []
             }
         }
+    }
+
+    /// Uploading a few photos takes real seconds; naming the step is the
+    /// difference between "working" and "frozen".
+    private var postingLabel: String {
+        photos.isEmpty ? "POSTING…" : "UPLOADING…"
     }
 
     private var preview: some View {
@@ -863,5 +887,5 @@ enum DemoFeed {
     PostToGuildSheet(headline: "EARNED CHOCOLATE MILKSHAKE",
                      emoji: "🥤",
                      detail: "412 cal · 43:00 · +508 XP",
-                     onPost: { _, _ in })
+                     onPost: { _, _ in true })
 }
