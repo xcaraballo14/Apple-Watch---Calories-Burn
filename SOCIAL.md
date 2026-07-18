@@ -207,7 +207,27 @@ Required by Guideline 1.2 (UGC) + 5.1.1(v) (accounts) — all launch-gating:
     Verified against 8 cases incl. the Scunthorpe problem (whole-word matching,
     no substring false positives). It is *not* moderation — report/block +
     the `hidden` kill switch in P4 are.
-  - ⏳ **Blocked on Xavier:** (1) run `supabase/p2_schema.sql`; (2) add the
+  - ✅ **Device pass 2026-07-18:** text post, then photo post, both landed.
+    Schema run + SCA capability added. Backend verified externally first
+    (tables exist against a bogus-table 404 control; anon insert refused
+    with 42501; bucket live).
+  - ⚠️ **The UUID-case trap (cost one device test).** Swift's
+    `UUID.uuidString` is UPPERCASE; Postgres renders `auth.uid()::text`
+    lowercase. The storage policy compares those as **strings**, so
+    uppercase paths 403'd on every upload while text-only posts worked fine.
+    `PostPhotoPipeline.path` lowercases, and must keep doing so. **Any future
+    policy that string-compares a Swift-generated id against a Postgres uuid
+    has this bug** — P1.5 avatars and P3 leaderboards are the next places it
+    could bite.
+  - ⚠️ **The lesson that mattered more:** the 403 was invisible because
+    `errorMessage` was set but displayed nowhere, and the sheet dismissed
+    before the result came back — so failure looked exactly like success.
+    Every async user action needs a visible pending state and a visible
+    failure, or the next bug costs a device test too.
+  - ⏳ **Remaining:** two-account test (a friend's post + photos loading
+    through the `are_friends` storage read policy — the only path never yet
+    exercised against a real friendship).
+  - ~~Blocked on Xavier~~ (done 2026-07-18): (1) run `supabase/p2_schema.sql`; (2) add the
     **Sensitive Content Analysis** capability in Xcode → Signing &
     Capabilities. Without (2) the on-device nudity screen silently no-ops
     (`analysisPolicy == .disabled`) — the code degrades gracefully but the
