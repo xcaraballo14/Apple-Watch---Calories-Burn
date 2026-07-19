@@ -248,6 +248,23 @@ final class SupabaseAPI {
     }()
 }
 
+// MARK: - Cancellation
+
+extension Error {
+    /// Whether this is "the work was cancelled" rather than "the work failed".
+    ///
+    /// SwiftUI cancels `.task` and `.refreshable` work as a matter of course —
+    /// switching tabs, backgrounding, letting go of a pull-to-refresh early.
+    /// Every one of those surfaced as a "cancelled" alert until this existed.
+    /// A cancellation is the app doing what it was told; the player has no
+    /// action to take and shouldn't be interrupted.
+    var isCancellation: Bool {
+        if self is CancellationError { return true }
+        if let urlError = self as? URLError, urlError.code == .cancelled { return true }
+        return false
+    }
+}
+
 // MARK: - Nonce helpers (Sign in with Apple)
 
 enum AppleNonce {

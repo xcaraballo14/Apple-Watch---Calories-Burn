@@ -293,7 +293,11 @@ struct FeedRow: View {
             HStack(spacing: 0) {
                 statColumn("🔥", "CALORIES", "\(calories)", "CAL", BRTheme.orangeFG)
                 statDividerLine
-                statColumn("⏱", "TIME", durationText(seconds), "MIN", BRTheme.blueFG)
+                // Past an hour the value reads h:mm:ss, so "MIN" underneath
+                // would be describing the wrong unit (a real 2:02:45 post read
+                // as "2 minutes" at a glance).
+                statColumn("⏱", "TIME", durationText(seconds),
+                           seconds >= 3600 ? "HR" : "MIN", BRTheme.blueFG)
                 statDividerLine
                 statColumn("⭐", "XP EARNED", "+\(xp)", "XP", BRTheme.gold)
             }

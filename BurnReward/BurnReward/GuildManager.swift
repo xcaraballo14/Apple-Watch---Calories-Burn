@@ -82,9 +82,9 @@ final class GuildManager: ObservableObject {
             let nsError = error as NSError
             print("SIWA failure — domain: \(nsError.domain), code: \(nsError.code), userInfo: \(nsError.userInfo)")
             // The user cancelling the sheet isn't an error worth shouting about.
-            if (error as? ASAuthorizationError)?.code != .canceled {
-                errorMessage = error.localizedDescription
-            }
+            guard (error as? ASAuthorizationError)?.code != .canceled,
+                  !error.isCancellation else { return }
+            errorMessage = error.localizedDescription
         case .success(let authorization):
             guard
                 let credential = authorization.credential as? ASAuthorizationAppleIDCredential,
@@ -102,6 +102,7 @@ final class GuildManager: ObservableObject {
                 currentNonce = nil
                 await loadGuild()
             } catch {
+                guard !error.isCancellation else { return }
                 errorMessage = error.localizedDescription
             }
         }
@@ -142,6 +143,7 @@ final class GuildManager: ObservableObject {
         } catch SupabaseAPI.APIError.notSignedIn {
             phase = .signedOut
         } catch {
+            guard !error.isCancellation else { return }
             errorMessage = error.localizedDescription
         }
     }
@@ -164,6 +166,7 @@ final class GuildManager: ObservableObject {
             friends = friendIDs.compactMap { byID[$0] }.sorted { $0.level > $1.level }
             incoming = requesterIDs.compactMap { byID[$0] }
         } catch {
+            guard !error.isCancellation else { return }
             errorMessage = error.localizedDescription
         }
     }
@@ -224,6 +227,7 @@ final class GuildManager: ObservableObject {
                 ? "@\(name) is taken. Try another."
                 : "Couldn't claim that name — \(body.prefix(120))"
         } catch {
+            guard !error.isCancellation else { return }
             errorMessage = error.localizedDescription
         }
     }
@@ -268,7 +272,9 @@ final class GuildManager: ObservableObject {
             )
             return rows.first
         } catch {
-            errorMessage = error.localizedDescription
+            if !error.isCancellation {
+                errorMessage = error.localizedDescription
+            }
             return nil
         }
     }
@@ -291,6 +297,7 @@ final class GuildManager: ObservableObject {
             // either way there's nothing useful to say beyond this.
             errorMessage = "You've already got a request with @\(profile.username)."
         } catch {
+            guard !error.isCancellation else { return }
             errorMessage = error.localizedDescription
         }
     }
@@ -307,6 +314,7 @@ final class GuildManager: ObservableObject {
             )
             await loadFriendships(uid: uid)
         } catch {
+            guard !error.isCancellation else { return }
             errorMessage = error.localizedDescription
         }
     }
@@ -321,6 +329,7 @@ final class GuildManager: ObservableObject {
             )
             incoming.removeAll { $0.id == profile.id }
         } catch {
+            guard !error.isCancellation else { return }
             errorMessage = error.localizedDescription
         }
     }
@@ -337,6 +346,7 @@ final class GuildManager: ObservableObject {
             )
             friends.removeAll { $0.id == profile.id }
         } catch {
+            guard !error.isCancellation else { return }
             errorMessage = error.localizedDescription
         }
     }

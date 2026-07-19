@@ -69,6 +69,7 @@ final class FeedManager: ObservableObject {
             }
             await loadPhotos(for: events)
         } catch {
+            guard !error.isCancellation else { return }
             errorMessage = error.localizedDescription
         }
     }
@@ -202,7 +203,11 @@ final class FeedManager: ObservableObject {
             try? await SupabaseAPI.shared.removeObjects(
                 bucket: PostPhotoPipeline.bucket, paths: paths
             )
-            errorMessage = error.localizedDescription
+            // A cancelled post still failed — the caller needs `false` so the
+            // sheet stays open — it just doesn't warrant an alert.
+            if !error.isCancellation {
+                errorMessage = error.localizedDescription
+            }
             return false
         }
     }
@@ -219,6 +224,7 @@ final class FeedManager: ObservableObject {
             )
             events.removeAll { $0.id == event.id }
         } catch {
+            guard !error.isCancellation else { return }
             errorMessage = error.localizedDescription
         }
     }
@@ -257,6 +263,7 @@ final class FeedManager: ObservableObject {
         } catch {
             // Put the UI back where the server still thinks it is.
             applyLocally(at: index, previous: events[index].myReaction, next: previous)
+            guard !error.isCancellation else { return }
             errorMessage = error.localizedDescription
         }
     }
