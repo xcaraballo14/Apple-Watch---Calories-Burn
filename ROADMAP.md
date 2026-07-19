@@ -696,6 +696,37 @@ shipped architecture. Decisions:
   `RECORD_OLD_WORKOUTS.md`, `WORKOUT_CATALOG.md`) → **v1.15 = catalog UX** →
   **v1.2 = the Ember Tree** (`PERK_TREE.md`; the subscription attaches here).
 
+#### 🔔 Push notifications — on the list (Xavier, 2026-07-19)
+
+Added after he asked whether a friend request notifies him. **It doesn't, and
+it doesn't reach the bell either** — see the gap below. Two separable pieces,
+and they should not be confused:
+
+1. **Social events in the in-app bell (cheap, no infrastructure).** Today
+   `AlertFeed.build` takes only `quests/scores/stats`, and `AlertItem.Kind` is
+   `nudge/streak/badge/levelUp/record` — entirely derived from HealthKit, by
+   design. Friend requests, accepted requests, and reactions on your posts live
+   in Supabase and are wired into **nothing**. The only surface is the gold
+   count on the GUILD → PARTY segment, and only once the app is open and has
+   refreshed. Adding social kinds to the bell needs no APNs and no server.
+   ⚠️ Note it breaks the "the feed is 100% derived from workout history"
+   property — social alerts are *fetched*, not derived. That's acceptable
+   (social is already an opt-in account layer) but the invariant's wording in
+   `CLAUDE.md` should be tightened rather than quietly violated.
+2. **Real push (needs infrastructure).** Requires the Push Notifications
+   capability + an APNs key, a `device_tokens` table, and a Supabase **Edge
+   Function** fired by a database trigger — *the project's first server-side
+   code*. Privacy-wise the payload stays summary-only ("@mika added you"),
+   never health data, but a device token is new personal data and the privacy
+   policy + App Privacy label must say so. Free tier covers it (Edge Functions
+   500K invocations/mo, APNs free).
+
+Sequencing: piece 1 is worth doing regardless and stands alone. Piece 2 is
+what makes the app worth reopening, and it pairs naturally with **P3
+realtime** — both are "tell the user something happened while they were
+away", and building the websocket and the push trigger together avoids
+solving that problem twice.
+
 ### Weekly Challenge — ✅ 2026-07-09 (retention loop 1)
 
 - [x] `WeeklyChallenge` engine (QuestModels.swift, pure Foundation): one
