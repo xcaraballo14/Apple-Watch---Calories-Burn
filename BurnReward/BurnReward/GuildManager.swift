@@ -115,6 +115,10 @@ final class GuildManager: ObservableObject {
         friends = []
         incoming = []
         outgoingIDs = []
+        // Nothing social survives sign-out: the feed, the cached photos, and
+        // the bell's guild rows all belong to the account that just left.
+        FeedManager.shared.signedOut()
+        SocialAlertStore.shared.clear()
     }
 
     // MARK: - Loading
@@ -140,6 +144,7 @@ final class GuildManager: ObservableObject {
             me = profile
             phase = .ready
             await loadFriendships(uid: uid)
+            await SocialAlertStore.shared.refresh()
         } catch SupabaseAPI.APIError.notSignedIn {
             phase = .signedOut
         } catch {

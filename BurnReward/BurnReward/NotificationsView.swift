@@ -1,35 +1,65 @@
 import SwiftUI
 
-/// The home for alerts behind the header bell. v1 = an in-app feed: a "next up"
-/// nudge section on top, then a history of achievement events. Everything is
-/// derived from quest history (see `AlertFeed`) — no backend, no push.
+/// The home for alerts behind the header bell: a "next up" panel of
+/// forward-looking nudges, guild news, then your achievement history.
+///
+/// NEXT UP and RECENT are derived from quest history (`AlertFeed`) — no
+/// backend. The GUILD section is *fetched* (`SocialAlertStore`) and is the one
+/// part a reinstall can't rebuild offline; see that file for why they're kept
+/// apart.
 struct NotificationsView: View {
     @ObservedObject var model: DashboardViewModel
+    @ObservedObject private var social = SocialAlertStore.shared
     @Environment(\.dismiss) private var dismiss
+    @AppStorage("br.displayName") private var displayName = ""
+    /// Tapping a guild row should land on the GUILD tab; the sheet's owner
+    /// passes this in so the row knows where to go.
+    var onOpenGuild: (() -> Void)?
+
+    private var isEmpty: Bool {
+        model.alertNudges.isEmpty && model.alertRecent.isEmpty && social.items.isEmpty
+    }
 
     var body: some View {
         NavigationStack {
             Group {
-                if model.alertNudges.isEmpty && model.alertRecent.isEmpty {
+                if isEmpty {
                     emptyState
                 } else {
-                    List {
-                        if !model.alertNudges.isEmpty {
-                            Section {
-                                ForEach(model.alertNudges) { row($0) }
-                            } header: { sectionHeader("NEXT UP") }
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 22) {
+                            if !model.alertNudges.isEmpty {
+                                section("NEXT UP") {
+                                    rows(model.alertNudges)
+                                    AlertStreakFooter(name: displayName,
+                                                      streakDays: model.stats.streakDays)
+                                        .padding(.top, 8)
+                                }
+                            }
+                            // Guild news sits between the forward-looking
+                            // nudges and your own history: it's about other
+                            // people, and some of it wants an answer.
+                            if !social.items.isEmpty {
+                                section("GUILD") {
+                                    rows(social.items, tappable: true)
+                                }
+                            }
+                            if !model.alertRecent.isEmpty {
+                                section("RECENT") {
+                                    rows(model.alertRecent)
+                                }
+                            }
                         }
-                        if !model.alertRecent.isEmpty {
-                            Section {
-                                ForEach(model.alertRecent) { row($0) }
-                            } header: { sectionHeader("RECENT") }
-                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
                     }
-                    .scrollContentBackground(.hidden)
-                    .contentMargins(.top, 8, for: .scrollContent)
                 }
             }
             .background(BRTheme.bg)
+            // Without this the bar reserves room for a large title that never
+            // renders (the title is a .principal item), leaving a dead band
+            // under the header. Every other sheet in the app already sets it.
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     Text("ALERTS")
@@ -48,69 +78,130 @@ struct NotificationsView: View {
         .onDisappear { model.markAlertsSeen() }
     }
 
-    // MARK: - Rows
+    // MARK: - Structure
 
-    private func sectionHeader(_ text: String) -> some View {
-        Text(text)
-            .font(.pixel(11))
-            .foregroundStyle(BRTheme.textMuted)
+    private func section<Content: View>(
+        _ title: String, @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            AlertSectionHeader(text: title)
+            VStack(spacing: 0) {
+                content()
+            }
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(BRTheme.card)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .strokeBorder(BRTheme.greenFG.opacity(0.22), lineWidth: 1)
+                    )
+            )
+        }
     }
+
+    @ViewBuilder
+    private func rows(_ items: [AlertItem], tappable: Bool = false) -> some View {
+        ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+            if tappable {
+                Button {
+                    dismiss()
+                    onOpenGuild?()
+                } label: { row(item) }
+                .buttonStyle(.plain)
+            } else {
+                row(item)
+            }
+            if index < items.count - 1 {
+                Rectangle()
+                    .fill(BRTheme.divider)
+                    .frame(height: 1)
+                    .padding(.vertical, 2)
+            }
+        }
+    }
+
+    // MARK: - One row
 
     private func row(_ item: AlertItem) -> some View {
         let isNew = model.isUnread(item)
-        return HStack(spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(tint(item.kind))
-                    .frame(width: 40, height: 40)
-                    .overlay(
-                        item.kind == .badge
-                            ? Circle().strokeBorder(BRTheme.gold, lineWidth: 1)
-                            : nil
-                    )
-                Text(item.emoji).font(.system(size: 20))
-            }
-            .accessibilityHidden(true)
+        return HStack(alignment: .top, spacing: 12) {
+            AlertIconTile(emoji: item.emoji, accent: accent(item.kind), stamp: stamp(item))
 
-            VStack(alignment: .leading, spacing: 3) {
-                Text(item.title)
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(BRTheme.textPrimary)
-                    .lineLimit(1)
-                Text(item.detail)
-                    .font(.footnote)
-                    .foregroundStyle(BRTheme.textMuted)
-                    .lineLimit(2)
-            }
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text(item.title)
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(BRTheme.textPrimary)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 0)
+                    Text(item.time)
+                        .font(.caption2)
+                        .foregroundStyle(BRTheme.textMuted)
+                        .lineLimit(1)
+                    Image(systemName: "chevron.right")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(BRTheme.textMuted)
+                        .opacity(item.kind.isSocial ? 1 : 0.35)
+                }
 
-            Spacer(minLength: 8)
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text(item.detail)
+                        .font(.footnote)
+                        .foregroundStyle(BRTheme.textMuted)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 0)
+                    if isNew {
+                        Circle()
+                            .fill(BRTheme.neonGreen)
+                            .frame(width: 8, height: 8)
+                            .accessibilityHidden(true)
+                    }
+                }
 
-            VStack(alignment: .trailing, spacing: 5) {
-                Text(item.time)
-                    .font(.caption2)
-                    .foregroundStyle(BRTheme.textMuted)
-                if isNew {
-                    Circle()
-                        .fill(BRTheme.neonGreen)
-                        .frame(width: 8, height: 8)
-                        .accessibilityHidden(true)
+                if let progress = item.progress {
+                    AlertProgressBar(progress: progress)
+                        .padding(.top, 3)
                 }
             }
         }
-        .padding(.vertical, 6)
-        .listRowBackground(BRTheme.card)
-        .listRowSeparatorTint(BRTheme.divider)
+        .padding(.vertical, 10)
+        .contentShape(Rectangle())
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(isNew ? "New. " : "")\(item.title). \(item.detail). \(item.time).")
+        .accessibilityLabel(spoken(item, isNew: isNew))
+        .accessibilityHint(item.kind.isSocial ? "Opens the guild." : "")
     }
 
-    private func tint(_ kind: AlertItem.Kind) -> Color {
+    private func spoken(_ item: AlertItem, isNew: Bool) -> String {
+        var parts = [isNew ? "New." : "", item.title + ".", item.detail + ".", item.time + "."]
+        if let progress = item.progress { parts.append("Progress: \(progress.readout).") }
+        return parts.filter { !$0.isEmpty }.joined(separator: " ")
+    }
+
+    /// The requester's level rides the plate, so you can size someone up
+    /// before opening their profile.
+    private func stamp(_ item: AlertItem) -> String? {
+        guard item.kind == .friendRequest,
+              let range = item.detail.range(of: #"LVL (\d+)"#, options: .regularExpression)
+        else { return nil }
+        return String(item.detail[range]).replacingOccurrences(of: "LVL ", with: "")
+    }
+
+    private func accent(_ kind: AlertItem.Kind) -> Color {
         switch kind {
-        case .nudge:   BRTheme.tintYellow
-        case .streak:  BRTheme.tintBlue
-        case .badge:   BRTheme.gold.opacity(0.15)
-        case .levelUp: BRTheme.tintGreen
-        case .record:  BRTheme.tintOrange
+        case .nudge:         BRTheme.greenFG
+        case .streak:        BRTheme.blueFG
+        case .badge:         BRTheme.gold
+        case .levelUp:       BRTheme.greenFG
+        case .record:        BRTheme.orangeFG
+        case .friendRequest: BRTheme.gold        // waiting on you
+        // Xavier's mockup uses magenta here; the design system has no magenta
+        // token, so blue keeps "joined" distinct from gold requests and orange
+        // reactions without inventing a one-off colour.
+        case .friendJoined:  BRTheme.blueFG
+        case .reaction:      BRTheme.orangeFG
         }
     }
 
@@ -123,7 +214,7 @@ struct NotificationsView: View {
             Text("NO ALERTS YET")
                 .font(.pixel(12))
                 .foregroundStyle(BRTheme.textPrimary)
-            Text("Finish a quest on your Apple Watch and your level-ups, badges, and streak nudges show up here.")
+            Text("Finish a quest on your Apple Watch and your level-ups, badges, and streak nudges show up here. Guild news lands here too.")
                 .font(.footnote)
                 .foregroundStyle(BRTheme.textMuted)
                 .multilineTextAlignment(.center)

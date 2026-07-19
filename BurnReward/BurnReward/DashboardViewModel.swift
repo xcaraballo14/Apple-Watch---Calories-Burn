@@ -157,9 +157,15 @@ final class DashboardViewModel: ObservableObject {
     // MARK: - Alerts (bell)
 
     /// True when any achievement event is newer than the last time the sheet
-    /// was opened — drives the header bell's red dot.
+    /// was opened — drives the header bell's red dot. Guild news counts too:
+    /// a friend request nobody sees is the whole problem this was built to fix.
     var hasUnreadAlerts: Bool {
-        alertRecent.contains { ($0.date ?? .distantPast) > alertsLastSeen }
+        let social = SocialAlertStore.shared.items
+        // A request is dateless and pinned — it stays "unread" until answered,
+        // because it's waiting on the player rather than just informing them.
+        if social.contains(where: { $0.kind == .friendRequest }) { return true }
+        return (alertRecent + social)
+            .contains { ($0.date ?? .distantPast) > alertsLastSeen }
     }
 
     func isUnread(_ item: AlertItem) -> Bool {

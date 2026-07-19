@@ -605,8 +605,46 @@ struct Celebration: Identifiable, Equatable {
 /// history + level state, so there's no backend and a reinstall rebuilds the
 /// same feed. `date` is nil for live nudges ("Now") and set for past events
 /// (which is also what drives the unread dot).
+/// How close a nudge is to done. Shown as a bar so "3 quests from QUEST
+/// SPREE" carries its own progress instead of just naming a gap.
+struct AlertProgress: Equatable {
+    let current: Int
+    let target: Int
+    /// Suffix for the readout: "1/4" (empty) vs "268 / 300 XP".
+    let unit: String
+    /// The bar's colour follows what's being measured, not the row.
+    let tint: AlertProgressTint
+
+    var fraction: Double {
+        target > 0 ? min(Double(current) / Double(target), 1) : 0
+    }
+
+    var readout: String {
+        unit.isEmpty
+            ? "\(current)/\(target)"
+            : "\(current.formatted()) / \(target.formatted()) \(unit)"
+    }
+}
+
+/// Named rather than a Color so the pure-model layer stays free of SwiftUI.
+enum AlertProgressTint: Equatable { case green, gold, orange }
+
 struct AlertItem: Identifiable, Equatable {
-    enum Kind: Equatable { case nudge, streak, badge, levelUp, record }
+    /// The first three are *derived* from quest history by `AlertFeed`. The
+    /// social kinds are *fetched* from Supabase by `SocialAlertStore` — they
+    /// are the one part of this feed a reinstall can't rebuild offline, which
+    /// is why they live in a separate store rather than in `AlertFeed`.
+    enum Kind: Equatable {
+        case nudge, streak, badge, levelUp, record
+        case friendRequest, friendJoined, reaction
+
+        var isSocial: Bool {
+            switch self {
+            case .friendRequest, .friendJoined, .reaction: true
+            default: false
+            }
+        }
+    }
     let id: String
     let kind: Kind
     let emoji: String
@@ -614,6 +652,7 @@ struct AlertItem: Identifiable, Equatable {
     let detail: String
     let time: String
     let date: Date?
+    var progress: AlertProgress? = nil
 }
 
 /// Builds the bell feed: forward-looking nudges from the current state, plus a
@@ -650,7 +689,9 @@ enum AlertFeed {
                 id: "nudge_challenge", kind: .nudge, emoji: challenge.emoji,
                 title: "\(remaining.formatted()) \(challenge.unitLabel(for: remaining)) from \(challenge.name)",
                 detail: challenge.detail,
-                time: "Now", date: nil
+                time: "Now", date: nil,
+                progress: AlertProgress(current: challenge.progress, target: challenge.goal,
+                                        unit: "", tint: .green)
             ))
         }
 
@@ -661,7 +702,10 @@ enum AlertFeed {
                 id: "nudge_level", kind: .nudge, emoji: "✨",
                 title: "\(toGo.formatted()) XP to Level \(progress.level + 1)",
                 detail: "Next rank: \(LevelEngine.title(for: progress.level + 1))",
-                time: "Now", date: nil
+                time: "Now", date: nil,
+                progress: AlertProgress(current: progress.xpIntoLevel,
+                                        target: progress.xpLevelSpan,
+                                        unit: "XP", tint: .gold)
             ))
         }
 
@@ -678,7 +722,9 @@ enum AlertFeed {
                 id: "nudge_badge_\(closest.badge.id)", kind: .nudge, emoji: closest.badge.emoji,
                 title: "\(closest.remaining.formatted()) \(p.unit) from \(closest.badge.name)",
                 detail: closest.badge.requirement,
-                time: "Now", date: nil
+                time: "Now", date: nil,
+                progress: AlertProgress(current: p.current, target: p.target,
+                                        unit: p.unit, tint: .green)
             ))
         }
 

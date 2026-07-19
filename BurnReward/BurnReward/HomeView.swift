@@ -16,6 +16,9 @@ struct HomeView: View {
     /// Drives the bell's red dot — true when an achievement event is newer than
     /// the last time the alerts sheet was opened.
     private var hasUnreadAlerts: Bool { model.hasUnreadAlerts }
+    /// Observed so the bell dot appears the moment guild news lands, not on
+    /// the next unrelated redraw.
+    @ObservedObject private var social = SocialAlertStore.shared
 
     var body: some View {
         let stats = model.stats
@@ -89,7 +92,9 @@ struct HomeView: View {
                                 ))
             }
         }
-        .sheet(isPresented: $showAlerts) { NotificationsView(model: model) }
+        .sheet(isPresented: $showAlerts) {
+            NotificationsView(model: model) { selectedTab = .guild }
+        }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
                 Task { await model.refresh() }

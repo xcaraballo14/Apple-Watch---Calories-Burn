@@ -237,7 +237,20 @@ final class SupabaseAPI {
 
     private let decoder: JSONDecoder = {
         let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
+        // Postgres emits timestamptz with microseconds ("…T08:19:40.123456+00")
+        // sometimes and without them other times, and plain `.iso8601` rejects
+        // the fractional form. A mismatch would throw mid-decode and take the
+        // whole response with it, so try both rather than trust one shape.
+        decoder.dateDecodingStrategy = .custom { decoder in
+            let text = try decoder.singleValueContainer().decode(String.self)
+            if let date = PostgresTimestamp.parse(text) {
+                return date
+            }
+            throw DecodingError.dataCorrupted(.init(
+                codingPath: decoder.codingPath,
+                debugDescription: "Unrecognized timestamp: \(text)"
+            ))
+        }
         return decoder
     }()
 
@@ -246,6 +259,29 @@ final class SupabaseAPI {
         encoder.dateEncodingStrategy = .iso8601
         return encoder
     }()
+}
+
+// MARK: - Timestamps
+
+/// Parses the two shapes Postgres hands back for `timestamptz`.
+///
+/// The formatters are shared rather than rebuilt per value — constructing an
+/// `ISO8601DateFormatter` for every row in a feed is measurably wasteful.
+/// `nonisolated(unsafe)` is sound here: Foundation's date formatters are
+/// documented thread-safe for parsing, and these two are configured once at
+/// init and never mutated afterwards.
+private enum PostgresTimestamp {
+    nonisolated(unsafe) private static let withFraction: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
+
+    nonisolated(unsafe) private static let plain = ISO8601DateFormatter()
+
+    static func parse(_ text: String) -> Date? {
+        withFraction.date(from: text) ?? plain.date(from: text)
+    }
 }
 
 // MARK: - Cancellation
@@ -361,9 +397,13 @@ struct FriendshipRow: Codable, Hashable {
     let requester: UUID
     let addressee: UUID
     var status: String
+    /// When the relationship last changed — i.e. when it was accepted, which
+    /// is what dates the "joined your party" alert.
+    var updatedAt: Date?
 
     enum CodingKeys: String, CodingKey {
         case requester, addressee, status
+        case updatedAt = "updated_at"
     }
 }
 
@@ -432,10 +472,21 @@ struct ReactionRow: Codable, Hashable {
     let eventID: UUID
     let userID: UUID
     var reaction: String
+    var createdAt: Date?
 
     enum CodingKeys: String, CodingKey {
         case reaction
         case eventID = "event_id"
         case userID = "user_id"
+        case createdAt = "created_at"
+    }
+
+    /// Inserts must not send `created_at` — the column has a default and the
+    /// row is rejected if the client tries to set it.
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(eventID, forKey: .eventID)
+        try container.encode(userID, forKey: .userID)
+        try container.encode(reaction, forKey: .reaction)
     }
 }

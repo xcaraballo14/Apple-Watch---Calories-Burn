@@ -224,6 +224,19 @@ Required by Guideline 1.2 (UGC) + 5.1.1(v) (accounts) — all launch-gating:
     before the result came back — so failure looked exactly like success.
     Every async user action needs a visible pending state and a visible
     failure, or the next bug costs a device test too.
+  - ✅ **Guild news in the bell (2026-07-19).** Friend requests, accepted
+    requests, and grouped reactions on your posts now appear in an ALERTS
+    **GUILD** section and light the header bell. Xavier redesigned the whole
+    alerts screen in the same round: beveled pixel plates per alert kind,
+    **progress bars on the nudges** (the data already existed in
+    WeeklyChallenge / LevelEngine / BadgeCatalog — `AlertItem` just never
+    carried it), tick-mark section headers, and a KEEP IT UP + streak strip.
+    Kept in `SocialAlertStore`, **not** `AlertFeed`: these rows are *fetched*
+    and a reinstall can't rebuild them, so the derivation-first guarantee still
+    describes AlertFeed truthfully. Reactions group one row per post. "Joined
+    your party" only fires for requests **you** sent — if you clicked accept,
+    you already know. This is piece 1 of push; piece 2 (APNs + Edge Function)
+    is queued in ROADMAP.md.
   - ⏳ **Remaining:** two-account test (a friend's post + photos loading
     through the `are_friends` storage read policy — the only path never yet
     exercised against a real friendship).

@@ -117,6 +117,9 @@ struct RootView: View {
                 }
             }
             await model.refresh()
+            // Guild news drives the header bell, which lives on Home — so it
+            // loads at the root rather than waiting for the GUILD tab to open.
+            await SocialAlertStore.shared.refresh()
         }
     }
 
