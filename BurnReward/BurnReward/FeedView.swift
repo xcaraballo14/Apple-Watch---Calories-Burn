@@ -136,6 +136,7 @@ struct FeedView: View {
     let hasFriends: Bool
     let onReact: (FeedEvent, Reaction) -> Void
     let onAction: (FeedEvent, FeedCardAction) -> Void
+    let onOpenProfile: (FeedEvent) -> Void
     let onRecruit: () -> Void
 
     var body: some View {
@@ -148,7 +149,8 @@ struct FeedView: View {
                         ForEach(events) { event in
                             FeedRow(event: event,
                                     onReact: { onReact(event, $0) },
-                                    onAction: { onAction(event, $0) })
+                                    onAction: { onAction(event, $0) },
+                                    onOpenProfile: { onOpenProfile(event) })
                         }
                     }
                     .padding(16)
@@ -201,6 +203,7 @@ struct FeedRow: View {
     let event: FeedEvent
     let onReact: (Reaction) -> Void
     let onAction: (FeedCardAction) -> Void
+    let onOpenProfile: () -> Void
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -232,11 +235,19 @@ struct FeedRow: View {
 
     // Who posted, and when. The identity block collapses to one VoiceOver
     // line; the ⋯ menu stays its own element so it's still reachable.
+    // Tapping a friend's identity opens their character sheet — your own
+    // header stays inert (your sheet is the CHARACTER tab).
     private var header: some View {
         HStack(spacing: 10) {
-            identityBlock
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel("\(event.isMine ? "You" : event.username), level \(event.level) \(event.title), \(event.stamp) ago.")
+            Button(action: onOpenProfile) {
+                identityBlock
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .disabled(event.isMine)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("\(event.isMine ? "You" : event.username), level \(event.level) \(event.title), \(event.stamp) ago.")
+            .accessibilityHint(event.isMine ? "" : "Opens their character sheet.")
             cardMenu
         }
         .padding(.leading, 14)
@@ -947,13 +958,13 @@ enum DemoFeed {
 
 #Preview("Feed") {
     FeedView(events: DemoFeed.events, hasFriends: true, onReact: { _, _ in },
-             onAction: { _, _ in }, onRecruit: {})
+             onAction: { _, _ in }, onOpenProfile: { _ in }, onRecruit: {})
         .background(BRTheme.bg)
 }
 
 #Preview("Feed — empty") {
     FeedView(events: [], hasFriends: false, onReact: { _, _ in },
-             onAction: { _, _ in }, onRecruit: {})
+             onAction: { _, _ in }, onOpenProfile: { _ in }, onRecruit: {})
         .background(BRTheme.bg)
 }
 

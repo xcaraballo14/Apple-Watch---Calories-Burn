@@ -44,6 +44,9 @@ struct GuildView: View {
     /// `-BRDemoMemberSheet`: the member profile is normally push-only (tap a
     /// party row), which screenshots can't reach — this presents it directly.
     @State private var demoMemberSheet = false
+    /// A feed author whose character sheet is being opened (tap on a card's
+    /// identity block).
+    @State private var openProfile: SocialProfile?
 
     init(guild: GuildManager, level: Int, rankTitle: String, badgeIDs: [String]) {
         self.guild = guild
@@ -96,6 +99,11 @@ struct GuildView: View {
             .background(BRTheme.bg)
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: SocialProfile.self) { profile in
+                FriendProfileView(profile: profile, guild: guild)
+            }
+            // Programmatic push for feed-header taps (the party list uses
+            // NavigationLink values; the feed resolves the author first).
+            .navigationDestination(item: $openProfile) { profile in
                 FriendProfileView(profile: profile, guild: guild)
             }
             .sheet(isPresented: $showAddFriend) { AddFriendSheet(guild: guild) }
@@ -462,6 +470,17 @@ struct GuildView: View {
                              case .report:   reportingEvent = event
                              case .block:    blockingEvent = event
                              }
+                         },
+                         onOpenProfile: { event in
+                             // The party list has the live profile (real badge
+                             // ids); the event itself is the fallback so the
+                             // tap always lands somewhere sensible.
+                             openProfile = guild.friends.first { $0.id == event.authorID }
+                                 ?? SocialProfile(id: event.authorID,
+                                                  username: event.username,
+                                                  avatarKind: "pixel", avatarRef: nil,
+                                                  level: event.level, title: event.title,
+                                                  badgeIDs: [])
                          },
                          onRecruit: { showAddFriend = true })
                 .refreshable { await feed.refresh() }

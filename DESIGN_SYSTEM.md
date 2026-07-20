@@ -13,6 +13,19 @@ Source of truth: `Theme.swift` for color/font tokens.
 **Personality:** Energetic · Gamified · Honest · No-fluff  
 **NOT:** Cold fitness tracker · Guilt-trip health app · Corporate wellness tool
 
+### North star (Xavier, 2026-07-19 — after the first two-player tests)
+
+> A **retro RPG that happens to track fitness** — not a fitness app with
+> retro graphics.
+
+That distinction should shape every screen: the feed, the workout summary,
+the social interactions, all of it. Parts of the app already live there (the
+GUILD splash, the alerts bevel plates, the stats consoles); the gap is the
+screens that still read as "iOS app with pixel accents" (system lists,
+sheets, plain cards). No redesign is commissioned yet — but when a screen is
+being touched anyway, pull it toward the RPG, and every new screen starts
+there. The ADA/WCAG rules in §here are not negotiable during any reskin.
+
 ---
 
 ## 2. Color Palette

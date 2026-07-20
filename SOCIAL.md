@@ -267,8 +267,8 @@ Required by Guideline 1.2 (UGC) + 5.1.1(v) (accounts) — all launch-gating:
     invisible overflow below the 220pt feed crop sat on the reaction bar —
     reactions worked under a landscape-photo post and died under a portrait
     one. Fixed with `.contentShape` at all three scaledToFill sites
-    (feed, Home avatar, post-sheet thumbnails), cd5451f. Pending: Xavier
-    re-taps a reaction on a portrait post to close P2.
+    (feed, Home avatar, post-sheet thumbnails), cd5451f — and the retest
+    passed 2026-07-19. **P2 closed.**
   - ~~Blocked on Xavier~~ (done 2026-07-18): (1) run `supabase/p2_schema.sql`; (2) add the
     **Sensitive Content Analysis** capability in Xcode → Signing &
     Capabilities. Without (2) the on-device nudity screen silently no-ops
@@ -277,8 +277,9 @@ Required by Guideline 1.2 (UGC) + 5.1.1(v) (accounts) — all launch-gating:
     auto-registers; hand-editing the entitlements file is what caused the
     -7003 ghost below.
 - **P4a — Report + block (pulled forward 2026-07-19). ✅ BUILT same day
-  (mockup → Xavier locked → wired); ⏳ blocked on Xavier running
-  `supabase/p4a_schema.sql`, then the two-account retest.**
+  (mockup → Xavier locked → wired), migration run, and the two-account
+  retest passed 2026-07-19 — report, block, take-down, and unblock all
+  verified on device. CLOSED.**
   - **Blocking rides friendships, not a new table**: `status='blocked'`
     already existed, and `are_friends()` requires 'accepted' — so one flipped
     row darkens feed, photos, and reactions in BOTH directions through the
