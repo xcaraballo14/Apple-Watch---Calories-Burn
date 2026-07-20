@@ -41,6 +41,9 @@ final class GuildManager: ObservableObject {
             || arguments.contains("-BRDemoPostSheet")
             || arguments.contains("-BRDemoFeedTail")
             || arguments.contains("-BRDemoPostPhotos")
+            || arguments.contains("-BRDemoReportSheet")
+            || arguments.contains("-BRDemoBlockConfirm")
+            || arguments.contains("-BRDemoMemberSheet")
         if arguments.contains("-BRDemoGuildClaim") {
             phase = .needsUsername
         } else if arguments.contains("-BRDemoFeedEmpty") {

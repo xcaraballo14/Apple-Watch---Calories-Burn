@@ -33,6 +33,8 @@ final class FeedManager: ObservableObject {
             || arguments.contains("-BRDemoFeedTail")
             || arguments.contains("-BRDemoPostSheet")
             || arguments.contains("-BRDemoPostPhotos")
+            || arguments.contains("-BRDemoReportSheet")
+            || arguments.contains("-BRDemoBlockConfirm")
         if arguments.contains("-BRDemoFeedTail") {
             events = Array(DemoFeed.events.suffix(3))
         } else if isDemo {

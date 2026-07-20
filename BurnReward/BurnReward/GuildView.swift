@@ -36,6 +36,14 @@ struct GuildView: View {
     @State private var segment: GuildSegment = .feed
     @ObservedObject private var feed = FeedManager.shared
     @State private var showPostSheet = false
+    // P4a mockup state — the ⋯ menu's three destinations. Actions are stubs
+    // until the design is locked; then they wire to reports/blocks/delete.
+    @State private var reportingEvent: FeedEvent?
+    @State private var blockingEvent: FeedEvent?
+    @State private var takedownEvent: FeedEvent?
+    /// `-BRDemoMemberSheet`: the member profile is normally push-only (tap a
+    /// party row), which screenshots can't reach — this presents it directly.
+    @State private var demoMemberSheet = false
 
     init(guild: GuildManager, level: Int, rankTitle: String, badgeIDs: [String]) {
         self.guild = guild
@@ -54,6 +62,16 @@ struct GuildView: View {
         }
         if arguments.contains("-BRDemoPostSheet") || arguments.contains("-BRDemoPostPhotos") {
             _showPostSheet = State(initialValue: true)
+        }
+        // Screenshot flags for the P4a mockup round.
+        if arguments.contains("-BRDemoReportSheet") {
+            _reportingEvent = State(initialValue: DemoFeed.events.first)
+        }
+        if arguments.contains("-BRDemoBlockConfirm") {
+            _blockingEvent = State(initialValue: DemoFeed.events.first)
+        }
+        if arguments.contains("-BRDemoMemberSheet") {
+            _demoMemberSheet = State(initialValue: true)
         }
     }
 
@@ -81,6 +99,17 @@ struct GuildView: View {
                 FriendProfileView(profile: profile, guild: guild)
             }
             .sheet(isPresented: $showAddFriend) { AddFriendSheet(guild: guild) }
+            .sheet(isPresented: $demoMemberSheet) {
+                NavigationStack {
+                    FriendProfileView(
+                        profile: SocialProfile(id: UUID(), username: "eli787",
+                                               avatarKind: "pixel", avatarRef: nil,
+                                               level: 1, title: "SNACK ROOKIE",
+                                               badgeIDs: ["first_burn", "long_walk", "marathoner"]),
+                        guild: guild
+                    )
+                }
+            }
             .sheet(isPresented: $showPostSheet) {
                 // Mockup surface only — the real entry point is the quest
                 // receipt / badge unlock share sheet (P0's ShareCardSheet).
@@ -427,8 +456,47 @@ struct GuildView: View {
                          onReact: { event, reaction in
                              Task { await feed.react(event, reaction) }
                          },
+                         onAction: { event, action in
+                             switch action {
+                             case .takeDown: takedownEvent = event
+                             case .report:   reportingEvent = event
+                             case .block:    blockingEvent = event
+                             }
+                         },
                          onRecruit: { showAddFriend = true })
                 .refreshable { await feed.refresh() }
+                .sheet(item: $reportingEvent) { event in
+                    ReportSheet(subject: "@\(event.username)'s post — \(event.headline)") { _, _ in
+                        // Mockup stub — the lock wires this to the reports insert
+                        // and hides the post for the reporter.
+                    }
+                }
+                .confirmationDialog(
+                    "Block @\(blockingEvent?.username ?? "")?",
+                    isPresented: Binding(get: { blockingEvent != nil },
+                                         set: { if !$0 { blockingEvent = nil } }),
+                    titleVisibility: .visible
+                ) {
+                    Button("Block player", role: .destructive) {
+                        blockingEvent = nil   // mockup stub — wires to blocks insert
+                    }
+                    Button("Cancel", role: .cancel) { blockingEvent = nil }
+                } message: {
+                    Text("They leave your party. Their posts vanish for you and yours vanish for them. They aren't told.")
+                }
+                .confirmationDialog(
+                    "Take down this post?",
+                    isPresented: Binding(get: { takedownEvent != nil },
+                                         set: { if !$0 { takedownEvent = nil } }),
+                    titleVisibility: .visible
+                ) {
+                    Button("Take down", role: .destructive) {
+                        takedownEvent = nil   // mockup stub — wires to feed.delete
+                    }
+                    Button("Keep it", role: .cancel) { takedownEvent = nil }
+                } message: {
+                    Text("Its photos and reactions go with it. Your party isn't told.")
+                }
             case .party:
                 partyList
             }
@@ -637,6 +705,10 @@ struct FriendProfileView: View {
     let profile: SocialProfile
     @ObservedObject var guild: GuildManager
     @State private var confirmingRemove = false
+    // P4a mockup state — report/block from the member sheet (App Review wants
+    // a path from a profile too, not just from posts). Stubs until locked.
+    @State private var reporting = false
+    @State private var confirmingBlock = false
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -684,16 +756,33 @@ struct FriendProfileView: View {
                     .padding(14)
                     .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(BRTheme.card))
 
-                    Button {
-                        confirmingRemove = true
-                    } label: {
-                        Text("REMOVE FROM PARTY")
-                            .font(.pixel(8))
-                            .foregroundStyle(BRTheme.alertRed)
-                            .frame(maxWidth: .infinity, minHeight: 44)
-                            .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(BRTheme.card))
+                    // Ordered by severity: part ways / flag them / wall them
+                    // off. Remove stays friendly; block is the loud one.
+                    VStack(spacing: 8) {
+                        memberActionRow("REMOVE FROM PARTY", color: BRTheme.alertRed) {
+                            confirmingRemove = true
+                        }
+                        memberActionRow("REPORT PLAYER", color: BRTheme.textMuted) {
+                            reporting = true
+                        }
+                        Button {
+                            confirmingBlock = true
+                        } label: {
+                            Text("BLOCK PLAYER")
+                                .font(.pixel(8))
+                                .foregroundStyle(BRTheme.alertRed)
+                                .frame(maxWidth: .infinity, minHeight: 44)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                        .fill(BRTheme.alertRed.opacity(0.10))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                                .strokeBorder(BRTheme.alertRed.opacity(0.5), lineWidth: 1)
+                                        )
+                                )
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                     .padding(.top, 4)
                 }
                 .padding(16)
@@ -712,6 +801,33 @@ struct FriendProfileView: View {
         } message: {
             Text("You can always recruit them again.")
         }
+        .sheet(isPresented: $reporting) {
+            ReportSheet(subject: "@\(profile.username)") { _, _ in
+                // Mockup stub — the lock wires this to the reports insert.
+            }
+        }
+        .confirmationDialog("Block @\(profile.username)?",
+                            isPresented: $confirmingBlock, titleVisibility: .visible) {
+            Button("Block player", role: .destructive) {
+                // Mockup stub — the lock wires this to the blocks insert,
+                // dissolves the friendship, and dismisses.
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("They leave your party. Their posts vanish for you and yours vanish for them. They aren't told.")
+        }
+    }
+
+    private func memberActionRow(_ title: String, color: Color,
+                                 action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(.pixel(8))
+                .foregroundStyle(color)
+                .frame(maxWidth: .infinity, minHeight: 44)
+                .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(BRTheme.card))
+        }
+        .buttonStyle(.plain)
     }
 }
 

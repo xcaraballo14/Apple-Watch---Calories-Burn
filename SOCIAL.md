@@ -20,6 +20,28 @@ v1.15 catalog UX, v1.2 Ember Tree.
 4. **Feed: short captions allowed** (plus the auto-generated structured
    line). Ships with the text-safety plumbing below.
 
+### Tester-round rulings (Xavier + first real tester, 2026-07-19)
+
+The first two-account test (build 37) produced these calls:
+
+1. **Report + block moves ahead of P3.** Testers are posting real photos;
+   the moderation rails are now the next build, before leaderboards.
+2. **Avatars: real photo uploads confirmed** (ruling 3's dial, re-affirmed
+   over the pixel-set-only alternative). Gated behind report/block landing
+   first — an avatar is a user photo and must be reportable on day one.
+3. **Friend profile pages will show more than the current wire carries** —
+   Xavier chose syncing additional summary stats (e.g. weekly XP, streak)
+   over a synced-fields-only sheet. Field list finalized at build time;
+   the health rules still bound it (no max-burn headline, no HR, weekly
+   aggregates for anything pressure-like). P3's weekly_xp overlaps.
+4. **Delete-post UI commissioned** (server side + photo cleanup already
+   existed in P2 — it needs only a menu on your own posts). **Edit stays
+   off**: posts are immutable so a reaction's target can't be swapped;
+   delete-and-repost is the honest equivalent.
+5. **Posting discoverability round queued** — the tester couldn't find how
+   to post (the only entry is the quest-receipt share flow). A FEED-tab
+   entry point gets its own mockup round.
+
 ## Invariants (unchanged, load-bearing)
 
 - **Core loop stays 100% on-device.** Social is an opt-in, account-based,
@@ -237,9 +259,16 @@ Required by Guideline 1.2 (UGC) + 5.1.1(v) (accounts) — all launch-gating:
     your party" only fires for requests **you** sent — if you clicked accept,
     you already know. This is piece 1 of push; piece 2 (APNs + Edge Function)
     is queued in ROADMAP.md.
-  - ⏳ **Remaining:** two-account test (a friend's post + photos loading
-    through the `are_friends` storage read policy — the only path never yet
-    exercised against a real friendship).
+  - ✅ **Two-account test (2026-07-19, build 37):** friend request → accept
+    → both directions of feed visibility, and a friend's photo loading
+    through the `are_friends` storage read policy — all confirmed on real
+    devices. One find: **portrait photos swallowed reaction taps.**
+    `.clipped()` clips drawing, not hit-testing, so a portrait photo's
+    invisible overflow below the 220pt feed crop sat on the reaction bar —
+    reactions worked under a landscape-photo post and died under a portrait
+    one. Fixed with `.contentShape` at all three scaledToFill sites
+    (feed, Home avatar, post-sheet thumbnails), cd5451f. Pending: Xavier
+    re-taps a reaction on a portrait post to close P2.
   - ~~Blocked on Xavier~~ (done 2026-07-18): (1) run `supabase/p2_schema.sql`; (2) add the
     **Sensitive Content Analysis** capability in Xcode → Signing &
     Capabilities. Without (2) the on-device nudity screen silently no-ops
@@ -247,11 +276,22 @@ Required by Guideline 1.2 (UGC) + 5.1.1(v) (accounts) — all launch-gating:
     safety net is simply absent. Do it through Xcode's UI so the App ID
     auto-registers; hand-editing the entitlements file is what caused the
     -7003 ghost below.
+- **P4a — Report + block (pulled forward, next in line — 2026-07-19).**
+  Scope: `reports` table (closed reason list + optional note, insert-only
+  for players, reviewed via dashboard) · `blocks` table with **mutual
+  invisibility enforced in RLS** on share_events/reactions (not just UI) ·
+  block also dissolves the friendship · card overflow menu (own post →
+  take down; someone else's → report post / block player) · report
+  auto-hides the content for the reporter · block surface on the party
+  member sheet too · unblock surface (settings) · delete-post rides along
+  since it's the same card menu. Mockup-first like everything visible.
 - **P3 — Leaderboards.** weekly_xp posting (opt-in toggle); friends weekly
   XP board; ties into the existing weekly-challenge screen real estate
   (mockup decides). Guardrail: weekly aggregates only — rest days never shown,
   no daily pressure mechanics (health rule).
-- **P4 — Compliance hardening.** Report/block flows, account deletion,
+- **P4 — Compliance hardening.** ⚠️ Report/block **pulled forward ahead of
+  P3** (tester-round ruling 1, 2026-07-19) — see P4a below. The rest of P4:
+  account deletion,
   caption/avatar filters verified, App Privacy label update (§6 pack),
   privacy-policy + data-compliance pages, moderation section, review notes
   update for the reviewer (test account needed? — SIWA means reviewer signs

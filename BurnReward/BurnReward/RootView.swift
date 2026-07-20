@@ -29,7 +29,10 @@ struct RootView: View {
             || arguments.contains("-BRDemoFeedEmpty")
             || arguments.contains("-BRDemoPostSheet")
             || arguments.contains("-BRDemoFeedTail")
-            || arguments.contains("-BRDemoPostPhotos") { return .guild }
+            || arguments.contains("-BRDemoPostPhotos")
+            || arguments.contains("-BRDemoReportSheet")
+            || arguments.contains("-BRDemoBlockConfirm")
+            || arguments.contains("-BRDemoMemberSheet") { return .guild }
         return .home
     }()
     /// One-time launch sign-in prompt (Xavier's ruling). Mockup phase: the

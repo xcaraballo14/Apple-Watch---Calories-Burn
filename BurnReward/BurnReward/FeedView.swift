@@ -117,6 +117,12 @@ extension FeedEvent {
     }
 }
 
+/// What the ⋯ menu on a card can do. Own posts get `takeDown`; everyone
+/// else's get `report` and `block` (P4a — the App Review-required pair).
+enum FeedCardAction {
+    case takeDown, report, block
+}
+
 // MARK: - Feed screen
 
 /// The activity feed: what your party has been burning. Reactions are the
@@ -126,6 +132,7 @@ struct FeedView: View {
     let events: [FeedEvent]
     let hasFriends: Bool
     let onReact: (FeedEvent, Reaction) -> Void
+    let onAction: (FeedEvent, FeedCardAction) -> Void
     let onRecruit: () -> Void
 
     var body: some View {
@@ -136,7 +143,9 @@ struct FeedView: View {
                 ScrollView {
                     LazyVStack(spacing: 12) {
                         ForEach(events) { event in
-                            FeedRow(event: event) { onReact(event, $0) }
+                            FeedRow(event: event,
+                                    onReact: { onReact(event, $0) },
+                                    onAction: { onAction(event, $0) })
                         }
                     }
                     .padding(16)
@@ -188,6 +197,7 @@ struct FeedView: View {
 struct FeedRow: View {
     let event: FeedEvent
     let onReact: (Reaction) -> Void
+    let onAction: (FeedCardAction) -> Void
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -217,8 +227,21 @@ struct FeedRow: View {
         .accessibilityElement(children: .contain)
     }
 
-    // Who posted, and when.
+    // Who posted, and when. The identity block collapses to one VoiceOver
+    // line; the ⋯ menu stays its own element so it's still reachable.
     private var header: some View {
+        HStack(spacing: 10) {
+            identityBlock
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("\(event.isMine ? "You" : event.username), level \(event.level) \(event.title), \(event.stamp) ago.")
+            cardMenu
+        }
+        .padding(.leading, 14)
+        .padding(.trailing, 8)   // the ⋯ brings its own breathing room
+        .padding(.vertical, 14)
+    }
+
+    private var identityBlock: some View {
         HStack(spacing: 10) {
             FeedAvatar(username: event.username, size: 38)
             VStack(alignment: .leading, spacing: 2) {
@@ -252,9 +275,33 @@ struct FeedRow: View {
                     .foregroundStyle(event.accent)
             }
         }
-        .padding(14)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(event.isMine ? "You" : event.username), level \(event.level) \(event.title), \(event.stamp) ago.")
+    }
+
+    /// Take down your own post; report or block under anyone else's (P4a).
+    /// A menu rather than buttons on the card: rare actions shouldn't compete
+    /// with the reactions row.
+    private var cardMenu: some View {
+        Menu {
+            if event.isMine {
+                Button(role: .destructive) { onAction(.takeDown) } label: {
+                    Label("Take down post", systemImage: "trash")
+                }
+            } else {
+                Button { onAction(.report) } label: {
+                    Label("Report post", systemImage: "flag")
+                }
+                Button(role: .destructive) { onAction(.block) } label: {
+                    Label("Block @\(event.username)", systemImage: "hand.raised")
+                }
+            }
+        } label: {
+            Image(systemName: "ellipsis")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(BRTheme.textMuted)
+                .frame(width: 34, height: 44)
+                .contentShape(Rectangle())
+        }
+        .accessibilityLabel(event.isMine ? "Your post options" : "Post options")
     }
 
     // The win itself.
@@ -896,12 +943,14 @@ enum DemoFeed {
 }
 
 #Preview("Feed") {
-    FeedView(events: DemoFeed.events, hasFriends: true, onReact: { _, _ in }, onRecruit: {})
+    FeedView(events: DemoFeed.events, hasFriends: true, onReact: { _, _ in },
+             onAction: { _, _ in }, onRecruit: {})
         .background(BRTheme.bg)
 }
 
 #Preview("Feed — empty") {
-    FeedView(events: [], hasFriends: false, onReact: { _, _ in }, onRecruit: {})
+    FeedView(events: [], hasFriends: false, onReact: { _, _ in },
+             onAction: { _, _ in }, onRecruit: {})
         .background(BRTheme.bg)
 }
 
