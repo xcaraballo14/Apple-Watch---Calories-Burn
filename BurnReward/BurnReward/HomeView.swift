@@ -169,6 +169,10 @@ struct AvatarBadge: View {
                         .scaledToFill()
                         .frame(width: size, height: size)
                         .clipShape(Circle())
+                        // Clipping is drawing-only; without this a portrait
+                        // photo's invisible overflow eats taps around the
+                        // avatar (and silently widens its own tap target).
+                        .contentShape(Circle())
                 } else if initials.isEmpty {
                     Image(systemName: "flame.fill")
                         .font(.system(size: size * 0.4))

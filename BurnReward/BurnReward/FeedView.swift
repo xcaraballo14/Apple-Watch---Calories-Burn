@@ -523,6 +523,10 @@ struct PhotoCarousel: View {
             .frame(maxWidth: .infinity)
             .frame(height: height)
             .clipped()
+            // `.clipped()` clips drawing only — the overflow of a portrait
+            // photo still hit-tests, invisibly covering the reaction buttons
+            // below. The content shape is what actually bounds the touches.
+            .contentShape(Rectangle())
     }
 }
 
@@ -685,6 +689,9 @@ struct PostToGuildSheet: View {
                             .frame(width: 96, height: 96)
                             .clipped()
                             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            // Clipping is drawing-only; without this a tall
+                            // photo's invisible overflow eats nearby taps.
+                            .contentShape(Rectangle())
                         Button {
                             photos.remove(at: offset)
                         } label: {
@@ -811,8 +818,13 @@ enum DemoFeed {
     /// Stand-in "photos" drawn at runtime so the mockup shows a real image
     /// without shipping sample bitmaps in the binary. Replaced by the player's
     /// actual photo once this is wired.
-    static func placeholderPhoto(_ top: UIColor, _ bottom: UIColor, sun: Bool) -> UIImage {
-        let size = CGSize(width: 800, height: 500)
+    /// `portrait: true` matters beyond looks: portrait photos overflow the
+    /// fixed-height feed frame, which is the shape that once let an invisible
+    /// image overhang swallow the reaction buttons. Keeping one in the
+    /// fixtures keeps that case on screen in every screenshot pass.
+    static func placeholderPhoto(_ top: UIColor, _ bottom: UIColor, sun: Bool,
+                                 portrait: Bool = false) -> UIImage {
+        let size = portrait ? CGSize(width: 500, height: 890) : CGSize(width: 800, height: 500)
         return UIGraphicsImageRenderer(size: size).image { context in
             let cg = context.cgContext
             let gradient = CGGradient(
@@ -822,13 +834,19 @@ enum DemoFeed {
             )!
             cg.drawLinearGradient(gradient, start: .zero,
                                   end: CGPoint(x: 0, y: size.height), options: [])
+            // The feed crops a portrait photo to its middle band, so the sun
+            // and horizon sit higher there — otherwise both crop away and the
+            // photo reads as a plain swatch.
             if sun {
                 UIColor(white: 1, alpha: 0.5).setFill()
-                cg.fillEllipse(in: CGRect(x: 560, y: 70, width: 110, height: 110))
+                cg.fillEllipse(in: CGRect(x: size.width * 0.7,
+                                          y: size.height * (portrait ? 0.38 : 0.14),
+                                          width: 110, height: 110))
             }
             // A soft horizon so it reads as a place, not a swatch.
             UIColor(white: 0, alpha: 0.22).setFill()
-            cg.fill(CGRect(x: 0, y: size.height * 0.68, width: size.width, height: size.height * 0.32))
+            let horizon = size.height * (portrait ? 0.58 : 0.68)
+            cg.fill(CGRect(x: 0, y: horizon, width: size.width, height: size.height - horizon))
         }
     }
 
@@ -841,7 +859,7 @@ enum DemoFeed {
                   reactions: [.burn: 3, .strong: 1], myReaction: .burn,
                   photos: [placeholderPhoto(UIColor(red: 0.99, green: 0.66, blue: 0.30, alpha: 1),
                                             UIColor(red: 0.72, green: 0.33, blue: 0.42, alpha: 1),
-                                            sun: true),
+                                            sun: true, portrait: true),
                            placeholderPhoto(UIColor(red: 0.55, green: 0.78, blue: 0.55, alpha: 1),
                                             UIColor(red: 0.18, green: 0.40, blue: 0.28, alpha: 1),
                                             sun: false),
