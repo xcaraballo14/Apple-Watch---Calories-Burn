@@ -79,6 +79,23 @@ struct SettingsView: View {
 
                 notificationsSection
 
+                // Only meaningful with a guild account — hidden otherwise so
+                // the sheet stays honest for players who never signed in.
+                if SupabaseAPI.shared.currentUserID != nil {
+                    Section {
+                        NavigationLink {
+                            BlockedPlayersView()
+                        } label: {
+                            Label("Blocked players", systemImage: "hand.raised")
+                        }
+                    } header: {
+                        Text("GUILD")
+                            .font(.pixel(10))
+                            .foregroundStyle(BRTheme.textMuted)
+                    }
+                    .listRowBackground(BRTheme.card)
+                }
+
                 Section {
                     LabeledContent("Version", value: version)
                     Link(destination: URL(string: "https://xcaraballo14.github.io/Apple-Watch---Calories-Burn/privacy-policy.html")!) {

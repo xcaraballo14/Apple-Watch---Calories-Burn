@@ -75,6 +75,9 @@ struct FeedEvent: Identifiable, Equatable {
     var photos: [UIImage] = []
     /// Your own posts read differently (and can't be reacted to by you).
     var isMine: Bool = false
+    /// Who posted — report and block need the account, not the display name.
+    /// Defaulted so screenshot fixtures stay terse.
+    var authorID: UUID = UUID()
 
     var totalReactions: Int { reactions.values.reduce(0, +) }
 }

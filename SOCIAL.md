@@ -276,15 +276,35 @@ Required by Guideline 1.2 (UGC) + 5.1.1(v) (accounts) — all launch-gating:
     safety net is simply absent. Do it through Xcode's UI so the App ID
     auto-registers; hand-editing the entitlements file is what caused the
     -7003 ghost below.
-- **P4a — Report + block (pulled forward, next in line — 2026-07-19).**
-  Scope: `reports` table (closed reason list + optional note, insert-only
-  for players, reviewed via dashboard) · `blocks` table with **mutual
-  invisibility enforced in RLS** on share_events/reactions (not just UI) ·
-  block also dissolves the friendship · card overflow menu (own post →
-  take down; someone else's → report post / block player) · report
-  auto-hides the content for the reporter · block surface on the party
-  member sheet too · unblock surface (settings) · delete-post rides along
-  since it's the same card menu. Mockup-first like everything visible.
+- **P4a — Report + block (pulled forward 2026-07-19). ✅ BUILT same day
+  (mockup → Xavier locked → wired); ⏳ blocked on Xavier running
+  `supabase/p4a_schema.sql`, then the two-account retest.**
+  - **Blocking rides friendships, not a new table**: `status='blocked'`
+    already existed, and `are_friends()` requires 'accepted' — so one flipped
+    row darkens feed, photos, and reactions in BOTH directions through the
+    existing policies, with zero changes to them. The migration adds
+    `blocked_by` (unblock is a right only the blocker holds), rebuilds the
+    p1 update/delete policies so the blocked person can't touch the row
+    (the old "either side can sever" would have let them self-unblock and
+    re-request), and allows insert-as-blocked for pairs with no row.
+  - **`reports` is write-only for players** — no select policy, so the app
+    inserts with `Prefer: return=minimal` (`insertNoEcho`; RETURNING would
+    403 on the missing select). Reviewed in the dashboard; kill switch is
+    `share_events.hidden`. `event_id` survives the author deleting the post
+    (`on delete set null`) — reporting can't be defeated by deleting the
+    evidence.
+  - **Client**: `ModerationClient` (report/block/unblock/blockedPlayers,
+    every method returns visible-error text) · ⋯ card menu (own → take down
+    → the existing `feed.delete`; others → report/block) · `ReportSheet`
+    (closed reasons, ≤200-char note, spinner, stays open on failure) ·
+    reporter-side auto-hide (`br.reportedEventIDs` UserDefaults cache —
+    legitimately underivable) · member-sheet REPORT/BLOCK rows · Settings →
+    GUILD → Blocked players (fetch + UNBLOCK, signed-in only). Screenshot
+    flags: `-BRDemoReportSheet`, `-BRDemoBlockConfirm`, `-BRDemoMemberSheet`.
+  - **Retest checklist (needs both accounts):** report a post → vanishes for
+    the reporter, row lands in the dashboard `reports` table · block → both
+    feeds + photos dark both ways, party rows gone · blocked player cannot
+    re-request · unblock in Settings → re-request works again.
 - **P3 — Leaderboards.** weekly_xp posting (opt-in toggle); friends weekly
   XP board; ties into the existing weekly-challenge screen real estate
   (mockup decides). Guardrail: weekly aggregates only — rest days never shown,

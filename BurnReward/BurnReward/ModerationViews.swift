@@ -45,11 +45,14 @@ enum ReportReason: String, CaseIterable, Identifiable {
 /// the header names ("@eli787's post", "@eli787").
 struct ReportSheet: View {
     let subject: String
-    /// Stub in the mockup; the lock wires it to the `reports` insert.
-    let onSubmit: (ReportReason, String) -> Void
+    /// Returns nil on success (the sheet dismisses) or the error text to
+    /// show (the sheet stays open) — a failed report must never look sent.
+    let onSubmit: (ReportReason, String) async -> String?
 
     @State private var reason: ReportReason?
     @State private var note = ""
+    @State private var isSending = false
+    @State private var sendError: String?
     @FocusState private var noteFocused: Bool
     @Environment(\.dismiss) private var dismiss
 
@@ -79,11 +82,21 @@ struct ReportSheet: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                         .foregroundStyle(BRTheme.textMuted)
+                        .disabled(isSending)
                 }
+            }
+            .alert("Report", isPresented: Binding(
+                get: { sendError != nil },
+                set: { if !$0 { sendError = nil } }
+            )) {
+                Button("OK", role: .cancel) { sendError = nil }
+            } message: {
+                Text(sendError ?? "")
             }
         }
         .presentationDetents([.height(620), .large])
         .presentationDragIndicator(.visible)
+        .interactiveDismissDisabled(isSending)
     }
 
     private var header: some View {
@@ -174,29 +187,160 @@ struct ReportSheet: View {
 
     private var submitButton: some View {
         Button {
-            guard let reason else { return }
-            onSubmit(reason, note)
-            dismiss()
+            guard let reason, !isSending else { return }
+            noteFocused = false
+            isSending = true
+            Task {
+                let failure = await onSubmit(reason, note)
+                isSending = false
+                if let failure {
+                    sendError = failure    // stays open — a failed report must be visible
+                } else {
+                    dismiss()
+                }
+            }
         } label: {
-            Text("SEND REPORT")
-                .font(.pixel(10))
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity, minHeight: 50)
-                .background(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(reason == nil ? BRTheme.alertRed.opacity(0.35) : BRTheme.alertRed)
-                )
+            ZStack {
+                Text("SEND REPORT")
+                    .font(.pixel(10))
+                    .foregroundStyle(.white)
+                    .opacity(isSending ? 0 : 1)
+                if isSending {
+                    ProgressView().tint(.white)
+                }
+            }
+            .frame(maxWidth: .infinity, minHeight: 50)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(reason == nil ? BRTheme.alertRed.opacity(0.35) : BRTheme.alertRed)
+            )
         }
         .buttonStyle(.plain)
-        .disabled(reason == nil)
+        .disabled(reason == nil || isSending)
         .accessibilityHint(reason == nil ? "Pick a reason first." : "Sends the report.")
     }
 }
 
+// MARK: - Blocked players (Settings)
+
+/// The unblock surface — Xavier's ruling: out of the way in Settings, not on
+/// the party screen. Fetches fresh on appear; blocking elsewhere doesn't need
+/// to keep this in sync.
+struct BlockedPlayersView: View {
+    @State private var players: [SocialProfile] = []
+    @State private var isLoading = true
+    @State private var working: UUID?
+    @State private var errorText: String?
+
+    var body: some View {
+        ZStack {
+            BRTheme.bg.ignoresSafeArea()
+            if isLoading {
+                ProgressView()
+            } else if players.isEmpty {
+                VStack(spacing: 12) {
+                    Image(systemName: "hand.raised")
+                        .font(.system(size: 34, weight: .light))
+                        .foregroundStyle(BRTheme.textMuted)
+                    Text("NOBODY BLOCKED")
+                        .font(.pixel(11))
+                        .foregroundStyle(BRTheme.textPrimary)
+                    Text("Players you block land here, and only you can let them back.")
+                        .font(.footnote)
+                        .foregroundStyle(BRTheme.textMuted)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 40)
+                }
+            } else {
+                ScrollView {
+                    VStack(spacing: 8) {
+                        ForEach(players) { player in
+                            row(player)
+                        }
+                    }
+                    .padding(16)
+                }
+            }
+        }
+        .navigationTitle("Blocked players")
+        .navigationBarTitleDisplayMode(.inline)
+        .task { await load() }
+        .alert("Guild", isPresented: Binding(
+            get: { errorText != nil },
+            set: { if !$0 { errorText = nil } }
+        )) {
+            Button("OK", role: .cancel) { errorText = nil }
+        } message: {
+            Text(errorText ?? "")
+        }
+    }
+
+    private func row(_ player: SocialProfile) -> some View {
+        HStack(spacing: 12) {
+            GuildAvatar(profile: player, size: 40)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("@\(player.username)")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(BRTheme.textPrimary)
+                Text("LVL \(player.level) · \(player.title)")
+                    .font(.pixel(7))
+                    .foregroundStyle(BRTheme.textMuted)
+            }
+            Spacer(minLength: 8)
+            Button {
+                working = player.id
+                Task {
+                    if let failure = await ModerationClient.shared.unblock(userID: player.id) {
+                        errorText = failure
+                    } else {
+                        players.removeAll { $0.id == player.id }
+                    }
+                    working = nil
+                }
+            } label: {
+                if working == player.id {
+                    ProgressView()
+                        .frame(minWidth: 74, minHeight: 34)
+                } else {
+                    Text("UNBLOCK")
+                        .font(.pixel(7))
+                        .foregroundStyle(BRTheme.greenFG)
+                        .frame(minWidth: 74, minHeight: 34)
+                        .background(
+                            RoundedRectangle(cornerRadius: 9, style: .continuous)
+                                .strokeBorder(BRTheme.greenFG.opacity(0.5), lineWidth: 1)
+                        )
+                }
+            }
+            .buttonStyle(.plain)
+            .disabled(working != nil)
+            .accessibilityLabel("Unblock \(player.username)")
+        }
+        .padding(12)
+        .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(BRTheme.card))
+        .accessibilityElement(children: .combine)
+    }
+
+    private func load() async {
+        do {
+            players = try await ModerationClient.shared.blockedPlayers()
+        } catch {
+            if !error.isCancellation {
+                errorText = "Couldn't load the list — pull back in and try again."
+            }
+        }
+        isLoading = false
+    }
+}
+
 #Preview("Report — post") {
-    ReportSheet(subject: "@eli787's post — UNLOCKED FIRST BURN") { _, _ in }
+    ReportSheet(subject: "@eli787's post — UNLOCKED FIRST BURN") { _, _ in nil }
 }
 
 #Preview("Report — player") {
-    ReportSheet(subject: "@eli787") { _, _ in }
+    ReportSheet(subject: "@eli787") { _, _ in nil }
+}
+
+#Preview("Blocked players") {
+    NavigationStack { BlockedPlayersView() }
 }

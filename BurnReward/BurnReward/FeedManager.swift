@@ -27,7 +27,18 @@ final class FeedManager: ObservableObject {
     /// Screenshot fixtures; no network, no account.
     private let isDemo: Bool
 
+    /// Posts this player reported, hidden on their side immediately (the
+    /// report sheet promises it). One of the few legitimate UserDefaults
+    /// caches: it can't be derived — the server keeps the post live for
+    /// everyone else until the guildmaster rules on it.
+    private var reportedIDs: Set<UUID>
+    private static let reportedKey = "br.reportedEventIDs"
+
     private init() {
+        reportedIDs = Set(
+            (UserDefaults.standard.stringArray(forKey: Self.reportedKey) ?? [])
+                .compactMap(UUID.init)
+        )
         let arguments = ProcessInfo.processInfo.arguments
         isDemo = arguments.contains("-BRDemoFeed")
             || arguments.contains("-BRDemoFeedTail")
@@ -55,16 +66,17 @@ final class FeedManager: ObservableObject {
                         URLQueryItem(name: "order", value: "created_at.desc"),
                         URLQueryItem(name: "limit", value: "50")]
             )
-            guard !rows.isEmpty else {
+            let visible = rows.filter { !reportedIDs.contains($0.id) }
+            guard !visible.isEmpty else {
                 events = []
                 return
             }
 
             // Authors and reactions in one round trip each rather than per row.
-            let authors = try await profiles(for: Set(rows.map(\.userID)))
-            let reactions = try await reactions(for: rows.map(\.id))
+            let authors = try await profiles(for: Set(visible.map(\.userID)))
+            let reactions = try await reactions(for: visible.map(\.id))
 
-            events = rows.compactMap { row in
+            events = visible.compactMap { row in
                 guard let author = authors[row.userID] else { return nil }
                 return makeEvent(row: row, author: author,
                                  reactions: reactions[row.id] ?? [], me: me)
@@ -137,7 +149,8 @@ final class FeedManager: ObservableObject {
             reactions: counts,
             myReaction: mine,
             photoPaths: row.photoPaths,
-            isMine: row.userID == me
+            isMine: row.userID == me,
+            authorID: row.userID
         )
     }
 
@@ -282,6 +295,26 @@ final class FeedManager: ObservableObject {
             events[index].reactions[next, default: 0] += 1
         }
         events[index].myReaction = next
+    }
+
+    // MARK: - Moderation (P4a)
+
+    /// The reporter's side of "it disappears as soon as you send".
+    func hideReported(_ eventID: UUID) {
+        reportedIDs.insert(eventID)
+        // Capped so a heavy reporter doesn't grow the cache forever; old posts
+        // fall out of the 50-row feed window anyway.
+        UserDefaults.standard.set(
+            Array(reportedIDs.map(\.uuidString).suffix(200)),
+            forKey: Self.reportedKey
+        )
+        events.removeAll { $0.id == eventID }
+    }
+
+    /// Instant local half of a block — the server side (RLS) makes it stick
+    /// on the next refresh.
+    func dropAuthor(_ userID: UUID) {
+        events.removeAll { $0.authorID == userID }
     }
 
     func signedOut() {

@@ -466,9 +466,14 @@ struct GuildView: View {
                          onRecruit: { showAddFriend = true })
                 .refreshable { await feed.refresh() }
                 .sheet(item: $reportingEvent) { event in
-                    ReportSheet(subject: "@\(event.username)'s post — \(event.headline)") { _, _ in
-                        // Mockup stub — the lock wires this to the reports insert
-                        // and hides the post for the reporter.
+                    ReportSheet(subject: "@\(event.username)'s post — \(event.headline)") { reason, note in
+                        let failure = await ModerationClient.shared.report(
+                            user: event.authorID, event: event.id,
+                            reason: reason, note: note
+                        )
+                        // The sheet's promise: gone from your feed on send.
+                        if failure == nil { feed.hideReported(event.id) }
+                        return failure
                     }
                 }
                 .confirmationDialog(
@@ -478,7 +483,17 @@ struct GuildView: View {
                     titleVisibility: .visible
                 ) {
                     Button("Block player", role: .destructive) {
-                        blockingEvent = nil   // mockup stub — wires to blocks insert
+                        guard let event = blockingEvent else { return }
+                        blockingEvent = nil
+                        Task {
+                            if let failure = await ModerationClient.shared.block(userID: event.authorID) {
+                                guild.errorMessage = failure
+                            } else {
+                                feed.dropAuthor(event.authorID)
+                                await guild.loadGuild()
+                                await SocialAlertStore.shared.refresh()
+                            }
+                        }
                     }
                     Button("Cancel", role: .cancel) { blockingEvent = nil }
                 } message: {
@@ -491,7 +506,9 @@ struct GuildView: View {
                     titleVisibility: .visible
                 ) {
                     Button("Take down", role: .destructive) {
-                        takedownEvent = nil   // mockup stub — wires to feed.delete
+                        guard let event = takedownEvent else { return }
+                        takedownEvent = nil
+                        Task { await feed.delete(event) }
                     }
                     Button("Keep it", role: .cancel) { takedownEvent = nil }
                 } message: {
@@ -802,19 +819,37 @@ struct FriendProfileView: View {
             Text("You can always recruit them again.")
         }
         .sheet(isPresented: $reporting) {
-            ReportSheet(subject: "@\(profile.username)") { _, _ in
-                // Mockup stub — the lock wires this to the reports insert.
+            ReportSheet(subject: "@\(profile.username)") { reason, note in
+                await ModerationClient.shared.report(
+                    user: profile.id, event: nil, reason: reason, note: note
+                )
             }
         }
         .confirmationDialog("Block @\(profile.username)?",
                             isPresented: $confirmingBlock, titleVisibility: .visible) {
             Button("Block player", role: .destructive) {
-                // Mockup stub — the lock wires this to the blocks insert,
-                // dissolves the friendship, and dismisses.
+                Task {
+                    if let failure = await ModerationClient.shared.block(userID: profile.id) {
+                        guild.errorMessage = failure
+                    } else {
+                        FeedManager.shared.dropAuthor(profile.id)
+                        await guild.loadGuild()
+                        await SocialAlertStore.shared.refresh()
+                        dismiss()
+                    }
+                }
             }
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("They leave your party. Their posts vanish for you and yours vanish for them. They aren't told.")
+        }
+        .alert("Guild", isPresented: Binding(
+            get: { guild.errorMessage != nil },
+            set: { if !$0 { guild.errorMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) { guild.errorMessage = nil }
+        } message: {
+            Text(guild.errorMessage ?? "")
         }
     }
 

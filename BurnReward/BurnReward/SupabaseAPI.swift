@@ -145,6 +145,14 @@ final class SupabaseAPI {
         return try decoder.decode([Row].self, from: data)
     }
 
+    /// Insert into a write-only table (no select policy — e.g. `reports`).
+    /// The default insert asks for the row back, and RETURNING needs select
+    /// rights the caller deliberately doesn't have — this one doesn't ask.
+    func insertNoEcho<Value: Encodable>(_ table: String, values: Value) async throws {
+        _ = try await rest("POST", table: table, query: [], body: values,
+                           prefer: "return=minimal")
+    }
+
     @discardableResult
     func update<Value: Encodable, Row: Decodable>(
         _ table: String, values: Value, query: [URLQueryItem]
@@ -204,7 +212,8 @@ final class SupabaseAPI {
     // MARK: - REST plumbing
 
     private func rest<Body: Encodable>(
-        _ method: String, table: String, query: [URLQueryItem], body: Body?
+        _ method: String, table: String, query: [URLQueryItem], body: Body?,
+        prefer: String = "return=representation"
     ) async throws -> Data {
         let token = try await freshAccessToken()
         var components = URLComponents(
@@ -218,7 +227,7 @@ final class SupabaseAPI {
         request.setValue(publishableKey, forHTTPHeaderField: "apikey")
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("return=representation", forHTTPHeaderField: "Prefer")
+        request.setValue(prefer, forHTTPHeaderField: "Prefer")
         if let body {
             request.httpBody = try encoder.encode(body)
         }
@@ -397,12 +406,16 @@ struct FriendshipRow: Codable, Hashable {
     let requester: UUID
     let addressee: UUID
     var status: String
+    /// Who flipped the pair to 'blocked' — only they can undo it (p4a).
+    /// Optional so decoding survives a database that predates the migration.
+    var blockedBy: UUID?
     /// When the relationship last changed — i.e. when it was accepted, which
     /// is what dates the "joined your party" alert.
     var updatedAt: Date?
 
     enum CodingKeys: String, CodingKey {
         case requester, addressee, status
+        case blockedBy = "blocked_by"
         case updatedAt = "updated_at"
     }
 }
