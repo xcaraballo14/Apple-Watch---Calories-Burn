@@ -92,6 +92,17 @@ final class DashboardViewModel: ObservableObject {
     /// so the log always matches the top of the History tab exactly.
     var recentQuests: [Quest] { Array(quests.prefix(3)) }
 
+    /// XP earned this week — the number posted to the ⚔️ WEEKLY CHALLENGE board
+    /// (P3), derived from the same per-quest scores the rest of the app uses.
+    /// Uses the fixed Monday-start week so it matches every friend's boundary.
+    var weeklyXP: Int {
+        guard let week = LeaderboardWeek.calendar.dateInterval(of: .weekOfYear, for: .now)
+        else { return 0 }
+        return quests
+            .filter { week.contains($0.endDate) }
+            .reduce(0) { $0 + (scores[$1.id]?.total ?? 0) }
+    }
+
     /// The one funnel for replacing the quest list. Recomputing the derived
     /// `stats` / `scores` here (not on each read) keeps them from ever going
     /// stale against `quests` while sparing every render the recompute.

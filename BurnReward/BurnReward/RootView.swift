@@ -32,7 +32,9 @@ struct RootView: View {
             || arguments.contains("-BRDemoPostPhotos")
             || arguments.contains("-BRDemoReportSheet")
             || arguments.contains("-BRDemoBlockConfirm")
-            || arguments.contains("-BRDemoMemberSheet") { return .guild }
+            || arguments.contains("-BRDemoMemberSheet")
+            || arguments.contains("-BRDemoLeaderboard")
+            || arguments.contains("-BRDemoLeaderboardJoin") { return .guild }
         return .home
     }()
     /// One-time launch sign-in prompt (Xavier's ruling). Mockup phase: the
@@ -55,7 +57,8 @@ struct RootView: View {
             tabPage(GuildView(guild: guild,
                               level: model.stats.levelProgress.level,
                               rankTitle: LevelEngine.title(for: model.stats.levelProgress.level),
-                              badgeIDs: earnedBadgeIDs))
+                              badgeIDs: earnedBadgeIDs,
+                              weeklyXP: model.weeklyXP))
                 .tag(AppTab.guild)
 
             tabPage(ProfileView(model: model, presentedAsTab: true))

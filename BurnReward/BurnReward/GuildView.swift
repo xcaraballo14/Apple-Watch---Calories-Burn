@@ -1,14 +1,15 @@
 import AuthenticationServices
 import SwiftUI
 
-/// The two faces of a signed-in guild.
+/// The three faces of a signed-in guild.
 enum GuildSegment: CaseIterable {
-    case feed, party
+    case feed, party, arena
 
     var label: String {
         switch self {
         case .feed:  "FEED"
         case .party: "PARTY"
+        case .arena: "ARENA"
         }
     }
 
@@ -16,6 +17,7 @@ enum GuildSegment: CaseIterable {
         switch self {
         case .feed:  "Feed — what your party has been burning"
         case .party: "Party — your friends and requests"
+        case .arena: "Arena — this week's XP challenge"
         }
     }
 }
@@ -24,10 +26,13 @@ enum GuildSegment: CaseIterable {
 /// is opt-in and account-based — the core loop never needs it.
 struct GuildView: View {
     @ObservedObject var guild: GuildManager
+    @ObservedObject private var board = LeaderboardManager.shared
     /// Local game identity, pushed up so friends see it current.
     let level: Int
     let rankTitle: String
     let badgeIDs: [String]
+    /// This week's XP, derived on-device — the number the ARENA posts.
+    let weeklyXP: Int
 
     @State private var showAddFriend = false
     @State private var claimText = ""
@@ -48,11 +53,13 @@ struct GuildView: View {
     /// identity block).
     @State private var openProfile: SocialProfile?
 
-    init(guild: GuildManager, level: Int, rankTitle: String, badgeIDs: [String]) {
+    init(guild: GuildManager, level: Int, rankTitle: String, badgeIDs: [String],
+         weeklyXP: Int) {
         self.guild = guild
         self.level = level
         self.rankTitle = rankTitle
         self.badgeIDs = badgeIDs
+        self.weeklyXP = weeklyXP
         if ProcessInfo.processInfo.arguments.contains("-BRDemoAddFriend") {
             _showAddFriend = State(initialValue: true)
         }
@@ -75,6 +82,9 @@ struct GuildView: View {
         }
         if arguments.contains("-BRDemoMemberSheet") {
             _demoMemberSheet = State(initialValue: true)
+        }
+        if arguments.contains("-BRDemoLeaderboard") || arguments.contains("-BRDemoLeaderboardJoin") {
+            _segment = State(initialValue: .arena)
         }
     }
 
@@ -535,6 +545,19 @@ struct GuildView: View {
                 }
             case .party:
                 partyList
+            case .arena:
+                LeaderboardView(entries: board.entries,
+                                isParticipating: board.isParticipating,
+                                resetText: board.resetText,
+                                onJoin: {
+                                    Task { await board.join(myWeeklyXP: weeklyXP,
+                                                            me: guild.me, friends: guild.friends) }
+                                },
+                                onRecruit: { showAddFriend = true })
+                .task { await board.refresh(myWeeklyXP: weeklyXP,
+                                            me: guild.me, friends: guild.friends) }
+                .refreshable { await board.refresh(myWeeklyXP: weeklyXP,
+                                                   me: guild.me, friends: guild.friends) }
             }
         }
     }

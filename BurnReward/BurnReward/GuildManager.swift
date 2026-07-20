@@ -44,6 +44,8 @@ final class GuildManager: ObservableObject {
             || arguments.contains("-BRDemoReportSheet")
             || arguments.contains("-BRDemoBlockConfirm")
             || arguments.contains("-BRDemoMemberSheet")
+            || arguments.contains("-BRDemoLeaderboard")
+            || arguments.contains("-BRDemoLeaderboardJoin")
         if arguments.contains("-BRDemoGuildClaim") {
             phase = .needsUsername
         } else if arguments.contains("-BRDemoFeedEmpty") {
@@ -118,10 +120,12 @@ final class GuildManager: ObservableObject {
         friends = []
         incoming = []
         outgoingIDs = []
-        // Nothing social survives sign-out: the feed, the cached photos, and
-        // the bell's guild rows all belong to the account that just left.
+        // Nothing social survives sign-out: the feed, the cached photos, the
+        // bell's guild rows, and the challenge board all belong to the account
+        // that just left.
         FeedManager.shared.signedOut()
         SocialAlertStore.shared.clear()
+        LeaderboardManager.shared.signedOut()
     }
 
     // MARK: - Loading

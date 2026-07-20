@@ -161,6 +161,15 @@ final class SupabaseAPI {
         return try decoder.decode([Row].self, from: data)
     }
 
+    /// Insert-or-update on the primary-key conflict (PostgREST
+    /// `resolution=merge-duplicates`, i.e. INSERT … ON CONFLICT DO UPDATE).
+    /// The target table needs both an insert and an update RLS policy, since
+    /// this touches both. No echo — the caller doesn't need the row back.
+    func upsert<Value: Encodable>(_ table: String, values: Value) async throws {
+        _ = try await rest("POST", table: table, query: [], body: values,
+                           prefer: "resolution=merge-duplicates,return=minimal")
+    }
+
     func delete(_ table: String, query: [URLQueryItem]) async throws {
         _ = try await rest("DELETE", table: table, query: query, body: nil as Never?)
     }
@@ -501,5 +510,20 @@ struct ReactionRow: Codable, Hashable {
         try container.encode(eventID, forKey: .eventID)
         try container.encode(userID, forKey: .userID)
         try container.encode(reaction, forKey: .reaction)
+    }
+}
+
+/// A player's XP for one week (P3). Encodes for the upsert (user_id +
+/// week_start + xp); `updated_at` has a DB default and is never sent.
+struct WeeklyScoreRow: Codable, Hashable {
+    let userID: UUID
+    /// "yyyy-MM-dd" — the Monday that starts the week.
+    let weekStart: String
+    let xp: Int
+
+    enum CodingKeys: String, CodingKey {
+        case xp
+        case userID = "user_id"
+        case weekStart = "week_start"
     }
 }

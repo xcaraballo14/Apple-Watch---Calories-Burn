@@ -306,10 +306,30 @@ Required by Guideline 1.2 (UGC) + 5.1.1(v) (accounts) — all launch-gating:
     the reporter, row lands in the dashboard `reports` table · block → both
     feeds + photos dark both ways, party rows gone · blocked player cannot
     re-request · unblock in Settings → re-request works again.
-- **P3 — Leaderboards.** weekly_xp posting (opt-in toggle); friends weekly
-  XP board; ties into the existing weekly-challenge screen real estate
-  (mockup decides). Guardrail: weekly aggregates only — rest days never shown,
-  no daily pressure mechanics (health rule).
+- **P3 — Leaderboards / ⚔️ WEEKLY CHALLENGE. ✅ BUILT 2026-07-20 (mockup →
+  Xavier locked all 3 dials on the recommended path → wired); ⏳ blocked on
+  Xavier running `supabase/p3_schema.sql`, then the two-account retest.**
+  Three locked decisions (2026-07-20): (1) the leaderboard **is** Xavier's
+  ⚔️ CHALLENGE — one screen, framed as the party's weekly duel, not a cold
+  board; (2) **opt-in, off by default** — the player taps ENTER THE CHALLENGE
+  (ARENA) or the Settings GUILD toggle before any XP is posted; (3) lives as a
+  **third GUILD segment, ARENA** (FEED · PARTY · ARENA).
+  - **Ranked by weekly XP, never calories/HR** — XP already bakes in precision
+    + type factor (v2.1), so the board rewards skill, not raw burn. The health
+    guardrail lives in *what's stored*: `weekly_scores` holds a single integer
+    XP total + the week, nothing else. Weekly reset (fixed Monday-start so
+    friends in different locales share a bucket), so rest never costs a place.
+  - **Files:** `p3_schema.sql` (weekly_scores + are_friends-scoped RLS + upsert
+    policies), `LeaderboardManager.swift` (post-on-refresh, opt-in, leave =
+    delete your rows), `LeaderboardView.swift` (ARENA UI + `LeaderboardWeek`),
+    `DashboardViewModel.weeklyXP`, `SupabaseAPI.upsert` +
+    `WeeklyScoreRow`, Settings "Join the weekly challenge" toggle.
+  - Sim-verified light + dark; #1 uses a vector `crown.fill` on a dark
+    medallion (the 👑 emoji washed out on the gold coin in light mode).
+    QA flags: `-BRDemoLeaderboard`, `-BRDemoLeaderboardJoin` (watching state).
+  - ⏳ **Remaining:** run the schema; two-account retest (a friend's real
+    posted score loading through the `are_friends` read policy — the one path
+    a single account can't exercise).
 - **P4 — Compliance hardening.** ⚠️ Report/block **pulled forward ahead of
   P3** (tester-round ruling 1, 2026-07-19) — see P4a below. The rest of P4:
   account deletion,

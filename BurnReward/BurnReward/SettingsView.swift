@@ -4,6 +4,7 @@ import UIKit
 struct SettingsView: View {
     @ObservedObject var model: DashboardViewModel
     @ObservedObject private var notifications = NotificationService.shared
+    @ObservedObject private var board = LeaderboardManager.shared
     @Environment(\.scenePhase) private var scenePhase
 
     private var version: String {
@@ -83,6 +84,14 @@ struct SettingsView: View {
                 // the sheet stays honest for players who never signed in.
                 if SupabaseAPI.shared.currentUserID != nil {
                     Section {
+                        Toggle(isOn: challengeParticipationBinding) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Label("Join the weekly challenge", systemImage: "flag.checkered")
+                                Text("Post your weekly XP to your party's board — only the number, never your workouts. Leaving removes it.")
+                                    .font(.caption)
+                                    .foregroundStyle(BRTheme.textMuted)
+                            }
+                        }
                         NavigationLink {
                             BlockedPlayersView()
                         } label: {
@@ -212,6 +221,17 @@ struct SettingsView: View {
             notifications.challengeReminderEnabled = on
             if on { Task { await notifications.ensureAuthorization() } }
             model.rescheduleChallengeReminder()
+        }
+    }
+
+    /// Opt into the ⚔️ WEEKLY CHALLENGE board (P3). Off posts nothing; on
+    /// publishes this week's XP and keeps it current. Reads through `board` so
+    /// the toggle reflects the real state after the async work lands.
+    private var challengeParticipationBinding: Binding<Bool> {
+        Binding {
+            board.isParticipating
+        } set: { on in
+            Task { await board.setParticipating(on, myWeeklyXP: model.weeklyXP) }
         }
     }
 }
