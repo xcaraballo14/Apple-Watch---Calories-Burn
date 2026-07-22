@@ -258,7 +258,8 @@ struct GuildView: View {
                     }
                 }
 
-                // Privacy panel
+                // Control panel — the honest post-pivot line. Full disclosure
+                // comes at the sign-in consent screen; this is the teaser.
                 guildPanel {
                     HStack(spacing: 14) {
                         Image(systemName: "lock.shield.fill")
@@ -266,10 +267,10 @@ struct GuildView: View {
                             .foregroundStyle(BRTheme.textMuted)
                             .accessibilityHidden(true)
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("YOUR HEALTH. YOUR DATA.")
+                            Text("YOU'RE IN CONTROL")
                                 .font(.pixel(9))
                                 .foregroundStyle(BRTheme.greenFG)
-                            Text("Your health data never leaves your device.\nYou choose exactly what to share.")
+                            Text("You choose what your party sees, and can go private anytime. Never sold, never used for ads.")
                                 .font(.caption)
                                 .foregroundStyle(BRTheme.textMuted)
                         }
@@ -1192,97 +1193,157 @@ struct GuildAvatar: View {
     }
 }
 
-/// The recruitment pitch — used by the one-time launch prompt.
-struct GuildPitch: View {
-    var body: some View {
-        VStack(spacing: 0) {
-            if let castle = UIImage(named: "guild_castle") {
-                Image(uiImage: castle)
-                    .resizable()
-                    .interpolation(.none)
-                    .scaledToFit()
-                    .frame(height: 132)
-                    .accessibilityHidden(true)
-            }
-            Text("THE GUILD IS OPEN")
-                .font(.pixel(16))
-                .foregroundStyle(BRTheme.greenFG)
-                .padding(.top, 16)
-
-            VStack(alignment: .leading, spacing: 12) {
-                pitchRow("🔥", "Share your quests and trophies")
-                pitchRow("⚔️", "Recruit friends to your party")
-                pitchRow("🏆", "Weekly XP leaderboards")
-            }
-            .padding(.top, 20)
-
-            Text("Your health data never leaves your device.\nYou choose exactly what to share.")
-                .font(.caption)
-                .foregroundStyle(BRTheme.textMuted)
-                .multilineTextAlignment(.center)
-                .padding(.top, 18)
-        }
-    }
-
-    private func pitchRow(_ emoji: String, _ text: String) -> some View {
-        HStack(spacing: 10) {
-            Text(emoji).font(.system(size: 18))
-            Text(text)
-                .font(.subheadline)
-                .foregroundStyle(BRTheme.textPrimary)
-        }
-        .accessibilityElement(children: .combine)
-    }
-}
-
-/// One-time launch prompt (Xavier's ruling: prompt at launch, skippable).
+/// The consent + disclosure gate for going social (pillar 4 of the Strava
+/// pivot). Shown when a player enables the guild — signing in with Apple is
+/// the consent act, so this screen must plainly disclose, *before* that tap,
+/// what the party sees (real metrics included), the controls, and the two hard
+/// promises. Replaces the old prompt whose "health data never leaves your
+/// device" line the pivot made false.
 struct GuildSignInPrompt: View {
     @ObservedObject var guild: GuildManager
     @Environment(\.dismiss) private var dismiss
     let onJoin: () -> Void
 
-    var body: some View {
-        VStack(spacing: 0) {
-            Spacer(minLength: 12)
-            GuildPitch()
+    private let policyURL = URL(string: "https://xcaraballo14.github.io/Apple-Watch---Calories-Burn/privacy-policy.html")!
 
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 0) {
+                header
+                disclosureSections
+                promise
+                actions
+            }
+            .padding(.horizontal, 18)
+            .padding(.bottom, 20)
+        }
+        .background(BRTheme.bg)
+        .presentationDetents([.large])
+        .presentationDragIndicator(.visible)
+    }
+
+    private var header: some View {
+        VStack(spacing: 10) {
+            if let castle = UIImage(named: "guild_castle") {
+                Image(uiImage: castle)
+                    .resizable().interpolation(.none).scaledToFit()
+                    .frame(height: 104)
+                    .accessibilityHidden(true)
+            }
+            Text("JOIN THE GUILD")
+                .font(.pixel(16)).foregroundStyle(BRTheme.greenFG)
+            Text("Team up, compete, and level up with your party.")
+                .font(.subheadline).foregroundStyle(BRTheme.textMuted)
+                .multilineTextAlignment(.center)
+        }
+        .padding(.top, 12)
+    }
+
+    private var disclosureSections: some View {
+        VStack(spacing: 14) {
+            consentCard(
+                title: "WHAT YOUR PARTY SEES",
+                tint: BRTheme.blueFG, fill: BRTheme.tintBlue,
+                rows: [
+                    ("🧙", "Your character sheet — class, XP, streaks, and records, **including calories and heart rate**"),
+                    ("📸", "Wins you post to the feed, with photos and captions"),
+                    ("🏆", "Your weekly XP, if you join the challenge"),
+                ])
+            consentCard(
+                title: "YOU'RE IN CONTROL",
+                tint: BRTheme.greenFG, fill: BRTheme.tintGreen,
+                rows: [
+                    ("👥", "Only players you accept into your party can see any of it"),
+                    ("🔒", "Go private anytime in Settings — nothing has to be shared"),
+                    ("🚫", "Block anyone to hide everything, both ways"),
+                ])
+        }
+        .padding(.top, 22)
+    }
+
+    private func consentCard(title: String, tint: Color, fill: Color,
+                             rows: [(String, String)]) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(title).font(.pixel(9)).foregroundStyle(tint)
+            ForEach(rows, id: \.1) { emoji, text in
+                HStack(alignment: .top, spacing: 10) {
+                    Text(emoji).font(.system(size: 16)).accessibilityHidden(true)
+                    Text(markdown(text))
+                        .font(.subheadline).foregroundStyle(BRTheme.textPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .accessibilityElement(children: .combine)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous).fill(fill)
+                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .strokeBorder(tint.opacity(0.35), lineWidth: 1))
+        )
+    }
+
+    /// The two hard lines from the pivot, stated as a promise. Dark card in
+    /// both themes, so the body text is light (not `textPrimary`, which goes
+    /// dark in light mode and would vanish on the dark fill).
+    private var promise: some View {
+        VStack(spacing: 6) {
+            Text("OUR PROMISE")
+                .font(.pixel(8)).foregroundStyle(BRTheme.gold)
+            Text("We never sell or hand your health data to sponsors or advertisers, and never use it for ad targeting.")
+                .font(.footnote).foregroundStyle(.white)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(BRTheme.darkIsland)
+                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .strokeBorder(BRTheme.gold.opacity(0.5), lineWidth: 1))
+        )
+        .padding(.top, 14)
+    }
+
+    private var actions: some View {
+        VStack(spacing: 8) {
             SignInWithAppleButton(.signIn) { request in
                 guild.prepareAppleRequest(request)
             } onCompletion: { result in
                 Task {
                     await guild.handleAppleCompletion(result)
-                    if guild.phase != .signedOut {
-                        dismiss()
-                        onJoin()
-                    }
+                    if guild.phase != .signedOut { dismiss(); onJoin() }
                 }
             }
             .signInWithAppleButtonStyle(.white)
-            .frame(maxWidth: 375)
             .frame(height: 50)
-            .padding(.horizontal, 28)
-            .padding(.top, 26)
-            .accessibilityLabel("Sign in with Apple")
+            .accessibilityLabel("Sign in with Apple to join the guild")
 
-            Button {
-                dismiss()
-            } label: {
+            Text("Signing in means you agree to share as described. You can change or stop it anytime in Settings.")
+                .font(.caption2).foregroundStyle(BRTheme.textMuted)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Link("Privacy Policy", destination: policyURL)
+                .font(.caption).foregroundStyle(BRTheme.blueFG)
+                .padding(.top, 2)
+
+            Button { dismiss() } label: {
                 Text("NOT NOW")
-                    .font(.pixel(9))
-                    .foregroundStyle(BRTheme.textMuted)
-                    .frame(minHeight: 40)
+                    .font(.pixel(9)).foregroundStyle(BRTheme.textMuted)
+                    .frame(maxWidth: .infinity, minHeight: 44)
             }
             .buttonStyle(.plain)
-            .padding(.top, 8)
-            .accessibilityLabel("Not now")
-            .accessibilityHint("You can join anytime from the Guild tab.")
-
-            Spacer(minLength: 8)
+            .accessibilityHint("Stay solo. You can join anytime from the Guild tab.")
         }
-        .padding(.horizontal, 12)
-        .background(BRTheme.bg)
-        .presentationDetents([.height(520)])
-        .presentationDragIndicator(.visible)
+        .padding(.top, 22)
+    }
+
+    /// Small helper so the disclosure rows can bold key phrases inline.
+    private func markdown(_ text: String) -> AttributedString {
+        (try? AttributedString(markdown: text)) ?? AttributedString(text)
     }
 }
 
