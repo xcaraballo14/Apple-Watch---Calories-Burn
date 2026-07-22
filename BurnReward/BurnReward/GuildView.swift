@@ -120,11 +120,23 @@ struct GuildView: View {
             .sheet(isPresented: $demoMemberSheet) {
                 NavigationStack {
                     FriendProfileView(
-                        profile: SocialProfile(id: UUID(), username: "eli787",
-                                               avatarKind: "pixel", avatarRef: nil,
-                                               level: 1, title: "SNACK ROOKIE",
-                                               badgeIDs: ["first_burn", "long_walk", "marathoner"]),
-                        guild: guild
+                        profile: SocialProfile(
+                            id: UUID(), username: "mika_runs",
+                            avatarKind: "photo", avatarRef: nil,
+                            level: 8, title: "DUNGEON DINER",
+                            badgeIDs: ["first_burn", "long_walk", "marathoner"],
+                            character: SharedCharacter(
+                                totalXP: 8_450,   // consistent with LVL 8 (real sync derives level from XP)
+                                classSpread: [
+                                    .init(emoji: "🏃", name: "STRIDER", count: 14, isMain: true),
+                                    .init(emoji: "🚴", name: "WAYFARER", count: 8, isMain: false),
+                                    .init(emoji: "🏋️", name: "WARDEN", count: 5, isMain: false),
+                                ],
+                                questsWon: 27, rewardsWon: 19, allTimeCalories: 41_800,
+                                dailyStreak: 6, bestStreak: 12, longestSeconds: 4_920,
+                                biggestBurn: 612, topHeartRate: 168, mostSteps: 9_240)),
+                        guild: guild,
+                        avatarPhoto: DemoAvatar.placeholder()
                     )
                 }
             }
@@ -763,6 +775,12 @@ struct GuildView: View {
 struct FriendProfileView: View {
     let profile: SocialProfile
     @ObservedObject var guild: GuildManager
+    /// A loaded photo avatar. Nil today (real loading arrives with the upload
+    /// build); the mockup flag injects one so the design is visible.
+    var avatarPhoto: UIImage? = nil
+    /// The friend's shared character, fetched on appear. The demo injects it via
+    /// `profile.character`; real friends load it from `shared_characters`.
+    @State private var loadedCharacter: SharedCharacter?
     @State private var confirmingRemove = false
     // P4a mockup state — report/block from the member sheet (App Review wants
     // a path from a profile too, not just from posts). Stubs until locked.
@@ -770,50 +788,22 @@ struct FriendProfileView: View {
     @State private var confirmingBlock = false
     @Environment(\.dismiss) private var dismiss
 
+    /// Demo injects via `profile.character`; real friends load `loadedCharacter`.
+    private var character: SharedCharacter? { profile.character ?? loadedCharacter }
+
     var body: some View {
         ZStack {
             BRTheme.bg.ignoresSafeArea()
             ScrollView {
-                VStack(spacing: 16) {
-                    GuildAvatar(profile: profile, size: 96)
-                        .padding(.top, 8)
-                    Text("@\(profile.username)")
-                        .font(.title3.weight(.semibold))
-                        .foregroundStyle(BRTheme.textPrimary)
-                    Text("LVL \(profile.level) · \(profile.title)")
-                        .font(.pixel(10))
-                        .foregroundStyle(BRTheme.yellowFG)
-
-                    VStack(alignment: .leading, spacing: 10) {
-                        HStack {
-                            PixelSectionLabel(text: "TROPHIES")
-                            Spacer()
-                            Text("\(profile.badgeIDs.count) earned")
-                                .font(.pixel(8))
-                                .foregroundStyle(BRTheme.textMuted)
-                        }
-                        if profile.badgeIDs.isEmpty {
-                            Text("No trophies yet — early days.")
-                                .font(.footnote)
-                                .foregroundStyle(BRTheme.textMuted)
-                        } else {
-                            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10),
-                                                     count: 4), spacing: 14) {
-                                ForEach(profile.badgeIDs, id: \.self) { id in
-                                    if let art = UIImage(named: "badge_\(id)") {
-                                        Image(uiImage: art)
-                                            .resizable()
-                                            .interpolation(.none)
-                                            .scaledToFit()
-                                            .frame(height: 46)
-                                    }
-                                }
-                            }
-                        }
+                VStack(spacing: 14) {
+                    identityPlate
+                    if let character = character {
+                        streakStrip(character)
+                        classSpread(character)
+                        lifetimeTiles(character)
+                        records(character)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(14)
-                    .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(BRTheme.card))
+                    trophyCase
 
                     // Ordered by severity: part ways / flag them / wall them
                     // off. Remove stays friendly; block is the loud one.
@@ -848,6 +838,13 @@ struct FriendProfileView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            // Real friends: pull their shared character (nil if private or the
+            // schema isn't run yet → the sheet just shows name/level/trophies).
+            if profile.character == nil {
+                loadedCharacter = await CharacterShare.shared.fetch(userID: profile.id)
+            }
+        }
         .confirmationDialog("Remove @\(profile.username) from your party?",
                             isPresented: $confirmingRemove, titleVisibility: .visible) {
             Button("Remove", role: .destructive) {
@@ -895,6 +892,241 @@ struct FriendProfileView: View {
         }
     }
 
+    // MARK: - Identity plate
+
+    /// Mirrors the player's own CHARACTER identity plate so a friend's sheet
+    /// reads as the same kind of screen: avatar, name, title, LVL, and — when
+    /// they've synced it — a full XP bar built from their total XP.
+    private var identityPlate: some View {
+        VStack(spacing: 14) {
+            HStack(spacing: 12) {
+                GuildAvatar(profile: profile, size: 64, photo: avatarPhoto)
+                    .overlay(Circle().strokeBorder(BRTheme.gold, lineWidth: 2))
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("@\(profile.username)")
+                        .font(.title3.weight(.semibold))
+                        .foregroundStyle(BRTheme.textPrimary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                    Text(profile.title)
+                        .font(.pixel(9))
+                        .foregroundStyle(BRTheme.greenFG)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                }
+                Spacer(minLength: 4)
+                VStack(spacing: 2) {
+                    Text("LVL").font(.pixel(7)).foregroundStyle(BRTheme.mutedOnDark)
+                    Text("\(profile.level)").font(.pixel(14)).foregroundStyle(BRTheme.expFill)
+                }
+                .frame(width: 46, height: 46)
+                .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(BRTheme.darkIsland))
+                .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(BRTheme.gold, lineWidth: 1))
+            }
+
+            if let character = character {
+                let progress = LevelEngine.progress(forXP: character.totalXP)
+                VStack(spacing: 6) {
+                    BRProgressBar(fraction: progress.fraction, fill: BRTheme.xpFill, height: 10)
+                    HStack {
+                        Text("\(character.totalXP.formatted()) XP")
+                            .font(.pixel(8)).foregroundStyle(BRTheme.yellowFG)
+                        Spacer()
+                        Text("\(progress.xpIntoLevel.formatted()) / \(progress.xpLevelSpan.formatted()) to LVL \(progress.level + 1)")
+                            .font(.caption2).foregroundStyle(BRTheme.textMuted)
+                    }
+                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("\(character.totalXP) total experience, \(progress.xpIntoLevel) of \(progress.xpLevelSpan) to level \(progress.level + 1)")
+            }
+        }
+        .brCard()
+        .accessibilityElement(children: .combine)
+    }
+
+    // MARK: - Character mirror sections
+    //
+    // A full mirror of the owner's CHARACTER page after the 2026-07-21 privacy
+    // pivot — real metrics (calories, HR, steps) included, shared by consent
+    // with per-visibility control. The owner's "Show my character" visibility
+    // setting decides whether `profile.character` is present at all.
+
+    /// The live daily streak, kept distinct from the all-time best-streak
+    /// record below. A day count, not a health metric.
+    private func streakStrip(_ character: SharedCharacter) -> some View {
+        HStack(spacing: 10) {
+            Text("🔥").font(.system(size: 18)).accessibilityHidden(true)
+            Text("CURRENT STREAK")
+                .font(.pixel(8)).foregroundStyle(BRTheme.textMuted)
+            Spacer()
+            Text("\(character.dailyStreak) DAY\(character.dailyStreak == 1 ? "" : "S")")
+                .font(.pixel(11)).foregroundStyle(BRTheme.orangeFG)
+        }
+        .padding(.horizontal, 14).padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous).fill(BRTheme.tintOrange)
+                .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .strokeBorder(BRTheme.orangeFG.opacity(0.3), lineWidth: 1))
+        )
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Current streak: \(character.dailyStreak) days")
+    }
+
+    private func classSpread(_ character: SharedCharacter) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            PixelSectionLabel(text: "CLASS AFFINITY")
+            LazyVGrid(
+                columns: Array(repeating: GridItem(.flexible(), spacing: 6),
+                               count: max(1, min(character.classSpread.count, 4))),
+                spacing: 6
+            ) {
+                ForEach(character.classSpread, id: \.name) { stat in
+                    classTile(stat)
+                }
+            }
+        }
+    }
+
+    private func classTile(_ stat: SharedCharacter.ClassStat) -> some View {
+        VStack(spacing: 5) {
+            Text(stat.emoji).font(.system(size: 18)).accessibilityHidden(true)
+            Text("\(stat.count)")
+                .font(.pixel(11))
+                .foregroundStyle(stat.isMain ? BRTheme.greenFG : BRTheme.textPrimary)
+            Text(stat.name)
+                .font(.caption2).foregroundStyle(BRTheme.textMuted)
+                .lineLimit(1).minimumScaleFactor(0.5)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 11).padding(.horizontal, 3)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous).fill(BRTheme.card)
+                .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .strokeBorder(stat.isMain ? BRTheme.greenFG : BRTheme.cardBorder,
+                                  lineWidth: stat.isMain ? 1.5 : 1))
+        )
+        .overlay(alignment: .top) {
+            if stat.isMain {
+                Text("MAIN")
+                    .font(.pixel(6)).foregroundStyle(BRTheme.onNeonGreen)
+                    .padding(.vertical, 2).padding(.horizontal, 5)
+                    .background(RoundedRectangle(cornerRadius: 4).fill(BRTheme.neonGreen))
+                    .offset(y: -7)
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(stat.name), \(stat.count) quest\(stat.count == 1 ? "" : "s")\(stat.isMain ? ", their main class" : "")")
+    }
+
+    private func lifetimeTiles(_ character: SharedCharacter) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            PixelSectionLabel(text: "LIFETIME")
+            VStack(spacing: 10) {
+                HStack(spacing: 10) {
+                    lifetimeTile("\(character.questsWon)", "quests won", BRTheme.greenFG, BRTheme.tintGreen)
+                    lifetimeTile("\(character.rewardsWon)", "rewards won", BRTheme.blueFG, BRTheme.tintBlue)
+                }
+                HStack(spacing: 10) {
+                    lifetimeTile(BRFormat.compact(character.allTimeCalories), "cal all-time", BRTheme.orangeFG, BRTheme.tintOrange)
+                    lifetimeTile(BRFormat.compact(character.totalXP), "total XP", BRTheme.yellowFG, BRTheme.tintYellow)
+                }
+            }
+        }
+    }
+
+    private func lifetimeTile(_ value: String, _ label: String,
+                              _ color: Color, _ fill: Color) -> some View {
+        VStack(spacing: 4) {
+            Text(value).font(.pixel(12)).foregroundStyle(color)
+                .lineLimit(1).minimumScaleFactor(0.6)
+            Text(label).font(.caption2).foregroundStyle(BRTheme.textMuted)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous).fill(fill)
+                .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .strokeBorder(color.opacity(0.35), lineWidth: 1))
+        )
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(label): \(value)")
+    }
+
+    /// The full record set — a mirror of the CHARACTER page, real metrics
+    /// included. A record with no data (0) is dropped rather than shown as "—".
+    private func records(_ character: SharedCharacter) -> some View {
+        let rows: [(String, Color, String, String)?] = [
+            character.biggestBurn > 0
+                ? ("flame.fill", BRTheme.orangeFG, "Biggest burn", "\(character.biggestBurn) CAL") : nil,
+            character.longestSeconds > 0
+                ? ("clock", BRTheme.blueFG, "Longest quest", BRFormat.duration(TimeInterval(character.longestSeconds))) : nil,
+            character.mostSteps > 0
+                ? ("figure.walk", BRTheme.greenFG, "Most steps", character.mostSteps.formatted()) : nil,
+            character.topHeartRate > 0
+                ? ("heart.fill", BRTheme.alertRed, "Top heart rate", "\(character.topHeartRate) BPM") : nil,
+            character.bestStreak > 0
+                ? ("calendar", BRTheme.yellowFG, "Best streak", "\(character.bestStreak) DAY\(character.bestStreak == 1 ? "" : "S")") : nil,
+        ]
+        let records = rows.compactMap { $0 }
+        return VStack(alignment: .leading, spacing: 10) {
+            PixelSectionLabel(text: "RECORDS")
+            VStack(spacing: 0) {
+                ForEach(Array(records.enumerated()), id: \.offset) { index, r in
+                    recordRow(r.0, r.1, r.2, r.3)
+                    if index < records.count - 1 { Divider().background(BRTheme.cardBorder) }
+                }
+            }
+            .padding(4)
+            .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(BRTheme.card))
+        }
+    }
+
+    private func recordRow(_ icon: String, _ color: Color,
+                           _ title: String, _ value: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 16)).foregroundStyle(color)
+                .frame(width: 26)
+            Text(title).font(.subheadline).foregroundStyle(BRTheme.textPrimary)
+            Spacer()
+            Text(value).font(.pixel(10)).foregroundStyle(color)
+        }
+        .padding(.horizontal, 10).padding(.vertical, 12)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(title): \(value)")
+    }
+
+    // MARK: - Trophy case
+
+    private var trophyCase: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                PixelSectionLabel(text: "TROPHIES")
+                Spacer()
+                Text("\(profile.badgeIDs.count) earned")
+                    .font(.pixel(8)).foregroundStyle(BRTheme.textMuted)
+            }
+            if profile.badgeIDs.isEmpty {
+                Text("No trophies yet — early days.")
+                    .font(.footnote).foregroundStyle(BRTheme.textMuted)
+            } else {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10),
+                                         count: 4), spacing: 14) {
+                    ForEach(profile.badgeIDs, id: \.self) { id in
+                        if let art = UIImage(named: "badge_\(id)") {
+                            Image(uiImage: art)
+                                .resizable().interpolation(.none).scaledToFit()
+                                .frame(height: 46)
+                        }
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(BRTheme.card))
+    }
+
     private func memberActionRow(_ title: String, color: Color,
                                  action: @escaping () -> Void) -> some View {
         Button(action: action) {
@@ -908,20 +1140,52 @@ struct FriendProfileView: View {
     }
 }
 
-/// Pixel avatar placeholder: initial-on-dark circle until Xavier's avatar art
-/// set lands (photo avatars come with the SCA gate at P1.5).
+/// A stand-in "uploaded selfie" drawn at runtime so the friend-profile mockup
+/// shows the photo-avatar vision without shipping a sample face in the binary.
+enum DemoAvatar {
+    static func placeholder() -> UIImage {
+        let size = CGSize(width: 240, height: 240)
+        return UIGraphicsImageRenderer(size: size).image { ctx in
+            let cg = ctx.cgContext
+            let gradient = CGGradient(
+                colorsSpace: CGColorSpaceCreateDeviceRGB(),
+                colors: [UIColor(red: 0.36, green: 0.62, blue: 0.86, alpha: 1).cgColor,
+                         UIColor(red: 0.20, green: 0.30, blue: 0.52, alpha: 1).cgColor] as CFArray,
+                locations: [0, 1])!
+            cg.drawLinearGradient(gradient, start: .zero,
+                                  end: CGPoint(x: 0, y: size.height), options: [])
+            // A simple head-and-shoulders silhouette so it reads as a portrait.
+            UIColor(white: 1, alpha: 0.9).setFill()
+            cg.fillEllipse(in: CGRect(x: 88, y: 58, width: 64, height: 64))
+            cg.fillEllipse(in: CGRect(x: 56, y: 138, width: 128, height: 130))
+        }
+    }
+}
+
+/// Pixel avatar placeholder: initial-on-dark circle until photo avatars land.
 struct GuildAvatar: View {
     let profile: SocialProfile
     let size: CGFloat
+    /// A loaded photo avatar, once uploads land. Nil → the initial circle.
+    var photo: UIImage? = nil
 
     var body: some View {
         ZStack {
-            Circle()
-                .fill(BRTheme.tintGreen)
-                .overlay(Circle().strokeBorder(BRTheme.greenFG, lineWidth: 1.5))
-            Text(String(profile.username.prefix(1)).uppercased())
-                .font(.pixel(size * 0.34))
-                .foregroundStyle(BRTheme.greenFG)
+            if let photo {
+                Image(uiImage: photo)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: size, height: size)
+                    .clipShape(Circle())
+                    .contentShape(Circle())   // clip is drawing-only; bound taps too
+            } else {
+                Circle()
+                    .fill(BRTheme.tintGreen)
+                    .overlay(Circle().strokeBorder(BRTheme.greenFG, lineWidth: 1.5))
+                Text(String(profile.username.prefix(1)).uppercased())
+                    .font(.pixel(size * 0.34))
+                    .foregroundStyle(BRTheme.greenFG)
+            }
         }
         .frame(width: size, height: size)
         .accessibilityHidden(true)

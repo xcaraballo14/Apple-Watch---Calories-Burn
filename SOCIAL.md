@@ -306,6 +306,29 @@ Required by Guideline 1.2 (UGC) + 5.1.1(v) (accounts) — all launch-gating:
     the reporter, row lands in the dashboard `reports` table · block → both
     feeds + photos dark both ways, party rows gone · blocked player cannot
     re-request · unblock in Settings → re-request works again.
+- **P3.5 — Open character profile (first brick of the Strava pivot). ✅ BUILT
+  2026-07-22; ⏳ blocked on Xavier running `supabase/p3_5_schema.sql`, then the
+  two-account retest.** After the 2026-07-21 privacy pivot (see CLAUDE.md
+  Direction / memory `strava-pivot`), a friend's profile is now a **full mirror
+  of the CHARACTER page** — identity + XP bar, current streak, class affinity
+  spread, lifetime (incl. cal all-time), the full record set (biggest burn, top
+  HR, most steps, longest, best streak), and trophies. Real metrics included;
+  the old raw-health hold-back is retired.
+  - **Privacy boundary:** the snapshot is a `SharedCharacter` jsonb in its OWN
+    table `shared_characters` — NOT a profiles column, because profiles are
+    world-readable (friend search) and this now carries calories/HR/steps. RLS
+    scopes reads to `are_friends` (blocked pairs excluded for free).
+  - **Visibility = one toggle** (Settings → GUILD → "Show my character to my
+    party", default ON). On = upsert the row; off = delete it → a friend falls
+    back to name/level/trophies. Hard lines still hold: never sold/handed to
+    sponsors/advertisers, never ad targeting.
+  - **Files:** `p3_5_schema.sql`, `CharacterShare.swift` (push/delete/fetch +
+    the toggle), `SharedCharacter` + `.make(quests:stats:)` (derived on device),
+    friend-sheet fetch-on-appear, RootView push on quest change. Sim-verified
+    light + dark (`-BRDemoMemberSheet`).
+  - ⚠️ **Public-launch gate:** don't ship this to the App Store until the
+    consent onboarding + rewritten privacy policy / App Privacy label (wedge
+    pillar 4) land — the label must declare health-data sharing.
 - **P3 — Leaderboards / ⚔️ WEEKLY CHALLENGE. ✅ BUILT 2026-07-20 (mockup →
   Xavier locked all 3 dials on the recommended path → wired); ⏳ blocked on
   Xavier running `supabase/p3_schema.sql`, then the two-account retest.**

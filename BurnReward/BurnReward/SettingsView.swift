@@ -5,6 +5,7 @@ struct SettingsView: View {
     @ObservedObject var model: DashboardViewModel
     @ObservedObject private var notifications = NotificationService.shared
     @ObservedObject private var board = LeaderboardManager.shared
+    @ObservedObject private var characterShare = CharacterShare.shared
     @Environment(\.scenePhase) private var scenePhase
 
     private var version: String {
@@ -84,10 +85,19 @@ struct SettingsView: View {
                 // the sheet stays honest for players who never signed in.
                 if SupabaseAPI.shared.currentUserID != nil {
                     Section {
+                        Toggle(isOn: Binding(get: { characterShare.isSharing },
+                                             set: { characterShare.isSharing = $0 })) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Label("Show my character to my party", systemImage: "person.text.rectangle")
+                                Text("Your party sees your character sheet — class, stats, records, trophies. Turn off to keep it private (they'll see only your name, level, and trophies).")
+                                    .font(.caption)
+                                    .foregroundStyle(BRTheme.textMuted)
+                            }
+                        }
                         Toggle(isOn: challengeParticipationBinding) {
                             VStack(alignment: .leading, spacing: 2) {
                                 Label("Join the weekly challenge", systemImage: "flag.checkered")
-                                Text("Post your weekly XP to your party's board — only the number, never your workouts. Leaving removes it.")
+                                Text("Post your weekly XP to your party's board. Leaving removes it.")
                                     .font(.caption)
                                     .foregroundStyle(BRTheme.textMuted)
                             }

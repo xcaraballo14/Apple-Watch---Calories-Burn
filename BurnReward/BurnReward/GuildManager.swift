@@ -126,6 +126,7 @@ final class GuildManager: ObservableObject {
         FeedManager.shared.signedOut()
         SocialAlertStore.shared.clear()
         LeaderboardManager.shared.signedOut()
+        CharacterShare.shared.signedOut()
     }
 
     // MARK: - Loading

@@ -402,12 +402,82 @@ struct SocialProfile: Codable, Identifiable, Hashable {
     var level: Int
     var title: String
     var badgeIDs: [String]
+    /// The shared character snapshot (friend profile mirror). Optional so a row
+    /// that predates it still decodes, and nil when the owner has the "show my
+    /// character" toggle off — then a friend sees only name/level/trophies.
+    var character: SharedCharacter?
 
     enum CodingKeys: String, CodingKey {
-        case id, username, level, title
+        case id, username, level, title, character
         case avatarKind = "avatar_kind"
         case avatarRef = "avatar_ref"
         case badgeIDs = "badge_ids"
+    }
+}
+
+/// What a friend sees of your CHARACTER page — a full mirror after the
+/// 2026-07-21 privacy pivot (memory `strava-pivot`). Now carries real metrics
+/// too (calories, heart rate, steps), shared by consent with per-visibility
+/// control. Synced as one jsonb column; a null column = "private", so a friend
+/// falls back to name/level/trophies. The two hard lines still hold: this data
+/// is never sold/handed to sponsors/advertisers and never used for ad
+/// targeting.
+struct SharedCharacter: Codable, Hashable {
+    var totalXP: Int
+    var classSpread: [ClassStat]
+    var questsWon: Int
+    var rewardsWon: Int
+    var allTimeCalories: Int
+    var dailyStreak: Int
+    var bestStreak: Int
+    /// Longest single quest, in seconds.
+    var longestSeconds: Int
+    /// All-time record set — real metrics, now shareable. 0 = no data yet.
+    var biggestBurn: Int      // calories
+    var topHeartRate: Int     // bpm
+    var mostSteps: Int
+
+    struct ClassStat: Codable, Hashable {
+        var emoji: String
+        var name: String
+        var count: Int
+        var isMain: Bool
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case totalXP = "total_xp"
+        case classSpread = "class_spread"
+        case questsWon = "quests_won"
+        case rewardsWon = "rewards_won"
+        case allTimeCalories = "all_time_calories"
+        case dailyStreak = "daily_streak"
+        case bestStreak = "best_streak"
+        case longestSeconds = "longest_seconds"
+        case biggestBurn = "biggest_burn"
+        case topHeartRate = "top_heart_rate"
+        case mostSteps = "most_steps"
+    }
+
+    /// Builds the snapshot from the player's derived data. Pure — the same
+    /// quests always produce the same snapshot (derivation-first survives the
+    /// pivot: you derive locally, then push what you choose to share).
+    static func make(quests: [Quest], stats: DashboardStats) -> SharedCharacter {
+        let earned = quests.filter(\.earned)
+        return SharedCharacter(
+            totalXP: stats.totalXP,
+            classSpread: ClassAffinity.all(for: quests).map {
+                ClassStat(emoji: $0.emoji, name: $0.name, count: $0.count, isMain: $0.isMain)
+            },
+            questsWon: earned.count,
+            rewardsWon: stats.rewardsWon,
+            allTimeCalories: stats.allTimeCalories,
+            dailyStreak: stats.streakDays,
+            bestStreak: PersonalRecord.bestStreak(quests),
+            longestSeconds: Int(earned.max { $0.duration < $1.duration }?.duration ?? 0),
+            biggestBurn: earned.max { $0.calories < $1.calories }?.calories ?? 0,
+            topHeartRate: earned.compactMap(\.averageHeartRate).max() ?? 0,
+            mostSteps: earned.compactMap(\.steps).max() ?? 0
+        )
     }
 }
 

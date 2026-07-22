@@ -112,6 +112,11 @@ struct RootView: View {
                     badgeIDs: earnedBadgeIDs
                 )
             }
+            // Re-publish the shared character snapshot (P3.5) — pushed only if
+            // sharing is on; the manager diffs so unchanged data is a no-op.
+            CharacterShare.shared.update(
+                SharedCharacter.make(quests: model.quests, stats: model.stats)
+            )
         }
         .task {
             liveManager.onQuestEnded = { [weak model] in
