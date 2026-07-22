@@ -7,6 +7,10 @@ import UIKit
 /// so it needs no separate store and a reinstall rebuilds it exactly.
 struct ProfileView: View {
     @ObservedObject var model: DashboardViewModel
+    /// The guild account — threaded through to Settings so account deletion
+    /// (Apple 5.1.1(v)) can tear down the session. Optional so previews and any
+    /// legacy sheet presentation without a guild still compile.
+    var guild: GuildManager? = nil
     /// True when living on the CHARACTER tab (custom header, Settings gear,
     /// no Done); false for legacy sheet presentation.
     var presentedAsTab: Bool = false
@@ -79,7 +83,7 @@ struct ProfileView: View {
             }
             .background(BRTheme.bg)
             .toolbar(presentedAsTab ? .hidden : .visible, for: .navigationBar)
-            .sheet(isPresented: $showSettings) { SettingsView(model: model) }
+            .sheet(isPresented: $showSettings) { SettingsView(model: model, guild: guild) }
             .navigationDestination(for: Quest.self) { quest in
                 QuestDetailView(quest: quest, xp: model.xpBreakdown(for: quest),
                                 recordKinds: model.recordKinds(for: quest),

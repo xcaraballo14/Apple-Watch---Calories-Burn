@@ -61,7 +61,7 @@ struct RootView: View {
                               weeklyXP: model.weeklyXP))
                 .tag(AppTab.guild)
 
-            tabPage(ProfileView(model: model, presentedAsTab: true))
+            tabPage(ProfileView(model: model, guild: guild, presentedAsTab: true))
                 .tag(AppTab.character)
         }
         .sheet(isPresented: $showSignInPrompt) {

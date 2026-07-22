@@ -3,9 +3,13 @@ import UIKit
 
 struct SettingsView: View {
     @ObservedObject var model: DashboardViewModel
+    /// Present when signed into the guild — enables account deletion.
+    var guild: GuildManager? = nil
     @ObservedObject private var notifications = NotificationService.shared
     @ObservedObject private var board = LeaderboardManager.shared
     @ObservedObject private var characterShare = CharacterShare.shared
+    @State private var confirmingDelete = false
+    @State private var isDeleting = false
     @Environment(\.scenePhase) private var scenePhase
 
     private var version: String {
@@ -52,6 +56,29 @@ struct SettingsView: View {
                 if phase == .active {
                     Task { await notifications.refreshAuthorization() }
                 }
+            }
+            .confirmationDialog("Delete your account?",
+                                isPresented: $confirmingDelete, titleVisibility: .visible) {
+                Button("Delete account", role: .destructive) {
+                    guard let guild else { return }
+                    isDeleting = true
+                    Task {
+                        let done = await guild.deleteAccount()
+                        isDeleting = false
+                        if done { dismiss() }   // back to the app in solo mode
+                    }
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This permanently deletes your account and everything you've shared. It can't be undone. Your on-device quests and Apple Health data stay put.")
+            }
+            .alert("Account", isPresented: Binding(
+                get: { guild?.errorMessage != nil },
+                set: { if !$0 { guild?.errorMessage = nil } }
+            )) {
+                Button("OK", role: .cancel) { guild?.errorMessage = nil }
+            } message: {
+                Text(guild?.errorMessage ?? "")
             }
         }
     }
@@ -110,6 +137,31 @@ struct SettingsView: View {
                     } header: {
                         Text("GUILD")
                             .font(.pixel(10))
+                            .foregroundStyle(BRTheme.textMuted)
+                    }
+                    .listRowBackground(BRTheme.card)
+
+                    // Account deletion (Apple 5.1.1(v)). Own section so it reads
+                    // as the serious, separate action it is.
+                    Section {
+                        Button(role: .destructive) {
+                            confirmingDelete = true
+                        } label: {
+                            HStack {
+                                Label("Delete account", systemImage: "trash")
+                                    .foregroundStyle(BRTheme.alertRed)
+                                Spacer()
+                                if isDeleting { ProgressView() }
+                            }
+                        }
+                        .disabled(isDeleting)
+                    } header: {
+                        Text("ACCOUNT")
+                            .font(.pixel(10))
+                            .foregroundStyle(BRTheme.textMuted)
+                    } footer: {
+                        Text("Permanently deletes your account and everything you've shared — profile, character, posts, photos, reactions, and scores. Your on-device quests and Apple Health data are not affected. This can't be undone.")
+                            .font(.caption)
                             .foregroundStyle(BRTheme.textMuted)
                     }
                     .listRowBackground(BRTheme.card)

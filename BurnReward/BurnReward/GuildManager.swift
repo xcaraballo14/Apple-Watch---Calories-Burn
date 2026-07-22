@@ -129,6 +129,26 @@ final class GuildManager: ObservableObject {
         CharacterShare.shared.signedOut()
     }
 
+    /// Permanently deletes the account (Apple 5.1.1(v)). The Edge Function
+    /// (service role, server-side) removes the auth user + all shared data +
+    /// storage photos; on success we tear down the local session and state,
+    /// leaving the app in its account-free solo mode. Returns whether it ran.
+    func deleteAccount() async -> Bool {
+        guard SupabaseAPI.shared.currentUserID != nil else { return false }
+        isWorking = true
+        defer { isWorking = false }
+        do {
+            try await SupabaseAPI.shared.callFunction("delete-account")
+            // The account and its server data are gone; clear everything local.
+            await signOut()
+            return true
+        } catch {
+            guard !error.isCancellation else { return false }
+            errorMessage = "Couldn't delete your account. Please try again — \(error.localizedDescription)"
+            return false
+        }
+    }
+
     // MARK: - Loading
 
     /// Signed in with no profile row yet → the username claim screen. This is

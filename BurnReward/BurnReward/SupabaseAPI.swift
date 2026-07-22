@@ -174,6 +174,21 @@ final class SupabaseAPI {
         _ = try await rest("DELETE", table: table, query: query, body: nil as Never?)
     }
 
+    // MARK: - Edge Functions
+
+    /// Invokes a Supabase Edge Function as the signed-in user. Used for the one
+    /// thing the publishable key can't do itself — deleting your own account,
+    /// which needs the service role (kept server-side in the function).
+    func callFunction(_ name: String) async throws {
+        let token = try await freshAccessToken()
+        var request = URLRequest(url: baseURL.appending(path: "/functions/v1/\(name)"))
+        request.httpMethod = "POST"
+        request.setValue(publishableKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        _ = try await perform(request)
+    }
+
     // MARK: - Storage
 
     /// Uploads bytes to a private bucket. `path` must start with the signed-in
