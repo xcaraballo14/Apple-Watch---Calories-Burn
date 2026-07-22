@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Privacy Policy — BurnReward</title>
-  <meta name="description" content="BurnReward Privacy Policy — how we handle your health data.">
+  <meta name="description" content="BurnReward Privacy Policy — how we handle your health data and what you share with your party.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -125,6 +125,14 @@
       border-radius: 0 3px 3px 0;
     }
     .highlight p { margin: 0; }
+    .warn {
+      background: rgba(255,34,68,.08);
+      border-left: 3px solid var(--red);
+      padding: 14px 18px;
+      margin: 16px 0;
+      border-radius: 0 3px 3px 0;
+    }
+    .warn p { margin: 0; }
     .data-table {
       width: 100%;
       border-collapse: collapse;
@@ -158,6 +166,7 @@
       border: 1px solid rgba(0,255,136,.3);
     }
     .badge.red { background: rgba(255,34,68,.12); color: var(--red); border-color: rgba(255,34,68,.3); }
+    .badge.blue { background: rgba(0,170,255,.12); color: var(--blue); border-color: rgba(0,170,255,.3); }
     footer {
       text-align: center;
       padding: 32px;
@@ -185,20 +194,21 @@
 <main>
   <div class="hero">
     <h1>PRIVACY POLICY</h1>
-    <p class="meta">Effective Date: June 15, 2025 &nbsp;·&nbsp; Last Updated: July 9, 2026</p>
+    <p class="meta">Effective Date: June 15, 2025 &nbsp;·&nbsp; Last Updated: July 22, 2026</p>
   </div>
 
   <section>
     <h2>1. OVERVIEW</h2>
-    <p>BurnReward ("we", "our", or "the app") is an iPhone app with a bundled Apple Watch app, developed by Xavier Caraballo. We are deeply committed to protecting your privacy. This policy explains in plain terms what information BurnReward accesses, why we access it, where it stays, and — critically — what we never do with it.</p>
+    <p>BurnReward ("we", "our", or "the app") is an iPhone app with a bundled Apple Watch app, developed by Xavier Caraballo. This policy explains what information BurnReward accesses, how the app works on your own device, and — for the optional social features — what you share, with whom, and the controls you have over it.</p>
     <div class="highlight">
-      <p><strong style="color:var(--green)">The short version:</strong> BurnReward reads your health data on your Apple Watch and iPhone and processes it entirely on your own devices — never transmitted to any server, never shared with any third party, and never used for advertising. We do not collect, store, or see your personal information.</p>
+      <p><strong style="color:var(--green)">The short version:</strong> You can play BurnReward entirely on your own device with no account — your quests, level, and records are computed from Apple Health on your iPhone and never leave it. If you choose to turn on the social features (the Guild), you create an account and share the game data you choose — including real workout metrics like calories and heart rate — with the party members you accept. You control what's visible, you can go private or delete your account at any time, and we never sell your data or use it for advertising.</p>
     </div>
+    <p>This is an important change from earlier versions of this policy. BurnReward previously kept all health data on your device. The app now offers optional social features that share the data you choose. Everything below describes how that works.</p>
   </section>
 
   <section>
-    <h2>2. INFORMATION WE ACCESS</h2>
-    <p>BurnReward requests access to the following data types through Apple's HealthKit framework:</p>
+    <h2>2. HEALTH DATA WE ACCESS</h2>
+    <p>BurnReward requests access to the following data types through Apple's HealthKit framework. This access, and how the data is used on your device, is the same whether or not you use the social features:</p>
 
     <table class="data-table">
       <thead>
@@ -238,109 +248,116 @@
     </table>
 
     <h3>WHAT WE DO NOT ACCESS</h3>
-    <p>BurnReward does not request and cannot access: body weight, blood oxygen, ECG data, sleep data, menstrual health data, reproductive health data, location (GPS), contacts, camera, microphone, or any other personal or sensitive data type not listed above.</p>
-    <p>If you add a profile photo, you pick it through Apple's system photo picker, which hands BurnReward only the single image you choose — the app is never granted access to your photo library. Your optional display name is text you type in. Both stay on your device (see Section 3).</p>
+    <p>BurnReward does not request and cannot access: body weight, blood oxygen, ECG data, sleep data, menstrual health data, reproductive health data, location (GPS), contacts, camera, microphone, or any other data type not listed above.</p>
+    <p>When you attach a photo to a post or pick a profile photo, you choose it through Apple's system photo picker, which hands BurnReward only the images you select — the app is never granted access to your whole photo library.</p>
   </section>
 
   <section>
-    <h2>3. HOW DATA IS STORED</h2>
-    <p>BurnReward stores data <strong style="color:var(--green)">only on your own devices</strong> — never on a server — using Apple's standard on-device storage.</p>
+    <h2>3. THE SOCIAL FEATURES — WHAT YOU SHARE</h2>
+    <p>The social features (the "Guild") are <strong>entirely optional and off by default.</strong> You can use the whole game without them. They begin only when you sign in with Apple and are shown a consent screen describing exactly what is shared before you agree.</p>
 
-    <h3>ON YOUR APPLE WATCH</h3>
-    <ul>
-      <li><strong>Workout progress</strong> (current calorie count, phase, elapsed time, selected rewards) — stored in <code>UserDefaults</code> on-device so your quest resumes if the app is closed mid-workout. Cleared when you start a new quest.</li>
-      <li><strong>Workout summary</strong> (total duration, average heart rate, total calories) — stored on-device after a quest is completed and displayed on the earned screen. Cleared when you start a new quest.</li>
-      <li><strong>Complication snapshot &amp; reward library</strong> — the live quest snapshot and the reward list synced from your iPhone, kept in an App Group container shared with the watch-face complication. On-device only.</li>
-    </ul>
+    <h3>YOUR ACCOUNT</h3>
+    <p>Signing in uses <strong>Sign in with Apple</strong>. Apple gives us an anonymous account identifier and, if you allow it, a relay email address that forwards to you without revealing your real address. You then choose a public <strong>username</strong>. We never receive your Apple ID password or your real email unless you choose to share it.</p>
 
-    <h3>ON YOUR iPHONE</h3>
-    <p>The iPhone stores <strong>no health data of its own</strong> — your quest history, level, badges, records, and weekly challenge are recomputed from Apple Health each time you open the app. Its on-device <code>UserDefaults</code> holds only:</p>
+    <h3>WHAT YOUR PARTY SEES</h3>
+    <p>"Your party" means the specific players whose friend requests you have accepted. Once you enable sharing, your party can see the game data you choose:</p>
     <ul>
-      <li><strong>Your profile</strong> — an optional display name you type and an optional profile photo you pick (saved as a small local image). Both stay on the device and are <strong>never uploaded</strong>.</li>
-      <li><strong>Your reward library</strong> — the custom rewards you create in the Reward Forge and which built-ins you've hidden.</li>
-      <li><strong>Notification preferences</strong> — which reminders you've turned on and the reminder time.</li>
-      <li><strong>Small "already handled" markers</strong> — e.g. which badges and records were already celebrated, and when you last opened the alerts bell, so a notification or toast fires only once.</li>
+      <li><strong>Your character sheet</strong> — level, title, class, XP, streaks, trophies, and your personal records. <strong style="color:var(--orange)">This includes real workout metrics: calories burned, average heart rate, and step counts.</strong> Controlled by the "Show my character to my party" setting.</li>
+      <li><strong>Wins you post to the feed</strong> — a summary of a completed quest, an earned trophy, or a level-up, with an optional caption and up to three photos you attach. Posting is always an explicit action you take.</li>
+      <li><strong>Reactions</strong> you leave on your party's posts.</li>
+      <li><strong>Your weekly XP</strong>, if you opt into the weekly challenge leaderboard.</li>
     </ul>
+    <p>A limited public profile — your username, level, title, and earned badge names — is visible to other signed-in players so they can find and add you. This public profile never contains calories, heart rate, steps, or any raw health metric.</p>
+
+    <h3>PHOTOS</h3>
+    <p>Photos you attach to posts are processed on your device before upload: location and other metadata (EXIF) are stripped out, and the image is screened on-device for explicit content. Photos are stored privately and are visible only to your accepted party.</p>
+
     <div class="highlight">
-      <p>None of this data is ever uploaded to a server, transmitted over a network, or stored in the cloud by BurnReward. It lives entirely on your devices. The iPhone and Apple Watch exchange the reward library and live quest progress directly, device-to-device, with no server in between.</p>
+      <p><strong style="color:var(--green)">You are always in control.</strong> You choose what to share, you can turn any sharing off in Settings at any time (which removes the shared copy), and blocking a player hides everything between you in both directions.</p>
     </div>
-    <p>Completed workouts saved to Apple Health are stored and managed entirely by Apple under Apple's own privacy policy and iCloud data practices. BurnReward has no access to workout records after they are written.</p>
   </section>
 
   <section>
-    <h2>4. HOW DATA IS USED</h2>
-    <p>Data accessed by BurnReward is used solely for the following in-app purposes:</p>
+    <h2>4. HOW DATA IS STORED</h2>
+    <h3>ON YOUR DEVICES (ALWAYS)</h3>
+    <p>Your quest history, level, badges, records, and challenges are recomputed from Apple Health on your iPhone each time you open the app — they are not stored on a server. The iPhone's on-device storage holds only things that can't be recomputed: your reward library, notification and sharing preferences, and small "already handled" markers (which badges/records were celebrated, when you last opened the alerts bell). Your Apple Watch stores in-progress and just-completed quest data on-device.</p>
+
+    <h3>ON OUR BACKEND (ONLY WHAT YOU SHARE)</h3>
+    <p>When you use the social features, the data you choose to share is stored on our backend, provided by <strong>Supabase</strong> (see Section 6). This includes your profile, your shared character snapshot, your feed posts and their photos, your reactions, your weekly scores, and your friend/block/report records. Access is enforced by database row-level security so that, for example, your character snapshot and photos are readable only by you and the party members you have accepted.</p>
+    <p>We derive everything from Apple Health on your device first, then upload only the summaries you share. The backend is a sharing layer — it is not the source of truth for your health data, and it never receives raw HealthKit samples.</p>
+  </section>
+
+  <section>
+    <h2>5. HOW DATA IS USED</h2>
+    <p>Data accessed or shared through BurnReward is used solely to provide the app's features:</p>
     <ul>
-      <li>Tracking live active calorie burn against your selected food reward goal (EXP progress bar).</li>
-      <li>Displaying your real-time heart rate and steps during a workout session.</li>
-      <li>Triggering haptic milestone notifications at 25%, 50%, 75%, and 100% of your calorie goal.</li>
-      <li>Computing and displaying a workout summary (duration, average heart rate, calories) when your quest is complete.</li>
-      <li>Saving the completed workout to Apple Health so it counts toward your rings and workout history.</li>
-      <li>Updating the watch-face complication to show live quest progress.</li>
-      <li>Showing your quest history, level and title, badges, personal records, and weekly challenge on the iPhone — all recomputed from your saved workouts.</li>
-      <li>Scheduling optional local reminders (achievements, streak, and weekly-challenge nudges) on your iPhone, if you turn them on.</li>
+      <li>Running your live workout, milestones, summary, and saving the completed workout to Apple Health.</li>
+      <li>Computing and showing your quest history, level, badges, records, and challenges on your device.</li>
+      <li>Displaying the game data you choose to share to the party members you accept, and showing you theirs.</li>
+      <li>Operating the feed, reactions, leaderboard, friend requests, blocking, and reporting.</li>
+      <li>Scheduling optional local reminders on your iPhone, if you turn them on.</li>
     </ul>
-    <p><strong style="color:var(--red)">We do not use your health data for advertising, analytics, machine learning, profiling, research, or any purpose beyond the in-app features described above.</strong></p>
+    <div class="warn">
+      <p><strong style="color:var(--red)">We never use your health data for advertising, ad targeting, or measurement; we never sell it or hand it to sponsors, advertisers, data brokers, insurers, or financial institutions; and we never use it for analytics profiling or research.</strong> Sponsored challenges or events, should they ever exist, will never involve giving your health data to a sponsor.</p>
+    </div>
   </section>
 
   <section>
-    <h2>5. DATA SHARING AND THIRD PARTIES</h2>
-    <p>BurnReward does not share your data with anyone.</p>
+    <h2>6. THIRD PARTIES AND SUB-PROCESSORS</h2>
+    <p>We do not sell or trade your data, and we do not use advertising or third-party analytics SDKs (no Mixpanel, Firebase, Amplitude, Crashlytics, or advertising frameworks). The only third parties involved in operating the app are:</p>
     <ul>
-      <li>We do not have servers. There is no backend. No data leaves your device through BurnReward.</li>
-      <li>We do not use any third-party analytics SDKs (no Mixpanel, Firebase, Amplitude, Crashlytics, or equivalent).</li>
-      <li>We do not use any advertising SDKs or frameworks.</li>
-      <li>We do not sell, rent, license, or trade your data in any form.</li>
-      <li>We do not share data with partners, affiliates, or any other entity.</li>
-      <li>Your iPhone and Apple Watch sync directly through Apple's on-device WatchConnectivity and HealthKit workout mirroring — this is device-to-device, never through a BurnReward server.</li>
+      <li><span class="badge blue">SUB-PROCESSOR</span> <strong>Supabase</strong> — provides the backend that stores what you share (authentication, database, and photo storage). Supabase processes this data on our behalf to operate the social features. See <a href="https://supabase.com/privacy" target="_blank">supabase.com/privacy</a>.</li>
+      <li><strong>Apple</strong> — HealthKit, Sign in with Apple, and App Store distribution, governed by Apple Inc.'s privacy practices at <a href="https://www.apple.com/legal/privacy/" target="_blank">apple.com/legal/privacy</a>.</li>
     </ul>
-    <p>The only external system involved is Apple's HealthKit and the App Store distribution platform, both governed by Apple Inc.'s privacy practices, which you can review at <a href="https://www.apple.com/legal/privacy/" target="_blank">apple.com/legal/privacy</a>.</p>
+    <p>These providers are service providers acting on our instructions to run the app. They are not permitted to use your data for their own purposes.</p>
   </section>
 
   <section>
-    <h2>6. HEALTHKIT-SPECIFIC COMMITMENTS</h2>
+    <h2>7. HEALTHKIT-SPECIFIC COMMITMENTS</h2>
     <p>Per Apple's HealthKit developer requirements, we explicitly affirm that BurnReward:</p>
     <ul>
-      <li>Will not use HealthKit data for advertising or advertising measurement purposes.</li>
-      <li>Will not disclose HealthKit data to third parties without user permission, except as required to provide or improve the app's health or fitness features.</li>
-      <li>Will not use HealthKit data to rebuild a user profile or to associate HealthKit data with other data for purposes beyond the app.</li>
-      <li>Will not sell HealthKit data to data brokers, insurers, financial institutions, or any third party.</li>
+      <li>Will not use HealthKit data for advertising or advertising-measurement purposes.</li>
+      <li>Will disclose HealthKit-derived data to others only with your consent and only to provide the app's fitness features — specifically, sharing the game data you choose with the party members you accept. We do not disclose it to any other third party for their own purposes.</li>
+      <li>Will not use HealthKit data to build a marketing profile or to associate it with other data for advertising.</li>
+      <li>Will not sell HealthKit data to data brokers, insurers, financial institutions, sponsors, advertisers, or any third party.</li>
     </ul>
-    <p>These are hard requirements enforced by Apple, and we comply fully.</p>
   </section>
 
   <section>
-    <h2>7. CHILDREN'S PRIVACY</h2>
-    <p>BurnReward is not directed to children under the age of 13 (or the equivalent minimum age in your jurisdiction). We do not knowingly collect personal information from children. Because the app collects no personal information from any user (an optional display name or profile photo you may add stays on your device) and has no server-side data storage, there is no child data at risk. If you are under 13, please ask a parent or guardian before using this app.</p>
+    <h2>8. CHILDREN'S PRIVACY</h2>
+    <p>BurnReward is not directed to children under the age of 13 (or the equivalent minimum age in your jurisdiction), and we do not knowingly collect personal information from children. The social features involve sharing information with other users; if you are under 13, do not create an account, and please ask a parent or guardian before using this app. If we learn that we have collected account information from a child under 13, we will delete it.</p>
   </section>
 
   <section>
-    <h2>8. YOUR RIGHTS AND CONTROLS</h2>
+    <h2>9. YOUR RIGHTS AND CONTROLS</h2>
+    <h3>CONTROLLING WHAT YOU SHARE</h3>
+    <p>Every kind of sharing is optional and reversible in the app's Settings: turn off "Show my character to my party" to make your character sheet private, leave the weekly challenge to remove your score, delete any post you've made, and block any player to hide everything between you. Turning a share off removes the shared copy from our backend.</p>
+
     <h3>REVOKING HEALTHKIT ACCESS</h3>
-    <p>You can revoke BurnReward's access to any HealthKit data type at any time on your iPhone: <strong>Settings → Privacy &amp; Security → Health → BurnReward</strong> (this controls both the iPhone and Apple Watch apps). Revoking access will prevent the app from reading your calorie, heart rate, and step data; you can still open the app but quest tracking and history will not function.</p>
+    <p>You can revoke BurnReward's access to any HealthKit data type at any time: <strong>Settings → Privacy &amp; Security → Health → BurnReward</strong>. This controls both the iPhone and Apple Watch apps.</p>
 
-    <h3>DELETING YOUR DATA</h3>
-    <p>All BurnReward data stored on your devices is deleted automatically when you delete the app — quest progress and summaries on the Apple Watch, and your profile (name and photo), reward library, and preferences on the iPhone. You can also clear in-progress quest data at any time by tapping "NEW QUEST" on the earned screen. Workout records previously saved to Apple Health are managed independently through the Health app.</p>
+    <h3>DELETING YOUR ACCOUNT AND DATA</h3>
+    <p>You can delete your account from within the app. Deleting your account removes your profile, shared character, posts, photos, reactions, scores, and friend/block records from our backend. On-device data is deleted when you delete the app. Workout records previously saved to Apple Health are managed independently through the Health app. If you never created an account, there is no server-side data to delete.</p>
 
     <h3>GDPR / EEA RESIDENTS</h3>
-    <p>Because BurnReward processes no personal data on any server and transfers no data outside your device, the full GDPR data subject rights framework (access, rectification, erasure, portability) is satisfied by the on-device controls above. There is no server-side data to request, correct, or delete. For any questions, contact us at the address below.</p>
+    <p>Where GDPR applies, our lawful basis for processing the data you share is your consent (given at the social consent screen and by your in-app sharing choices) and the performance of the service you request. You may access, correct, export, or erase your shared data using the in-app controls above, or by contacting us. You may withdraw consent at any time by turning off sharing or deleting your account.</p>
 
     <h3>CALIFORNIA RESIDENTS (CCPA)</h3>
-    <p>BurnReward does not sell personal information. We do not share personal information with third parties for cross-context behavioral advertising. You have the right to know what personal information we collect — and the honest answer is: none that leaves your device.</p>
+    <p>BurnReward does not sell your personal information and does not share it for cross-context behavioral advertising. You have the right to know what we collect (described above), and to request deletion using the in-app account-deletion control or by contacting us.</p>
   </section>
 
   <section>
-    <h2>9. SECURITY</h2>
-    <p>Because BurnReward stores data only on your devices and never transmits it, the security of your health data is governed by the security of your Apple Watch and iPhone themselves (passcode, encryption at rest, Secure Enclave). We benefit from Apple's platform-level security protections and do not introduce additional data exposure vectors.</p>
+    <h2>10. SECURITY</h2>
+    <p>On-device data is protected by your device's own security (passcode, encryption at rest, Secure Enclave). Data you share is transmitted over encrypted connections (HTTPS/TLS) and stored by our backend provider with access enforced by database row-level security, so that only you and the party members you accept can read your shared content. The key shipped in the app is a restricted publishable key that cannot bypass those access rules.</p>
   </section>
 
   <section>
-    <h2>10. CHANGES TO THIS POLICY</h2>
-    <p>If we update this Privacy Policy, the new version will be posted at this URL with an updated "Last Updated" date. For material changes (such as adding server-side data processing or analytics), we will notify users through the App Store update notes. Continued use of the app after a policy update constitutes acceptance of the updated terms.</p>
+    <h2>11. CHANGES TO THIS POLICY</h2>
+    <p>If we update this Privacy Policy, the new version will be posted at this URL with an updated "Last Updated" date. For material changes, we will notify users through the App Store update notes or in the app. Continued use of the app after a policy update constitutes acceptance of the updated terms.</p>
   </section>
 
   <section>
-    <h2>11. CONTACT</h2>
+    <h2>12. CONTACT</h2>
     <p>If you have questions, concerns, or requests related to this Privacy Policy, please contact:</p>
     <p>
       <strong style="color:var(--green)">Xavier Caraballo</strong><br>

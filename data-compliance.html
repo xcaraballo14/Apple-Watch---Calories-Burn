@@ -182,9 +182,16 @@
 <main>
   <div class="hero">
     <h1>DATA USE &amp; COMPLIANCE</h1>
-    <p class="meta">Document Version 1.1 &nbsp;·&nbsp; Updated July 9, 2026</p>
-    <p class="sub">A complete technical and regulatory reference for every data type BurnReward accesses, why it is needed, how it is stored, and how it meets applicable requirements.</p>
+    <p class="meta">Document Version 2.0 &nbsp;·&nbsp; Updated July 22, 2026</p>
+    <p class="sub">A technical and regulatory reference for the data BurnReward accesses, how the solo game keeps it on-device, and how the optional social features share the data you choose.</p>
   </div>
+
+  <section>
+    <h2>0. TWO MODES — READ THIS FIRST</h2>
+    <div class="info">
+      <p><strong style="color:var(--blue)">BurnReward operates in two modes.</strong> <strong>Solo mode</strong> (the default, no account) keeps everything on your device exactly as documented in Sections 3–4: your quests, level, and records are computed from Apple Health on the iPhone and never leave it. <strong>Social mode</strong> (optional, the "Guild") begins only when you sign in and consent; it shares the game data you choose — including real metrics like calories and heart rate — with the party members you accept, stored on our backend (Supabase). Sections describing "no server / nothing leaves the device" apply to solo mode; the backend and what's shared are documented in Section 3.5.</p>
+    </div>
+  </section>
 
   <!-- ─────────────────────────────────────────── -->
   <section>
@@ -195,13 +202,13 @@
       <tr><td>Platform</td><td>iOS 17+ (iPhone app) with a bundled Apple Watch app (watchOS 10+). The watch app also runs standalone.</td></tr>
       <tr><td>Developer</td><td>Xavier Caraballo</td></tr>
       <tr><td>Category</td><td>Health & Fitness</td></tr>
-      <tr><td>Backend / Server</td><td><span class="cross">✗ None</span> — all processing is on-device; no code path makes any network request</td></tr>
-      <tr><td>Account Required</td><td><span class="cross">✗ No</span> — no login, no registration</td></tr>
+      <tr><td>Backend / Server</td><td><span class="badge blue">Solo:</span> none &nbsp; <span class="badge blue">Social:</span> Supabase (auth, database, photo storage) — stores only what you choose to share</td></tr>
+      <tr><td>Account Required</td><td>Solo mode: <span class="cross">✗ No</span>. Social mode: Sign in with Apple.</td></tr>
       <tr><td>Analytics SDKs</td><td><span class="cross">✗ None</span></td></tr>
       <tr><td>Advertising SDKs</td><td><span class="cross">✗ None</span></td></tr>
-      <tr><td>Third-party SDKs</td><td><span class="cross">✗ None</span></td></tr>
-      <tr><td>Network Requests</td><td><span class="cross">✗ None at runtime</span> (iPhone↔watch sync is device-to-device via WatchConnectivity / HealthKit workout mirroring; Google Fonts load on the landing page only)</td></tr>
-      <tr><td>Data Sold</td><td><span class="cross">✗ Never</span></td></tr>
+      <tr><td>Third-party SDKs</td><td><span class="cross">✗ None</span> — the backend is reached with a dependency-free HTTPS client, no vendor SDK bundled</td></tr>
+      <tr><td>Network Requests</td><td>Solo mode: none (iPhone↔watch sync is device-to-device). Social mode: HTTPS to our Supabase backend for the data you share.</td></tr>
+      <tr><td>Data Sold</td><td><span class="cross">✗ Never</span> — never sold or shared with sponsors, advertisers, or data brokers, and never used for ad targeting</td></tr>
     </table>
   </section>
 
@@ -408,13 +415,75 @@
     </div>
 
     <div class="good">
-      <p><strong style="color:var(--green)">Key point:</strong> The only user-provided data is an <em>optional</em> display name and profile photo, both stored on the device and never transmitted. Everything else is numeric workout metrics, reward names from the user's own list, timing data, and app preferences. There are no accounts, no email addresses, no device-identifier tracking, and none of it leaves the device.</p>
+      <p><strong style="color:var(--green)">Key point (solo mode):</strong> Everything above stays on the device. It is numeric workout metrics, reward names from the user's own list, timing data, and app preferences, plus an optional local display name and photo. In solo mode there is no account and none of it leaves the device. What social mode adds is documented next.</p>
     </div>
   </section>
 
   <!-- ─────────────────────────────────────────── -->
   <section>
-    <h2>4. DATA FLOWS — ARCHITECTURE DIAGRAM</h2>
+    <h2>3.5. SOCIAL MODE — BACKEND DATA (WHAT YOU SHARE)</h2>
+    <p>The social features are optional and off by default. They begin only after the user signs in with Apple and agrees to an in-app consent screen that discloses exactly what is shared. In social mode, the data the user chooses to share is stored on our backend, provided by <strong>Supabase</strong> (a hosted Postgres database, authentication, and object storage). Everything is still derived on the device first; only the chosen summaries are uploaded. Raw HealthKit samples are never uploaded.</p>
+
+    <div class="table-wrap"><table>
+      <thead><tr><th>Stored on Backend</th><th>Contains</th><th>Who Can See It</th><th>Contains Health Metrics?</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Account</td>
+          <td>Sign in with Apple identifier; a chosen username. Optional Apple relay email (forwards without revealing the real address).</td>
+          <td>Account holder; username is public to signed-in players</td>
+          <td><span class="cross">✗ No</span></td>
+        </tr>
+        <tr>
+          <td>Public profile</td>
+          <td>Username, level, title, earned badge names</td>
+          <td>Any signed-in player (enables friend search)</td>
+          <td><span class="cross">✗ No</span></td>
+        </tr>
+        <tr>
+          <td>Shared character</td>
+          <td>Level, class, XP, streaks, trophies, and records — <strong style="color:var(--orange)">including calories, average heart rate, and step counts</strong></td>
+          <td>Accepted party only (row-level security), and only while "Show my character" is on</td>
+          <td><span class="badge orange">YES</span></td>
+        </tr>
+        <tr>
+          <td>Feed posts &amp; photos</td>
+          <td>Quest/badge/level-up summaries (may include a workout's calories and duration), an optional caption, and up to three photos (EXIF-stripped, on-device content-screened)</td>
+          <td>Accepted party only</td>
+          <td><span class="badge orange">YES</span> (summary metrics)</td>
+        </tr>
+        <tr>
+          <td>Reactions</td>
+          <td>Which reaction the user left on a party member's post</td>
+          <td>Accepted party only</td>
+          <td><span class="cross">✗ No</span></td>
+        </tr>
+        <tr>
+          <td>Weekly score</td>
+          <td>The user's XP total for the week (only if they opt into the challenge)</td>
+          <td>Accepted party only</td>
+          <td><span class="cross">✗ No</span> (XP is a game score, not a raw metric)</td>
+        </tr>
+        <tr>
+          <td>Social graph &amp; safety</td>
+          <td>Friend requests / accepted friends, blocks, and reports the user files</td>
+          <td>Enforced by row-level security; reports are reviewed by the developer</td>
+          <td><span class="cross">✗ No</span></td>
+        </tr>
+      </tbody>
+    </table></div>
+
+    <div class="info">
+      <p><strong style="color:var(--blue)">Access boundary:</strong> The app ships only a restricted <em>publishable</em> key; it cannot bypass the database's row-level security. Those rules — not the client — decide what each signed-in player can read, so a user's shared character and photos are readable only by the user and the party members they have accepted. Blocking a player severs this in both directions.</p>
+    </div>
+
+    <div class="good">
+      <p><strong style="color:var(--green)">Control &amp; deletion:</strong> Every share is reversible in Settings (make the character private, leave the challenge, delete a post, block a player), which removes the shared copy. Deleting the account removes the profile, shared character, posts, photos, reactions, scores, and social-graph records from the backend.</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────── -->
+  <section>
+    <h2>4. DATA FLOWS — SOLO MODE (ON-DEVICE)</h2>
     <p>All data flows are local — kept on a single device or exchanged directly between the paired iPhone and Apple Watch. There is no outbound network path from BurnReward to any server.</p>
     <table>
       <thead>
@@ -484,26 +553,25 @@
     <h2>5. APPLE APP STORE COMPLIANCE</h2>
 
     <h3>APP STORE CONNECT — DATA NUTRITION LABEL</h3>
-    <p>Apple's "App Privacy" questionnaire defines <em>collection</em> as transmitting data off the device for access beyond servicing the immediate request. BurnReward reads HealthKit entirely on-device, stores everything locally, runs no server, and bundles no analytics or third-party SDKs — so nothing meets that definition. The accurate response is <strong style="color:var(--green)">Data Not Collected</strong>.</p>
-    <table>
+    <p>Apple's "App Privacy" questionnaire treats data as <em>collected</em> when it is transmitted off the device beyond servicing the immediate request. In <strong>solo mode</strong>, nothing meets that definition — HealthKit is read and used entirely on-device. In <strong>social mode</strong>, the data the user chooses to share <em>is</em> transmitted to our backend, so it must be declared as collected and <strong>Linked to You</strong>. Nothing is used for <strong>Tracking</strong> (we never share data with brokers or use it for cross-app/site advertising). The accurate label is below.</p>
+    <div class="table-wrap"><table>
       <thead>
-        <tr><th>Category</th><th>Collected?</th><th>Linked to Identity?</th><th>Used for Tracking?</th></tr>
+        <tr><th>Category (App Privacy type)</th><th>Collected?</th><th>Linked to You?</th><th>Tracking?</th><th>Purpose</th></tr>
       </thead>
       <tbody>
-        <tr><td>Contact Info</td><td><span class="cross">✗ Not collected</span></td><td>—</td><td>—</td></tr>
-        <tr><td>Health & Fitness</td><td><span class="cross">✗ Not collected</span> (read on-device only, never transmitted)</td><td>—</td><td>—</td></tr>
-        <tr><td>Financial Info</td><td><span class="cross">✗ Not collected</span></td><td>—</td><td>—</td></tr>
-        <tr><td>Location</td><td><span class="cross">✗ Not collected</span></td><td>—</td><td>—</td></tr>
-        <tr><td>Sensitive Info</td><td><span class="cross">✗ Not collected</span></td><td>—</td><td>—</td></tr>
-        <tr><td>Identifiers</td><td><span class="cross">✗ Not collected</span></td><td>—</td><td>—</td></tr>
-        <tr><td>Usage Data</td><td><span class="cross">✗ Not collected</span></td><td>—</td><td>—</td></tr>
-        <tr><td>Diagnostics</td><td><span class="cross">✗ Not collected</span></td><td>—</td><td>—</td></tr>
+        <tr><td><strong>Health &amp; Fitness</strong> — calories, heart rate, steps, workout data</td><td><span class="check">✓ Yes</span> (social mode, when shared)</td><td>Yes</td><td><span class="cross">No</span></td><td>App Functionality</td></tr>
+        <tr><td><strong>User Content</strong> — photos, and other user content (captions, posts)</td><td><span class="check">✓ Yes</span></td><td>Yes</td><td><span class="cross">No</span></td><td>App Functionality</td></tr>
+        <tr><td><strong>Identifiers</strong> — User ID (account identifier / username)</td><td><span class="check">✓ Yes</span></td><td>Yes</td><td><span class="cross">No</span></td><td>App Functionality</td></tr>
+        <tr><td><strong>Contact Info</strong> — Email Address (Apple relay, if the user allows it)</td><td><span class="check">✓ Yes</span></td><td>Yes</td><td><span class="cross">No</span></td><td>App Functionality</td></tr>
+        <tr><td>Location</td><td><span class="cross">✗ Not collected</span></td><td>—</td><td>—</td><td>—</td></tr>
+        <tr><td>Financial Info</td><td><span class="cross">✗ Not collected</span></td><td>—</td><td>—</td><td>—</td></tr>
+        <tr><td>Usage Data</td><td><span class="cross">✗ Not collected</span></td><td>—</td><td>—</td><td>—</td></tr>
+        <tr><td>Diagnostics</td><td><span class="cross">✗ Not collected</span></td><td>—</td><td>—</td><td>—</td></tr>
       </tbody>
-    </table>
-    <div class="good">
-      <p><strong style="color:var(--green)">Result: Data Not Collected.</strong> Health data (active energy, heart rate, workouts) is read from HealthKit and used only on the device to update the user's quest — never transmitted, stored off-device, sold, or shared. Because it never leaves the device, it is not "collected" under Apple's App Privacy definition, so BurnReward's store privacy label is <strong>Data Not Collected</strong>.</p>
+    </table></div>
+    <div class="info">
+      <p><strong style="color:var(--blue)">How to fill in App Store Connect:</strong> For each collected type above, select the type → mark it used for <strong>App Functionality</strong> (do not check Third-Party Advertising, Developer's Advertising, Analytics, or Product Personalization) → mark it <strong>Linked to the user's identity</strong> → answer <strong>No</strong> to "used for tracking." Health &amp; Fitness lives under the "Health &amp; Fitness" data type; photos and captions under "User Content"; the account id/username under "Identifiers"; the Apple relay email under "Contact Info → Email Address." Because sharing is opt-in and off by default, this is the label once a user turns social on — but Apple requires declaring any data the app is <em>capable</em> of collecting, so it must be set now.</p>
     </div>
-    <p>This concerns on-device <em>collection</em> for the App Store label only. HealthKit data is still <em>processed</em> on-device to power the app; the broader frameworks that also cover on-device processing (GDPR, CCPA) are addressed in Section 6.</p>
 
     <h3>HEALTHKIT USAGE DESCRIPTIONS (INFO.PLIST)</h3>
     <p>Each target declares its own HealthKit usage strings, shown when access is first requested:</p>
@@ -537,10 +605,10 @@
     <table>
       <thead><tr><th>Rule</th><th>Status</th></tr></thead>
       <tbody>
-        <tr><td>Don't use HealthKit data for advertising or advertising measurement</td><td><span class="check">✓ Compliant</span> — no advertising in the app</td></tr>
-        <tr><td>Don't disclose HealthKit data to third parties</td><td><span class="check">✓ Compliant</span> — no third parties involved</td></tr>
-        <tr><td>Don't sell HealthKit data</td><td><span class="check">✓ Compliant</span> — no data monetization</td></tr>
-        <tr><td>Don't use HealthKit data to rebuild a user profile</td><td><span class="check">✓ Compliant</span> — HealthKit builds only the user's own in-app progress (level, history, badges) shown back to them; never for advertising, data mining, or disclosure to third parties</td></tr>
+        <tr><td>Don't use HealthKit data for advertising or advertising measurement</td><td><span class="check">✓ Compliant</span> — no advertising, ad targeting, or measurement anywhere in the app</td></tr>
+        <tr><td>Disclose HealthKit data to others only with consent, to provide the app's fitness features</td><td><span class="check">✓ Compliant</span> — shared only with the user's explicit consent (the social consent screen and per-share settings) and only with the party members they accept, to power the social fitness features. Not disclosed to any other third party for that party's own purposes.</td></tr>
+        <tr><td>Don't sell HealthKit data</td><td><span class="check">✓ Compliant</span> — never sold or handed to data brokers, insurers, sponsors, or advertisers</td></tr>
+        <tr><td>Don't use HealthKit data to build a marketing profile or for data mining</td><td><span class="check">✓ Compliant</span> — used only to power the user's own progression and the sharing they opt into; never for advertising, marketing profiles, or data mining</td></tr>
         <tr><td>Include a Privacy Policy</td><td><span class="check">✓ Compliant</span> — see <a href="privacy-policy.html">Privacy Policy</a></td></tr>
         <tr><td>Request only the types you use</td><td><span class="check">✓ Compliant</span> — four types (active energy, heart rate, step count, workouts). The Watch reads energy/HR/steps and writes workouts; the iPhone reads all four back. No unused types.</td></tr>
       </tbody>
@@ -576,14 +644,19 @@
           <td>On the Watch, quest state clears when a new quest starts; the iPhone stores no health-derived data at all (it recomputes from HealthKit on each launch). All app data is removed on deletion.</td>
         </tr>
         <tr>
+          <td>Lawful basis for shared data (social mode)</td>
+          <td><span class="check">✓</span></td>
+          <td>Consent (Article 6(1)(a) / Article 9(2)(a) for health data), given at the social consent screen and by each in-app sharing choice; withdrawable anytime by turning sharing off or deleting the account</td>
+        </tr>
+        <tr>
           <td>Data subject access / erasure rights</td>
           <td><span class="check">✓</span></td>
-          <td>Deleting the app deletes all BurnReward data. No server to contact. Right to erasure is automatic.</td>
+          <td>Solo data is erased by deleting the app. Shared data is erased by turning off the relevant share or using in-app account deletion, which removes the profile, shared character, posts, photos, reactions, scores, and social-graph records from the backend.</td>
         </tr>
         <tr>
           <td>Data transfers outside EEA</td>
           <td><span class="check">✓</span></td>
-          <td>No transfers — all data stays on the device. iCloud sync (if any) is managed by Apple under their DPA.</td>
+          <td>Solo data never leaves the device. Shared data is processed by our backend provider (Supabase) under their Data Processing Addendum and standard contractual clauses.</td>
         </tr>
         <tr>
           <td>Privacy Policy</td>
@@ -603,15 +676,15 @@
       <thead><tr><th>Requirement</th><th>Status</th></tr></thead>
       <tbody>
         <tr><td>Right to Know what personal information is collected</td><td><span class="check">✓</span> — disclosed in Privacy Policy and this document</td></tr>
-        <tr><td>Right to Delete personal information</td><td><span class="check">✓</span> — automatic on app deletion; no server-side data exists</td></tr>
-        <tr><td>Right to Opt-Out of sale of personal information</td><td><span class="check">✓</span> — BurnReward does not sell personal information</td></tr>
+        <tr><td>Right to Delete personal information</td><td><span class="check">✓</span> — solo data on app deletion; shared data via in-app account deletion</td></tr>
+        <tr><td>Right to Opt-Out of sale / sharing of personal information</td><td><span class="check">✓</span> — BurnReward does not sell personal information or share it for cross-context behavioral advertising</td></tr>
         <tr><td>"Do Not Sell My Personal Information" link required?</td><td>No — only required when personal information is sold. BurnReward sells nothing.</td></tr>
         <tr><td>Non-discrimination for exercising rights</td><td><span class="check">✓</span> — there are no tiers, no accounts, and no differential treatment</td></tr>
       </tbody>
     </table>
 
     <h3>COPPA (Children's Online Privacy Protection Act)</h3>
-    <p>BurnReward is not directed to children under 13. The App Store age rating is set to 4+ (no objectionable content), but the app is a fitness tool intended for adults and teens with parental consent. No personal information is collected from any user, so COPPA obligations regarding data collection and parental consent for personal information do not apply. The Terms of Service set a minimum age of 13.</p>
+    <p>BurnReward is not directed to children under 13, and the Terms of Service set a minimum age of 13. Solo mode collects no personal information. Social mode involves creating an account and sharing information with other users, so it is intended for users 13 and older; if we learn that we have collected account information from a child under 13, we will delete it. The social consent screen and age gate exist to prevent under-13 accounts.</p>
 
     <h3>HIPAA (Health Insurance Portability and Accountability Act)</h3>
     <p>HIPAA applies to covered entities (healthcare providers, insurers) and their business associates. BurnReward is a consumer fitness app, not a healthcare provider, and does not create, receive, maintain, or transmit Protected Health Information (PHI) as defined by HIPAA. The app does not interface with any healthcare provider system and is not a medical device. HIPAA does not apply.</p>
