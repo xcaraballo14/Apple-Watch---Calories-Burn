@@ -124,10 +124,13 @@ Small polish pass before any external eyes see the app.
       watch app bundled, not a standalone watchOS listing
 - [ ] Category: **Health & Fitness** (primary; pick a secondary)
 - [ ] Listing copy pasted — name, subtitle, description, keywords, promo text
-      (see §4 in metadata; rewrite for the companion: RPG progression, quests,
-      badges, weekly challenges, on-device privacy)
+      (see §4 in metadata — **rewritten 2026-07-28** for the pivot: RPG
+      progression, every-workout-counts, the party/feed/ARENA, and opt-in
+      sharing. The old "on-device privacy" pitch is retired)
 - [ ] Support URL + Marketing URL (GitHub Pages site) set
-- [ ] Age rating questionnaire → **4+**
+- [ ] Age rating questionnaire → ~~**4+**~~ ⚠️ **superseded 2026-07-28** — the
+      app ships user-generated content (usernames, captions, photos), so the UGC
+      questions must be answered yes. Expect **13+**; see `APP_STORE_METADATA.md` §5
 - [ ] Pricing = **Free** (IAP / subscription is post-launch, see C8)
 
 ### 3c · Screenshots (both platforms now)
@@ -150,10 +153,13 @@ Small polish pass before any external eyes see the app.
 
 ### 3d · Privacy & compliance (updated for the iOS app)
 
-- [ ] **App Privacy questionnaire → "Data Not Collected."** Nothing leaves the
-      device: HealthKit is read on-device, the profile photo is a local JPEG in
-      UserDefaults, notifications are scheduled locally, no analytics/SDKs. This
-      is a genuine selling point — answer it honestly and simply.
+- [ ] ~~**App Privacy questionnaire → "Data Not Collected."**~~ ⚠️ **FALSE since
+      the 2026-07-21 pivot — superseded 2026-07-28.** The app now has accounts, a
+      Supabase backend, and consent-based sharing of calories/HR/steps/photos.
+      The correct declaration is Health & Fitness + User Content + Identifiers +
+      Contact Info, all Collected and Linked to You, none used for Tracking. The
+      authoritative table is `APP_STORE_METADATA.md` §6, mirrored in
+      `data-compliance.html` §5. Do not answer "Data Not Collected."
 - [ ] Health usage strings present: `NSHealthShareUsageDescription` on **both**
       targets (iOS needed both HK strings + the HealthKit entitlement — error
       90683 if missing); `PrivacyInfo.xcprivacy` on each (UserDefaults reason
