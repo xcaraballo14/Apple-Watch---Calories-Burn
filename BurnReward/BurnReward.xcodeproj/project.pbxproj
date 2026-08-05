@@ -595,7 +595,7 @@
 				INFOPLIST_FILE = "BurnReward-iOS-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = BurnReward;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "BurnReward reads the workouts it saved from your Apple Watch to show your quest history, streaks, and level.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "BurnReward reads your workouts, active calories, heart rate, steps, and distance from Apple Health to show your quest history, streaks, and level, including workouts recorded by your Apple Watch or by other fitness apps and devices.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "BurnReward never writes health data from your iPhone — workouts are saved to Apple Health by the Apple Watch app.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "BurnReward saves your share cards to your photo library.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -642,7 +642,7 @@
 				INFOPLIST_FILE = "BurnReward-iOS-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = BurnReward;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "BurnReward reads the workouts it saved from your Apple Watch to show your quest history, streaks, and level.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "BurnReward reads your workouts, active calories, heart rate, steps, and distance from Apple Health to show your quest history, streaks, and level, including workouts recorded by your Apple Watch or by other fitness apps and devices.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "BurnReward never writes health data from your iPhone — workouts are saved to Apple Health by the Apple Watch app.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "BurnReward saves your share cards to your photo library.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
