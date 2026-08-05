@@ -260,7 +260,7 @@
     </table></div>
 
     <div class="info">
-      <p><strong style="color:var(--blue)">HealthKit Privacy Note:</strong> Apple's HealthKit intentionally hides read-authorization status from apps (a privacy design so an app can't infer which categories a user has blocked). BurnReward therefore never drives its UI from HealthKit's read-status APIs — it relies only on real operations (a save succeeding, samples arriving). If a quest collects no sensor data, the Watch shows a one-time "no sensor data" hint pointing to iPhone Settings › Privacy &amp; Security › Health › BurnReward. The iPhone reads only the workouts BurnReward itself saved (matched by app source) — never any other app's health data.</p>
+      <p><strong style="color:var(--blue)">HealthKit Privacy Note:</strong> Apple's HealthKit intentionally hides read-authorization status from apps (a privacy design so an app can't infer which categories a user has blocked). BurnReward therefore never drives its UI from HealthKit's read-status APIs — it relies only on real operations (a save succeeding, samples arriving). If a quest collects no sensor data, the Watch shows a one-time "no sensor data" hint pointing to iPhone Settings › Privacy &amp; Security › Health › BurnReward. The iPhone reads your workout history from Apple Health — including workouts recorded by your Apple Watch, your iPhone, or other fitness apps and devices — so that everything you do counts toward your quest history, level, and records. This reading happens on your device; what leaves it is governed by Section 3.5 and by your sharing settings.</p>
     </div>
   </section>
 
@@ -591,7 +591,7 @@
         <tr>
           <td>iPhone</td>
           <td><code>NSHealthShareUsageDescription</code></td>
-          <td>"BurnReward reads the workouts it saved from your Apple Watch to show your quest history, streaks, and level."</td>
+          <td>"BurnReward reads your workouts, active calories, heart rate, steps, and distance from Apple Health to show your quest history, streaks, and level, including workouts recorded by your Apple Watch or by other fitness apps and devices."</td>
         </tr>
         <tr>
           <td>iPhone</td>
