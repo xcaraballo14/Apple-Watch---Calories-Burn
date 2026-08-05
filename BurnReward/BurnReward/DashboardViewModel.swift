@@ -381,9 +381,39 @@ final class DashboardViewModel: ObservableObject {
             )
         }
 
+        /// A workout that arrived from Apple Health rather than a BurnReward
+        /// quest — no reward, no goal, never earned. The aperture fix means a
+        /// real history is a mix of these and quests, so the sample is too.
+        func outside(
+            daysAgo: Int, hour: Int, minutes: Double, calories: Int,
+            hr: Int?, type: String, source: String, meters: Double? = nil
+        ) -> Quest {
+            let day = cal.date(byAdding: .day, value: -daysAgo, to: cal.startOfDay(for: now)) ?? now
+            let start = cal.date(byAdding: .hour, value: hour, to: day) ?? day
+            var quest = Quest(
+                id: UUID(), startDate: start, endDate: start.addingTimeInterval(minutes * 60),
+                duration: minutes * 60, calories: calories, averageHeartRate: hr,
+                steps: type == "RUN" ? Int(160 * minutes) : nil,
+                activityLabel: type, rewardNames: [], rewardEmojis: [],
+                goalCalories: nil, earned: false, isLegacy: false
+            )
+            quest.isOutside = true
+            quest.sourceName = source
+            quest.distanceMeters = meters
+            return quest
+        }
+
         return [
             quest(daysAgo: 0, hour: 7, minutes: 28.7, calories: 412, hr: 142, type: "RUN",
                   names: ["Pizza Slice"], emojis: ["🍕"], goal: 400),
+            outside(daysAgo: 1, hour: 6, minutes: 31, calories: 305, hr: 148,
+                    type: "RUN", source: "Strava", meters: 5_200),
+            outside(daysAgo: 2, hour: 17, minutes: 52, calories: 486, hr: 132,
+                    type: "BIKE", source: "Garmin Connect", meters: 18_400),
+            outside(daysAgo: 5, hour: 12, minutes: 45, calories: 268, hr: nil,
+                    type: "SWIM", source: "Apple Watch", meters: 1_200),
+            outside(daysAgo: 7, hour: 19, minutes: 38, calories: 214, hr: 119,
+                    type: "YOGA", source: "Oura"),
             quest(daysAgo: 3, hour: 18, minutes: 52, calories: 282, hr: 118, type: "WALK",
                   names: ["Donut"], emojis: ["🍩"], goal: 270),
             quest(daysAgo: 4, hour: 9, minutes: 24, calories: 195, hr: 136, type: "RUN",

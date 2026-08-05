@@ -44,6 +44,19 @@ struct RootView: View {
     @State private var showSignInPrompt = false
 
     var body: some View {
+        // MOCKUP PHASE — `-BRDemoAperture` replaces the whole app with the
+        // aperture-fix comparison screen so it can be screenshot in both themes.
+        // Goes away with ApertureMockup.swift once Xavier locks the answers.
+        if ProcessInfo.processInfo.arguments.contains("-BRDemoAperture") {
+            ApertureMockupView(page: 1)
+        } else if ProcessInfo.processInfo.arguments.contains("-BRDemoAperture2") {
+            ApertureMockupView(page: 2)
+        } else {
+            appBody
+        }
+    }
+
+    private var appBody: some View {
         TabView(selection: $selectedTab) {
             tabPage(HomeView(model: model, liveManager: liveManager, selectedTab: $selectedTab))
                 .tag(AppTab.home)

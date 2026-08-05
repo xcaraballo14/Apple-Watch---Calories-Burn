@@ -23,6 +23,17 @@ enum GameBalance {
     static let firstQuestOfDayBonus = 20
     /// Corrects the watch's undercounting of strength work.
     static let liftTypeFactor = 1.4
+    /// XP per calorie for a workout BurnReward didn't run as a quest — anything
+    /// arriving from Apple Health via another app, watch, or ring. Adjudicated
+    /// 2026-07-14 (`RECORD_OLD_WORKOUTS.md`) and locked for launch in
+    /// `LAUNCH_SCOPE.md`: outside work counts, quests count for more.
+    ///
+    /// Deliberately expressed as a **rate on the base**, never as a deduction
+    /// row — a red "−68 XP" reads as a punishment for training outside the app,
+    /// which is the exact resentment the aperture fix exists to remove. Same
+    /// arithmetic either way; only this framing keeps the XP v2.1 promise that
+    /// no factor is ever below 1 against the calories the player is credited.
+    static let outsideWorkoutRate = 0.8
     /// Intensity multiplier bands from average heart rate, highest first.
     /// A workout's factor is the first band whose floor its avg HR reaches;
     /// below the lowest floor (or no HR) the factor is 1.0 — never a penalty.

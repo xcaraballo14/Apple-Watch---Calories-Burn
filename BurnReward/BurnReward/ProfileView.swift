@@ -120,6 +120,11 @@ struct ProfileView: View {
                 if arguments.contains("-BRDemoQuestReceipt"), demoReceiptQuest == nil {
                     demoReceiptQuest = model.quests.first { $0.earned }
                 }
+                // The outside-workout receipt: 0.8 base rate, SIDE QUEST chip,
+                // Recorded by + Distance rows, and no quest-complete bonus.
+                if arguments.contains("-BRDemoOutsideReceipt"), demoReceiptQuest == nil {
+                    demoReceiptQuest = model.quests.first { $0.isOutside }
+                }
                 // `-BRDemoShareCard` / `-BRDemoShareCardBadge` present the social
                 // share card (quest / badge variant) for simulator screenshots.
                 if demoShareCard == nil {

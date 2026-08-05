@@ -248,6 +248,44 @@ struct HistoryRow: View {
     /// or steps) — shows the gold RECORD tag. Specifics live in the detail view.
     var isRecordHolder: Bool = false
 
+    /// A quest's title is its reward, so the workout type belongs in the
+    /// subtitle. An outside workout's title *is* the type, so the slot goes to
+    /// the source instead — the fact a player is actually checking for ("did it
+    /// see my Garmin?").
+    ///
+    /// The source goes **last** deliberately. It reads better in the middle, but
+    /// this line is `lineLimit(1)` and real source names are long — "Garmin
+    /// Connect" pushed the calories off the end entirely. Trailing means the
+    /// truncation eats the app name, which the player can still recognise from
+    /// its first few letters, instead of the numbers they came to see.
+    private var subtitle: String {
+        let day = quest.endDate.formatted(.dateTime.month(.abbreviated).day())
+        let metrics = "\(Int(quest.duration / 60)) min · \(quest.calories) cal"
+        if quest.isOutside, let sourceName = quest.sourceName {
+            return "\(day) · \(metrics) · \(sourceName)"
+        }
+        return "\(day) · \(quest.activityLabel.capitalized) · \(metrics)"
+    }
+
+    private var accessibilityText: String {
+        let date = quest.endDate.formatted(date: .abbreviated, time: .omitted)
+        var parts = [
+            quest.title,
+            date,
+            quest.activityLabel.lowercased(),
+            "\(quest.calories) calories",
+            "\(xp) experience points",
+        ]
+        if let sourceName = quest.sourceName { parts.append("recorded by \(sourceName)") }
+        if isRecordHolder { parts.append("current record holder") }
+        if quest.isOutside {
+            parts.append("side quest")
+        } else if !quest.earned {
+            parts.append("unfinished")
+        }
+        return parts.joined(separator: ", ")
+    }
+
     var body: some View {
         HStack(spacing: 12) {
             Text(quest.emoji)
@@ -258,7 +296,7 @@ struct HistoryRow: View {
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(BRTheme.textPrimary)
                     .lineLimit(1)
-                Text("\(quest.endDate.formatted(.dateTime.month(.abbreviated).day())) · \(quest.activityLabel.capitalized) · \(Int(quest.duration / 60)) min · \(quest.calories) cal")
+                Text(subtitle)
                     .font(.footnote)
                     .foregroundStyle(BRTheme.textMuted)
                     .lineLimit(1)
@@ -274,7 +312,14 @@ struct HistoryRow: View {
                         .font(.pixel(7))
                         .foregroundStyle(BRTheme.gold)
                 }
-                if !quest.earned {
+                // An outside workout isn't unfinished — it was a whole workout
+                // that simply wasn't run as a quest. Saying UNFINISHED here
+                // would read as a failure the player never had.
+                if quest.isOutside {
+                    Text("SIDE QUEST")
+                        .font(.pixel(7))
+                        .foregroundStyle(BRTheme.blueFG)
+                } else if !quest.earned {
                     Text("UNFINISHED")
                         .font(.pixel(8))
                         .foregroundStyle(BRTheme.textMuted)
@@ -283,12 +328,7 @@ struct HistoryRow: View {
         }
         .padding(.vertical, 6)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(
-            "\(quest.title), \(quest.endDate.formatted(date: .abbreviated, time: .omitted)), " +
-            "\(quest.activityLabel.lowercased()), \(quest.calories) calories, \(xp) experience points" +
-            (isRecordHolder ? ", current record holder" : "") +
-            (quest.earned ? "" : ", unfinished")
-        )
+        .accessibilityLabel(accessibilityText)
     }
 }
 
@@ -323,7 +363,21 @@ struct QuestDetailView: View {
                         .foregroundStyle(BRTheme.textPrimary)
                         .multilineTextAlignment(.center)
 
-                    if quest.earned {
+                    if quest.isOutside {
+                        Text("SIDE QUEST")
+                            .font(.pixel(11))
+                            .foregroundStyle(BRTheme.blueFG)
+                            .padding(.vertical, 6)
+                            .padding(.horizontal, 10)
+                            .background(
+                                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                    .fill(BRTheme.blueFG.opacity(0.12))
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                    .strokeBorder(BRTheme.blueFG, lineWidth: 1)
+                            )
+                    } else if quest.earned {
                         Text("EARNED")
                             .font(.pixel(11))
                             .foregroundStyle(BRTheme.onNeonGreen)
@@ -368,6 +422,12 @@ struct QuestDetailView: View {
                     VStack(spacing: 0) {
                         detailRow("Date", quest.endDate.formatted(date: .abbreviated, time: .shortened))
                         detailRow("Workout", quest.activityLabel.capitalized)
+                        if let sourceName = quest.sourceName {
+                            detailRow("Recorded by", sourceName)
+                        }
+                        if let distanceText = quest.distanceText {
+                            detailRow("Distance", distanceText)
+                        }
                         detailRow("Duration", BRFormat.duration(quest.duration))
                         detailRow("Avg heart rate", quest.averageHeartRate.map { "\($0) BPM" } ?? "—")
                         detailRow("Steps", quest.steps.map { $0.formatted() } ?? "—")
@@ -384,7 +444,7 @@ struct QuestDetailView: View {
                         PixelSectionLabel(text: "XP BREAKDOWN")
                             .padding(.horizontal, 14)
                             .padding(.top, 14)
-                        detailRow("Base · 1 XP per calorie", "\(xp.baseCalories)")
+                        detailRow("Base · \(xp.sourceRate.formatted()) XP per calorie", "\(xp.ratedBase)")
                         if xp.typeXP > 0 {
                             detailRow("Strength training ×\(xp.typeFactor.formatted())", "+\(xp.typeXP)", valueColor: BRTheme.orangeFG)
                         }
@@ -413,6 +473,23 @@ struct QuestDetailView: View {
                         .padding(.horizontal, 14)
                         .padding(.vertical, 14)
                         .accessibilityElement(children: .combine)
+
+                        // States the rule instead of docking a line for it —
+                        // the gap becomes a reason to run a quest rather than a
+                        // punishment for training outside the app.
+                        if quest.isOutside {
+                            HStack(spacing: 6) {
+                                Text("⚔️").font(.system(size: 11))
+                                Text("Run a quest in BurnReward to earn at the full rate.")
+                                    .font(.caption)
+                                    .foregroundStyle(BRTheme.textMuted)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 14)
+                            .padding(.bottom, 14)
+                            .accessibilityElement(children: .combine)
+                        }
                     }
                     .brCard(padding: 0)
 

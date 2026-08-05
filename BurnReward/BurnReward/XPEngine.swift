@@ -4,25 +4,32 @@ import Foundation
 /// (base → type → intensity), so the visible lines always sum to `total`.
 struct XPBreakdown: Hashable {
     let baseCalories: Int
+    /// XP per calorie before any multiplier: 1.0 for a quest BurnReward ran,
+    /// `GameBalance.outsideWorkoutRate` for a workout that arrived from another
+    /// app. Shown as the *rate on the Base line*, never as a deduction row.
+    var sourceRate: Double = 1.0
     let typeFactor: Double
     let intensityFactor: Double
     let earnedBonus: Int
     let firstOfDayBonus: Int
     let precisionBonus: Int
 
-    /// Calories after both multipliers, rounded once.
+    /// The credited calories — what the receipt's Base line reads.
+    var ratedBase: Int { Int((Double(baseCalories) * sourceRate).rounded()) }
+
+    /// Calories after every multiplier, rounded once.
     var multipliedBase: Int {
-        Int((Double(baseCalories) * typeFactor * intensityFactor).rounded())
+        Int((Double(baseCalories) * sourceRate * typeFactor * intensityFactor).rounded())
     }
 
     /// XP added by the type factor alone.
     var typeXP: Int {
-        Int((Double(baseCalories) * typeFactor).rounded()) - baseCalories
+        Int((Double(baseCalories) * sourceRate * typeFactor).rounded()) - ratedBase
     }
 
     /// XP added by the intensity factor — absorbs the rounding remainder so
-    /// baseCalories + typeXP + intensityXP == multipliedBase exactly.
-    var intensityXP: Int { multipliedBase - baseCalories - typeXP }
+    /// ratedBase + typeXP + intensityXP == multipliedBase exactly.
+    var intensityXP: Int { multipliedBase - ratedBase - typeXP }
 
     var total: Int { multipliedBase + earnedBonus + firstOfDayBonus + precisionBonus }
 }
@@ -76,9 +83,18 @@ enum XPEngine {
         return Int((closeness * Double(GameBalance.precisionBonusMax)).rounded())
     }
 
+    /// A quest earns at the full rate; anything BurnReward didn't run earns at
+    /// `GameBalance.outsideWorkoutRate`. Existing history is untouched — every
+    /// BurnReward workout scores 1.0, exactly as it did before the aperture
+    /// opened, so nobody's level moves when this ships.
+    static func sourceRate(for quest: Quest) -> Double {
+        quest.isOutside ? GameBalance.outsideWorkoutRate : 1.0
+    }
+
     static func score(_ quest: Quest, isFirstQuestOfDay: Bool) -> XPBreakdown {
         XPBreakdown(
             baseCalories: quest.calories,
+            sourceRate: sourceRate(for: quest),
             typeFactor: typeFactor(forActivityLabel: quest.activityLabel),
             intensityFactor: intensityFactor(forAverageHR: quest.averageHeartRate),
             earnedBonus: quest.earned ? questCompleteBonus : 0,

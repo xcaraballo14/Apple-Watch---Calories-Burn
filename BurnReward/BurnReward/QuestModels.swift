@@ -12,19 +12,46 @@ struct Quest: Identifiable, Hashable {
     let calories: Int
     let averageHeartRate: Int?
     let steps: Int?                  // nil when the workout carries no step data
-    let activityLabel: String        // WALK / RUN / BIKE / LIFT / OTHER
+    let activityLabel: String        // RUN / BIKE / SWIM / LIFT / … / OTHER
     let rewardNames: [String]
     let rewardEmojis: [String]
     let goalCalories: Int?
     let earned: Bool
     /// Saved before the watch stamped reward metadata — shows as a generic quest.
     let isLegacy: Bool
+    /// Recorded by something other than BurnReward — Strava, Garmin, a ring, a
+    /// phone app, or Apple's own Workout app. Earns XP, streak, challenge,
+    /// records and badges, but never auto-claims a pending reward
+    /// (`LAUNCH_SCOPE.md`, decision 2). Shown as a SIDE QUEST.
+    /// `var` with a default purely so the memberwise init stays source-compatible
+    /// with the sample-data and preview call sites; `init(workout:)` always sets it.
+    var isOutside: Bool = false
+    /// Display name of the app that recorded it ("Strava", "Apple Watch") —
+    /// the trust line, so a player can see BurnReward noticed their gear.
+    var sourceName: String? = nil
+    /// Distance in meters when the workout carries one (walk/run, cycling, swim).
+    var distanceMeters: Double? = nil
 
     var title: String {
-        rewardNames.isEmpty ? "Quest Workout" : rewardNames.joined(separator: " + ")
+        if !rewardNames.isEmpty { return rewardNames.joined(separator: " + ") }
+        return isOutside ? activityLabel.capitalized : "Quest Workout"
     }
 
-    var emoji: String { rewardEmojis.first ?? "🔥" }
+    /// The reward's emoji for a quest; the workout's own icon for anything
+    /// BurnReward didn't run, which has no reward attached to speak for it.
+    var emoji: String {
+        if let rewardEmoji = rewardEmojis.first { return rewardEmoji }
+        return isOutside ? BRActivity.emoji(forLabel: activityLabel) : "🔥"
+    }
+
+    /// Formatted for the LOG subtitle and the detail row — km or mi by locale.
+    var distanceText: String? {
+        guard let distanceMeters, distanceMeters > 0 else { return nil }
+        return Measurement(value: distanceMeters, unit: UnitLength.meters)
+            .formatted(.measurement(width: .abbreviated,
+                                    usage: .road,
+                                    numberFormatStyle: .number.precision(.fractionLength(0...2))))
+    }
 
     var progressToGoal: Double? {
         guard let goalCalories, goalCalories > 0 else { return nil }
@@ -56,6 +83,24 @@ extension Quest {
 
         activityLabel = workout.workoutActivityType.brLabel
 
+        let distance = workout.statistics(for: HKQuantityType(.distanceWalkingRunning))?
+            .sumQuantity()?.doubleValue(for: .meter())
+            ?? workout.statistics(for: HKQuantityType(.distanceCycling))?
+            .sumQuantity()?.doubleValue(for: .meter())
+            ?? workout.statistics(for: HKQuantityType(.distanceSwimming))?
+            .sumQuantity()?.doubleValue(for: .meter())
+        distanceMeters = distance
+
+        let source = workout.sourceRevision.source
+        let fromBurnReward = source.bundleIdentifier
+            .hasPrefix(HealthKitService.sourceBundlePrefix)
+        isOutside = !fromBurnReward
+        sourceName = fromBurnReward ? nil : source.name
+
+        // Three cases, not two. The old code assumed every metadata-less workout
+        // was a pre-metadata BurnReward quest and credited it as earned; once the
+        // aperture opened, that would have handed every Strava run a completion
+        // bonus and an EARNED stamp it never worked for.
         let meta = workout.metadata ?? [:]
         if let names = meta[QuestMetadata.rewardNames] as? String, !names.isEmpty {
             rewardNames = names.components(separatedBy: QuestMetadata.separator)
@@ -68,12 +113,60 @@ extension Quest {
             let rewardCount = meta[QuestMetadata.rewardCount] as? Int ?? rewardNames.count
             earned = rewardCount > 0 && earnedCount >= rewardCount
             isLegacy = false
-        } else {
+        } else if fromBurnReward {
             rewardNames = []
             rewardEmojis = []
             goalCalories = nil
             earned = true   // pre-metadata workouts were saved at quest completion
             isLegacy = true
+        } else {
+            rewardNames = []
+            rewardEmojis = []
+            goalCalories = nil
+            earned = false  // never auto-claims a reward — the locked rule
+            isLegacy = false
+        }
+    }
+}
+
+/// Workout-type vocabulary. Deliberately the *shallow* layer of
+/// `WORKOUT_CATALOG.md` — labels and icons only. The full 22-type/7-class
+/// affinity system is cut to post-launch (`LAUNCH_SCOPE.md`); this exists
+/// because the aperture fix means a player's history now arrives from every
+/// app they use, and "OTHER" for half of it reads as an app that isn't paying
+/// attention.
+enum BRActivity {
+    /// Icon for the LOG row when there's no reward emoji to show instead.
+    static func emoji(forLabel label: String) -> String {
+        switch label {
+        case "WALK":     "🚶"
+        case "RUN":      "🏃"
+        case "BIKE":     "🚴"
+        case "SWIM":     "🏊"
+        case "LIFT":     "🏋️"
+        case "HIIT":     "🔥"
+        case "ROW":      "🚣"
+        case "ELLIPTICAL": "🌀"
+        case "HIKE":     "🥾"
+        case "YOGA":     "🧘"
+        case "PILATES":  "🤸"
+        case "CORE":     "🌟"
+        case "DANCE":    "💃"
+        case "STAIRS":   "🪜"
+        case "JUMP ROPE": "🪢"
+        case "BOX":      "🥊"
+        case "MARTIAL ARTS": "🥋"
+        case "CLIMB":    "🧗"
+        case "SKI":      "⛷️"
+        case "SNOWBOARD": "🏂"
+        case "SKATE":    "⛸️"
+        case "PADDLE":   "🛶"
+        case "SURF":     "🏄"
+        case "GOLF":     "⛳"
+        case "TENNIS":   "🎾"
+        case "TEAM SPORT": "⚽"
+        case "CARDIO":   "💥"
+        default:         "🔥"
         }
     }
 }
@@ -81,11 +174,42 @@ extension Quest {
 private extension HKWorkoutActivityType {
     var brLabel: String {
         switch self {
-        case .walking:                     "WALK"
-        case .running:                     "RUN"
-        case .cycling:                     "BIKE"
-        case .traditionalStrengthTraining: "LIFT"
-        default:                           "OTHER"
+        case .walking:                        "WALK"
+        case .running:                        "RUN"
+        case .cycling:                        "BIKE"
+        case .swimming:                       "SWIM"
+        case .traditionalStrengthTraining,
+             .functionalStrengthTraining:     "LIFT"
+        case .highIntensityIntervalTraining:  "HIIT"
+        case .rowing:                         "ROW"
+        case .elliptical:                     "ELLIPTICAL"
+        case .hiking:                         "HIKE"
+        case .yoga:                           "YOGA"
+        case .pilates:                        "PILATES"
+        case .coreTraining:                   "CORE"
+        case .cardioDance, .socialDance:      "DANCE"
+        case .stairClimbing, .stairs,
+             .stepTraining:                   "STAIRS"
+        case .jumpRope:                       "JUMP ROPE"
+        case .boxing, .kickboxing:            "BOX"
+        case .martialArts:                    "MARTIAL ARTS"
+        case .climbing:                       "CLIMB"
+        case .downhillSkiing,
+             .crossCountrySkiing:             "SKI"
+        case .snowboarding:                   "SNOWBOARD"
+        case .skatingSports:                  "SKATE"
+        case .paddleSports:                   "PADDLE"
+        case .surfingSports:                  "SURF"
+        case .golf:                           "GOLF"
+        case .tennis, .racquetball,
+             .squash, .badminton,
+             .tableTennis, .pickleball:       "TENNIS"
+        case .soccer, .basketball,
+             .americanFootball, .hockey,
+             .volleyball, .baseball,
+             .softball, .rugby:               "TEAM SPORT"
+        case .mixedCardio, .crossTraining:    "CARDIO"
+        default:                              "OTHER"
         }
     }
 }
